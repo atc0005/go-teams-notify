@@ -181,6 +181,16 @@ func TestTeamsClientSend(t *testing.T) {
 					test.error,
 					err,
 				)
+				t.Logf(
+					"OK: test %d; test.error has value '%s'",
+					idx,
+					test.error.Error(),
+				)
+				t.Logf(
+					"OK: test %d; error response has value '%s'",
+					idx,
+					err.Error(),
+				)
 			}
 		} else {
 			t.Logf("OK: test %d; no error", idx)
