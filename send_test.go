@@ -116,6 +116,24 @@ func TestTeamsClientSend(t *testing.T) {
 		client := NewTestClient(func(req *http.Request) (*http.Response, error) {
 			// Test request parameters
 			assert.Equal(t, req.URL.String(), test.reqURL)
+
+			// GH-46; fix contributed by @davecheney (thank you!)
+			//
+			// The RoundTripper documentation notes that nil must be returned
+			// as the error value if a response is received. A non-nil error
+			// should be returned for failure to obtain a response. Failure to
+			// obtain a response is indicated by the test table response
+			// error, so we represent that failure to obtain a response by
+			// returning nil and the test table response error explaining why
+			// a response could not be retrieved.
+			if test.resError != nil {
+				return nil, test.resError
+			}
+
+			// GH-46 (cont) If no table test response errors are provided,
+			// then the response was retrieved (provided below), so we are
+			// required to return nil as the error value along with the
+			// response.
 			return &http.Response{
 				StatusCode: test.resStatus,
 
@@ -124,7 +142,7 @@ func TestTeamsClientSend(t *testing.T) {
 
 				// Must be set to non-nil value or it panics
 				Header: make(http.Header),
-			}, test.resError
+			}, nil
 		})
 		c := &teamsClient{httpClient: client}
 
