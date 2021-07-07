@@ -44,6 +44,16 @@ const (
 	PotentialActionActionCardInputMultichoiceInput = "MultichoiceInput"
 )
 
+// PotentialActionMaxSupported is the maximum number of actions allowed in a
+// MessageCardPotentialAction collection.
+// https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#actions
+const PotentialActionMaxSupported = 4
+
+// ErrPotentialActionsLimitReached indicates that the maximum supported number
+// of potentialAction collection values has been reached for either a
+// MessageCard or a MessageCardSection.
+var ErrPotentialActionsLimitReached = errors.New("potential actions collection limit reached")
+
 // MessageCardPotentialAction represents potential actions an user can do in a
 // message card. See
 // https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#actions
@@ -395,6 +405,54 @@ type MessageCard struct {
 	PotentialActions []*MessageCardPotentialAction `json:"potentialAction,omitempty"`
 }
 
+// validatePotentialAction inspects the given *MessageCardPotentialAction
+// and returns an error if the value is not known.
+func validatePotentialAction(pa *MessageCardPotentialAction) error {
+	if pa == nil {
+		return fmt.Errorf("nil MessageCardPotentialAction received")
+	}
+
+	switch pa.Type {
+	case PotentialActionOpenURIType,
+		PotentialActionHTTPPostType,
+		PotentialActionActionCardType,
+		PotentialActionInvokeAddInCommandType:
+
+	default:
+		return fmt.Errorf("unknown type %s for potential action %s", pa.Type, pa.Name)
+	}
+
+	if pa.Name == "" {
+		return fmt.Errorf("missing name value for MessageCardPotentialAction")
+	}
+
+	return nil
+}
+
+// addPotentialAction adds one or many MessageCardPotentialAction values to a
+// PotentialActions collection.
+func addPotentialAction(collection *[]*MessageCardPotentialAction, actions ...*MessageCardPotentialAction) error {
+	for _, a := range actions {
+		logger.Printf("addPotentialAction: MessageCardPotentialAction received: %+v\n", a)
+
+		if err := validatePotentialAction(a); err != nil {
+			logger.Printf("addPotentialAction: validation failed: %v", err)
+
+			return err
+		}
+
+		if len(*collection) > PotentialActionMaxSupported {
+			logger.Printf("addPotentialAction: failed to add potential action: %v", ErrPotentialActionsLimitReached.Error())
+
+			return fmt.Errorf("func addPotentialAction: failed to add potential action: %w", ErrPotentialActionsLimitReached)
+		}
+
+		*collection = append(*collection, a)
+	}
+
+	return nil
+}
+
 // AddSection adds one or many additional MessageCardSection values to a
 // MessageCard. Validation is performed to reject invalid values with an error
 // message.
@@ -445,28 +503,7 @@ func (mc *MessageCard) AddSection(section ...*MessageCardSection) error {
 // AddPotentialAction adds one or many MessageCardPotentialAction values to a
 // PotentialActions collection on a MessageCard.
 func (mc *MessageCard) AddPotentialAction(actions ...*MessageCardPotentialAction) error {
-	for _, a := range actions {
-		logger.Printf("AddPotentialAction: MessageCardPotentialAction received: %+v\n", a)
-
-		if a == nil {
-			return fmt.Errorf("func AddPotentialAction: nil MessageCardPotentialAction received")
-		}
-
-		switch a.Type {
-		case PotentialActionOpenURIType,
-			PotentialActionHTTPPostType,
-			PotentialActionActionCardType,
-			PotentialActionInvokeAddInCommandType:
-
-		default:
-			logger.Printf("AddPotentialAction: unknown type %s for action %s\n", a.Type, a.Name)
-			return fmt.Errorf("unknown type %s for potential action %s", a.Type, a.Name)
-		}
-
-		mc.PotentialActions = append(mc.PotentialActions, a)
-	}
-
-	return nil
+	return addPotentialAction(&mc.PotentialActions, actions...)
 }
 
 // Validate validates a MessageCard calling ValidateFunc if defined,
@@ -540,28 +577,7 @@ func (mcs *MessageCardSection) AddFactFromKeyValue(key string, values ...string)
 // PotentialActions collection on a MessageCardSection. This is separate from
 // the actions collection for the MessageCard.
 func (mcs *MessageCardSection) AddPotentialAction(actions ...*MessageCardPotentialAction) error {
-	for _, a := range actions {
-		logger.Printf("AddPotentialAction: MessageCardPotentialAction received: %+v\n", a)
-
-		if a == nil {
-			return fmt.Errorf("func AddPotentialAction: nil MessageCardPotentialAction received")
-		}
-
-		switch a.Type {
-		case PotentialActionOpenURIType,
-			PotentialActionHTTPPostType,
-			PotentialActionActionCardType,
-			PotentialActionInvokeAddInCommandType:
-
-		default:
-			logger.Printf("AddPotentialAction: unknown type %s for action %s\n", a.Type, a.Name)
-			return fmt.Errorf("unknown type %s for potential action %s", a.Type, a.Name)
-		}
-
-		mcs.PotentialActions = append(mcs.PotentialActions, a)
-	}
-
-	return nil
+	return addPotentialAction(&mcs.PotentialActions, actions...)
 }
 
 // AddImage adds an image to a MessageCard section. These images are used to
@@ -661,10 +677,17 @@ func NewMessageCardSectionImage() MessageCardSectionImage {
 
 // NewMessageCardPotentialAction creates a new MessageCardPotentialAction
 // using the provided potential action type and name. The name values defines
-// the text that will be displayed on screen for the action.
-func NewMessageCardPotentialAction(potentialActionType string, name string) *MessageCardPotentialAction {
-	return &MessageCardPotentialAction{
+// the text that will be displayed on screen for the action. An error is
+// returned if invalid values are supplied.
+func NewMessageCardPotentialAction(potentialActionType string, name string) (*MessageCardPotentialAction, error) {
+	pa := MessageCardPotentialAction{
 		Type: potentialActionType,
 		Name: name,
 	}
+
+	if err := validatePotentialAction(&pa); err != nil {
+		return nil, err
+	}
+
+	return &pa, nil
 }
