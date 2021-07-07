@@ -405,9 +405,13 @@ type MessageCard struct {
 	PotentialActions []*MessageCardPotentialAction `json:"potentialAction,omitempty"`
 }
 
-// validatePotentialAction inspects the given *MessageCardPotentialAction and
-// returns an error if the value is not known.
+// validatePotentialAction inspects the given *MessageCardPotentialAction
+// and returns an error if the value is not known.
 func validatePotentialAction(pa *MessageCardPotentialAction) error {
+	if pa == nil {
+		return fmt.Errorf("nil MessageCardPotentialAction received")
+	}
+
 	switch pa.Type {
 	case PotentialActionOpenURIType,
 		PotentialActionHTTPPostType,
@@ -418,8 +422,11 @@ func validatePotentialAction(pa *MessageCardPotentialAction) error {
 		return fmt.Errorf("unknown type %s for potential action %s", pa.Type, pa.Name)
 	}
 
-	return nil
+	if pa.Name == "" {
+		return fmt.Errorf("missing name value for MessageCardPotentialAction")
+	}
 
+	return nil
 }
 
 // addPotentialAction adds one or many MessageCardPotentialAction values to a
@@ -428,20 +435,16 @@ func addPotentialAction(collection *[]*MessageCardPotentialAction, actions ...*M
 	for _, a := range actions {
 		logger.Printf("addPotentialAction: MessageCardPotentialAction received: %+v\n", a)
 
-		if a == nil {
-			return fmt.Errorf("func addPotentialAction: nil MessageCardPotentialAction received")
+		if err := validatePotentialAction(a); err != nil {
+			logger.Printf("addPotentialAction: validation failed: %v", err)
+
+			return err
 		}
 
 		if len(*collection) > PotentialActionMaxSupported {
 			logger.Printf("addPotentialAction: failed to add potential action: %v", ErrPotentialActionsLimitReached.Error())
 
 			return fmt.Errorf("func addPotentialAction: failed to add potential action: %w", ErrPotentialActionsLimitReached)
-		}
-
-		if err := validatePotentialAction(a); err != nil {
-			logger.Printf("addPotentialAction: validation failed: %v", err)
-
-			return err
 		}
 
 		*collection = append(*collection, a)
@@ -674,10 +677,17 @@ func NewMessageCardSectionImage() MessageCardSectionImage {
 
 // NewMessageCardPotentialAction creates a new MessageCardPotentialAction
 // using the provided potential action type and name. The name values defines
-// the text that will be displayed on screen for the action.
-func NewMessageCardPotentialAction(potentialActionType string, name string) *MessageCardPotentialAction {
-	return &MessageCardPotentialAction{
+// the text that will be displayed on screen for the action. An error is
+// returned if invalid values are supplied.
+func NewMessageCardPotentialAction(potentialActionType string, name string) (*MessageCardPotentialAction, error) {
+	pa := MessageCardPotentialAction{
 		Type: potentialActionType,
 		Name: name,
 	}
+
+	if err := validatePotentialAction(&pa); err != nil {
+		return nil, err
+	}
+
+	return &pa, nil
 }
