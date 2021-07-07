@@ -44,6 +44,16 @@ const (
 	PotentialActionActionCardInputMultichoiceInput = "MultichoiceInput"
 )
 
+// PotentialActionMaxSupported is the maximum number of actions allowed in a
+// MessageCardPotentialAction collection.
+// https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#actions
+const PotentialActionMaxSupported = 4
+
+// ErrPotentialActionsLimitReached indicates that the maximum supported number
+// of potentialAction collection values has been reached for either a
+// MessageCard or a MessageCardSection.
+var ErrPotentialActionsLimitReached = errors.New("potential actions collection limit reached")
+
 // MessageCardPotentialAction represents potential actions an user can do in a
 // message card. See
 // https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#actions
@@ -395,6 +405,23 @@ type MessageCard struct {
 	PotentialActions []*MessageCardPotentialAction `json:"potentialAction,omitempty"`
 }
 
+// validatePotentialAction inspects the given *MessageCardPotentialAction and
+// returns an error if the value is not known.
+func validatePotentialAction(pa *MessageCardPotentialAction) error {
+	switch pa.Type {
+	case PotentialActionOpenURIType,
+		PotentialActionHTTPPostType,
+		PotentialActionActionCardType,
+		PotentialActionInvokeAddInCommandType:
+
+	default:
+		return fmt.Errorf("unknown type %s for potential action %s", pa.Type, pa.Name)
+	}
+
+	return nil
+
+}
+
 // AddSection adds one or many additional MessageCardSection values to a
 // MessageCard. Validation is performed to reject invalid values with an error
 // message.
@@ -547,15 +574,16 @@ func (mcs *MessageCardSection) AddPotentialAction(actions ...*MessageCardPotenti
 			return fmt.Errorf("func AddPotentialAction: nil MessageCardPotentialAction received")
 		}
 
-		switch a.Type {
-		case PotentialActionOpenURIType,
-			PotentialActionHTTPPostType,
-			PotentialActionActionCardType,
-			PotentialActionInvokeAddInCommandType:
+		if len(mcs.PotentialActions) > PotentialActionMaxSupported {
+			logger.Printf("AddPotentialAction: failed to add potential action: %v", ErrPotentialActionsLimitReached.Error())
 
-		default:
-			logger.Printf("AddPotentialAction: unknown type %s for action %s\n", a.Type, a.Name)
-			return fmt.Errorf("unknown type %s for potential action %s", a.Type, a.Name)
+			return fmt.Errorf("failed to add potential action: %w", ErrPotentialActionsLimitReached)
+		}
+
+		if err := validatePotentialAction(a); err != nil {
+			logger.Printf("AddPotentialAction: validation failed: %v", err)
+
+			return err
 		}
 
 		mcs.PotentialActions = append(mcs.PotentialActions, a)
