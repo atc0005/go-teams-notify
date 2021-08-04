@@ -25,7 +25,7 @@ jobs:
       - name: Setup Node
         # https://github.com/actions/setup-node#supported-version-syntax
         # https://github.com/nvm-sh/nvm#long-term-support
-        uses: actions/setup-node@v2.3.0
+        uses: actions/setup-node@v2.3.1
         with:
           node-version: "lts/*"
 
