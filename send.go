@@ -300,40 +300,7 @@ func (c teamsClient) SendWithRetry(ctx context.Context, webhookURL string, webho
 		result = c.SendWithContext(ctx, webhookURL, webhookMessage)
 
 		switch {
-		case result == nil:
-
-			logger.Printf(
-				"SendWithRetry: successfully sent message after %d of %d attempts\n",
-				attempt,
-				attemptsAllowed,
-			)
-
-			// No further retries needed
-			return nil
-
-		// While the context is passed to mstClient.SendWithContext and it
-		// should ensure that it is respected, we check here explicitly in
-		// order to return early in an effort to prevent undesired message
-		// attempts
-		case ctx.Err() != nil && result != nil:
-
-			errMsg := fmt.Errorf(
-				"SendWithRetry: context cancelled or expired: %v; "+
-					"aborting message submission after %d of %d attempts: %w",
-				ctx.Err().Error(),
-				attempt,
-				attemptsAllowed,
-				result,
-			)
-
-			logger.Println(errMsg)
-			return errMsg
-
-		// Last send attempt failed. Context hasn't expired yet and at least
-		// one retry attempt remains.
-		default:
-
-			ourRetryDelay := time.Duration(retriesDelay) * time.Second
+		case result != nil:
 
 			logger.Printf(
 				"SendWithRetry: Attempt %d of %d to send message failed: %v",
@@ -342,14 +309,38 @@ func (c teamsClient) SendWithRetry(ctx context.Context, webhookURL string, webho
 				result,
 			)
 
-			// apply retry delay since our context hasn't been cancelled yet,
-			// otherwise continue with the loop to allow context cancellation
-			// handling logic to be applied
+			if ctx.Err() != nil {
+				errMsg := fmt.Errorf(
+					"SendWithRetry: context cancelled or expired: %v; "+
+						"aborting message submission after %d of %d attempts: %w",
+					ctx.Err().Error(),
+					attempt,
+					attemptsAllowed,
+					result,
+				)
+
+				logger.Println(errMsg)
+
+				return errMsg
+			}
+
+			ourRetryDelay := time.Duration(retriesDelay) * time.Second
+
 			logger.Printf(
 				"SendWithRetry: Context not cancelled yet, applying retry delay of %v",
 				ourRetryDelay,
 			)
 			time.Sleep(ourRetryDelay)
+
+		default:
+			logger.Printf(
+				"SendWithRetry: successfully sent message after %d of %d attempts\n",
+				attempt,
+				attemptsAllowed,
+			)
+
+			// No further retries needed
+			return nil
 		}
 	}
 
