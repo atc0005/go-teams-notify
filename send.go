@@ -160,6 +160,8 @@ func (c *teamsClient) SetUserAgent(userAgent string) API {
 	return c
 }
 
+// AddWebhookURLValidationPatterns collects given patterns for validation of
+// the the webhook URL.
 func (c *teamsClient) AddWebhookURLValidationPatterns(patterns ...string) API {
 	c.webhookURLValidationPatterns = append(c.webhookURLValidationPatterns, patterns...)
 	return c
