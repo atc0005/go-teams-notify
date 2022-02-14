@@ -365,6 +365,7 @@ func (c teamsClient) validateInput(webhookMessage MessageCard, webhookURL string
 	return webhookMessage.Validate()
 }
 
+// ValidateWebhook applies webhook URL validation unless explicitly disabled.
 func (c teamsClient) ValidateWebhook(webhookURL string) error {
 	if c.skipWebhookURLValidation || webhookURL == DisableWebhookURLValidation {
 		return nil
