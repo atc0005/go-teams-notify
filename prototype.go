@@ -12,6 +12,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 )
 
 // msgPreparer is intended to cover MessageCard, AdaptiveCard, botapi.Message,
@@ -22,17 +23,12 @@ type msgPreparer interface {
 	// ProcessResponse() ?
 	// Validate(webhookURL string) error
 	// String() ? - perhaps implement, but not add to this interface
-
 }
 
-// validateMessage acts as a validation "router" all message types, calling
-// out to appropriate helper functions as required.
-func (c teamsClient) validateMessage(message interface{}, webhookURL string) error {
-
-	// PLACEHOLDER; FIXME
-	return fmt.Errorf(
-		"PLACEHOLDER",
-	)
+// msgValidator is intended to cover MessageCard, AdaptiveCard,
+// botapi.Message, etc.
+type msgValidator interface {
+	Validate() error
 }
 
 func (c teamsClient) sendWithContext(ctx context.Context, webhookURL string, message msgPreparer) error {
@@ -71,5 +67,64 @@ func (c teamsClient) sendWithContext(ctx context.Context, webhookURL string, mes
 	logger.Printf("sendWithContext: Response string from Microsoft Teams API: %v\n", responseText)
 
 	return nil
+}
 
+func (c teamsClient) sendWithRetry(ctx context.Context, webhookURL string, message msgPreparer, retries int, retriesDelay int) error {
+	var result error
+
+	// initial attempt + number of specified retries
+	attemptsAllowed := 1 + retries
+
+	// attempt to send message to Microsoft Teams, retry specified number of
+	// times before giving up
+	for attempt := 1; attempt <= attemptsAllowed; attempt++ {
+		// the result from the last attempt is returned to the caller
+		result = c.sendWithContext(ctx, webhookURL, message)
+
+		switch {
+		case result != nil:
+
+			logger.Printf(
+				"sendWithRetry: Attempt %d of %d to send message failed: %v",
+				attempt,
+				attemptsAllowed,
+				result,
+			)
+
+			if ctx.Err() != nil {
+				errMsg := fmt.Errorf(
+					"sendWithRetry: context cancelled or expired: %v; "+
+						"aborting message submission after %d of %d attempts: %w",
+					ctx.Err().Error(),
+					attempt,
+					attemptsAllowed,
+					result,
+				)
+
+				logger.Println(errMsg)
+
+				return errMsg
+			}
+
+			ourRetryDelay := time.Duration(retriesDelay) * time.Second
+
+			logger.Printf(
+				"sendWithRetry: Context not cancelled yet, applying retry delay of %v",
+				ourRetryDelay,
+			)
+			time.Sleep(ourRetryDelay)
+
+		default:
+			logger.Printf(
+				"sendWithRetry: successfully sent message after %d of %d attempts\n",
+				attempt,
+				attemptsAllowed,
+			)
+
+			// No further retries needed
+			return nil
+		}
+	}
+
+	return result
 }

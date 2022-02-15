@@ -173,7 +173,7 @@ func (c teamsClient) Send(webhookURL string, webhookMessage MessageCard) error {
 	ctx, cancel := context.WithTimeout(context.Background(), DefaultWebhookSendTimeout)
 	defer cancel()
 
-	return c.SendWithContext(ctx, webhookURL, webhookMessage)
+	return c.sendWithContext(ctx, webhookURL, webhookMessage)
 }
 
 // SendWithContext posts a notification to the provided MS Teams webhook URL.
@@ -188,63 +188,7 @@ func (c teamsClient) SendWithContext(ctx context.Context, webhookURL string, web
 // provided the desired context timeout, the number of retries and retries
 // delay.
 func (c teamsClient) SendWithRetry(ctx context.Context, webhookURL string, webhookMessage MessageCard, retries int, retriesDelay int) error {
-	var result error
-
-	// initial attempt + number of specified retries
-	attemptsAllowed := 1 + retries
-
-	// attempt to send message to Microsoft Teams, retry specified number of
-	// times before giving up
-	for attempt := 1; attempt <= attemptsAllowed; attempt++ {
-		// the result from the last attempt is returned to the caller
-		result = c.SendWithContext(ctx, webhookURL, webhookMessage)
-
-		switch {
-		case result != nil:
-
-			logger.Printf(
-				"SendWithRetry: Attempt %d of %d to send message failed: %v",
-				attempt,
-				attemptsAllowed,
-				result,
-			)
-
-			if ctx.Err() != nil {
-				errMsg := fmt.Errorf(
-					"SendWithRetry: context cancelled or expired: %v; "+
-						"aborting message submission after %d of %d attempts: %w",
-					ctx.Err().Error(),
-					attempt,
-					attemptsAllowed,
-					result,
-				)
-
-				logger.Println(errMsg)
-
-				return errMsg
-			}
-
-			ourRetryDelay := time.Duration(retriesDelay) * time.Second
-
-			logger.Printf(
-				"SendWithRetry: Context not cancelled yet, applying retry delay of %v",
-				ourRetryDelay,
-			)
-			time.Sleep(ourRetryDelay)
-
-		default:
-			logger.Printf(
-				"SendWithRetry: successfully sent message after %d of %d attempts\n",
-				attempt,
-				attemptsAllowed,
-			)
-
-			// No further retries needed
-			return nil
-		}
-	}
-
-	return result
+	return c.sendWithRetry(ctx, webhookURL, webhookMessage, retries, retriesDelay)
 }
 
 // SkipWebhookURLValidationOnSend allows the caller to optionally disable
@@ -255,45 +199,15 @@ func (c *teamsClient) SkipWebhookURLValidationOnSend(skip bool) API {
 }
 
 // validateInput verifies if the input parameters are valid
-func (c teamsClient) validateInput(webhookMessage MessageCard, webhookURL string) error {
+func (c teamsClient) validateInput(message msgValidator, webhookURL string) error {
 	// validate url
 	if err := c.ValidateWebhook(webhookURL); err != nil {
 		return err
 	}
 
 	// validate message
-	return webhookMessage.Validate()
+	return message.Validate()
 }
-
-// prepareMessageCard is a helper method to handle tasks needed to prepare a
-// given webhook MessageCard for delivery to an endpoint.
-// func (c teamsClient) prepareMessageCard(webhookURL string, webhookMessage MessageCard) (*bytes.Buffer, error) {
-// 	if c.skipWebhookURLValidation {
-// 		logger.Printf("prepareMessageCard: Webhook URL will not be validated: %#v\n", webhookURL)
-// 	}
-//
-// 	if err := c.validateInput(webhookMessage, webhookURL); err != nil {
-// 		return nil, err
-// 	}
-//
-// 	webhookMessageByte, err := json.Marshal(webhookMessage)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-//
-// 	webhookMessageBuffer := bytes.NewBuffer(webhookMessageByte)
-//
-// 	// Basic, unformatted JSON
-// 	// logger.Printf("prepareMessageCard: %+v\n", string(webhookMessageByte))
-//
-// 	var prettyJSON bytes.Buffer
-// 	if err := json.Indent(&prettyJSON, webhookMessageByte, "", "\t"); err != nil {
-// 		return nil, err
-// 	}
-// 	logger.Printf("prepareMessageCard: Payload for Microsoft Teams: \n\n%v\n\n", prettyJSON.String())
-//
-// 	return webhookMessageBuffer, nil
-// }
 
 // prepareRequest is a helper method response for preparing a http.Request
 // (including all desired headers) in order to submit a given prepared message

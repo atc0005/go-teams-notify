@@ -510,7 +510,9 @@ func (mc *MessageCard) AddPotentialAction(actions ...*MessageCardPotentialAction
 
 // Validate validates a MessageCard calling ValidateFunc if defined,
 // otherwise, a default validation occurs
-func (mc *MessageCard) Validate() error {
+//
+// TODO: Does changing the receiver type break v2 API compatibility?
+func (mc MessageCard) Validate() error {
 	if mc.ValidateFunc != nil {
 		return mc.ValidateFunc()
 	}
