@@ -9,6 +9,8 @@
 package goteamsnotify
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -522,6 +524,39 @@ func (mc *MessageCard) Validate() error {
 	}
 
 	return nil
+}
+
+// Prepare handles tasks needed to prepare a given webhook MessageCard for
+// delivery to an endpoint.
+func (mc MessageCard) Prepare(c teamsClient, webhookURL string) (*bytes.Buffer, error) {
+	if c.skipWebhookURLValidation {
+		logger.Printf("Prepare: Webhook URL will not be validated: %#v\n", webhookURL)
+	}
+
+	// TODO: Replace with mc.Validate() method call
+	// Use a helper function to validate webhook URL so that similar logic can
+	// be applied to the BotAPI also?
+	if err := c.validateInput(mc, webhookURL); err != nil {
+		return nil, err
+	}
+
+	webhookMessageByte, err := json.Marshal(mc)
+	if err != nil {
+		return nil, err
+	}
+
+	webhookMessageBuffer := bytes.NewBuffer(webhookMessageByte)
+
+	// Basic, unformatted JSON
+	// logger.Printf("Prepare: %+v\n", string(webhookMessageByte))
+
+	var prettyJSON bytes.Buffer
+	if err := json.Indent(&prettyJSON, webhookMessageByte, "", "\t"); err != nil {
+		return nil, err
+	}
+	logger.Printf("Prepare: Payload for Microsoft Teams: \n\n%v\n\n", prettyJSON.String())
+
+	return webhookMessageBuffer, nil
 }
 
 // AddFact adds one or many additional MessageCardSectionFact values to a

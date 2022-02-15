@@ -11,7 +11,6 @@ package goteamsnotify
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -181,40 +180,7 @@ func (c teamsClient) Send(webhookURL string, webhookMessage MessageCard) error {
 // The http client request honors the cancellation or timeout of the provided
 // context.
 func (c teamsClient) SendWithContext(ctx context.Context, webhookURL string, webhookMessage MessageCard) error {
-	logger.Printf("SendWithContext: Webhook message received: %#v\n", webhookMessage)
-
-	webhookMessageBuffer, err := c.prepareMessageCard(webhookURL, webhookMessage)
-	if err != nil {
-		return err
-	}
-
-	req, err := c.prepareRequest(ctx, webhookURL, webhookMessageBuffer)
-	if err != nil {
-		return err
-	}
-
-	// Submit message to endpoint.
-	res, err := c.httpClient.Do(req)
-	if err != nil {
-		logger.Println(err)
-		return err
-	}
-
-	// Make sure that we close the response body once we're done with it
-	defer func() {
-		if err := res.Body.Close(); err != nil {
-			log.Printf("error closing response body: %v", err)
-		}
-	}()
-
-	responseText, err := processResponse(res)
-	if err != nil {
-		return err
-	}
-
-	logger.Printf("SendWithContext: Response string from Microsoft Teams API: %v\n", responseText)
-
-	return nil
+	return c.sendWithContext(ctx, webhookURL, webhookMessage)
 }
 
 // SendWithRetry is a wrapper function around the SendWithContext method in
@@ -301,33 +267,33 @@ func (c teamsClient) validateInput(webhookMessage MessageCard, webhookURL string
 
 // prepareMessageCard is a helper method to handle tasks needed to prepare a
 // given webhook MessageCard for delivery to an endpoint.
-func (c teamsClient) prepareMessageCard(webhookURL string, webhookMessage MessageCard) (*bytes.Buffer, error) {
-	if c.skipWebhookURLValidation {
-		logger.Printf("prepareMessageCard: Webhook URL will not be validated: %#v\n", webhookURL)
-	}
-
-	if err := c.validateInput(webhookMessage, webhookURL); err != nil {
-		return nil, err
-	}
-
-	webhookMessageByte, err := json.Marshal(webhookMessage)
-	if err != nil {
-		return nil, err
-	}
-
-	webhookMessageBuffer := bytes.NewBuffer(webhookMessageByte)
-
-	// Basic, unformatted JSON
-	// logger.Printf("prepareMessageCard: %+v\n", string(webhookMessageByte))
-
-	var prettyJSON bytes.Buffer
-	if err := json.Indent(&prettyJSON, webhookMessageByte, "", "\t"); err != nil {
-		return nil, err
-	}
-	logger.Printf("prepareMessageCard: Payload for Microsoft Teams: \n\n%v\n\n", prettyJSON.String())
-
-	return webhookMessageBuffer, nil
-}
+// func (c teamsClient) prepareMessageCard(webhookURL string, webhookMessage MessageCard) (*bytes.Buffer, error) {
+// 	if c.skipWebhookURLValidation {
+// 		logger.Printf("prepareMessageCard: Webhook URL will not be validated: %#v\n", webhookURL)
+// 	}
+//
+// 	if err := c.validateInput(webhookMessage, webhookURL); err != nil {
+// 		return nil, err
+// 	}
+//
+// 	webhookMessageByte, err := json.Marshal(webhookMessage)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+//
+// 	webhookMessageBuffer := bytes.NewBuffer(webhookMessageByte)
+//
+// 	// Basic, unformatted JSON
+// 	// logger.Printf("prepareMessageCard: %+v\n", string(webhookMessageByte))
+//
+// 	var prettyJSON bytes.Buffer
+// 	if err := json.Indent(&prettyJSON, webhookMessageByte, "", "\t"); err != nil {
+// 		return nil, err
+// 	}
+// 	logger.Printf("prepareMessageCard: Payload for Microsoft Teams: \n\n%v\n\n", prettyJSON.String())
+//
+// 	return webhookMessageBuffer, nil
+// }
 
 // prepareRequest is a helper method response for preparing a http.Request
 // (including all desired headers) in order to submit a given prepared message
