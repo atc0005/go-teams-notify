@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 )
 
@@ -530,7 +531,7 @@ func (mc MessageCard) Validate() error {
 
 // Prepare handles tasks needed to prepare a given webhook MessageCard for
 // delivery to an endpoint.
-func (mc MessageCard) Prepare(c teamsClient, webhookURL string) (*bytes.Buffer, error) {
+func (mc MessageCard) Prepare(c teamsClient, webhookURL string) (io.Reader, error) {
 	if c.skipWebhookURLValidation {
 		logger.Printf("Prepare: Webhook URL will not be validated: %#v\n", webhookURL)
 	}

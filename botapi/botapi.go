@@ -63,7 +63,7 @@ type Message struct {
 	// "<at>Some User</at>" string is required by Microsoft Teams.
 	//
 	// TODO: A unique "<at>Some User</at>" string is believed to be required
-	// for each Entity value in the Entities collection .
+	// for each Entity value in the Entities collection.
 	Text string `json:"text"`
 
 	// Entities is required; a collection of Mention values, one per mentioned
@@ -176,3 +176,5 @@ func (m Mention) Validate() error {
 func (m Message) AddMention(mention ...Mention) error {
 	return errors.New("TODO: Implement this")
 }
+
+// func (m Message) Prepare(c teamsClient, )

@@ -8,30 +8,35 @@
 package goteamsnotify
 
 import (
-	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"time"
 )
 
-// msgPreparer is intended to cover MessageCard, AdaptiveCard, botapi.Message,
-// etc.
-type msgPreparer interface {
-	Prepare(c teamsClient, webhookURL string) (*bytes.Buffer, error)
+// MessagePreparer is intended to cover MessageCard, AdaptiveCard,
+// botapi.Message, etc.
+type MessagePreparer interface {
+	Prepare(c teamsClient, webhookURL string) (io.Reader, error)
 	// PrepareRequest(...) ?
 	// ProcessResponse() ?
 	// Validate(webhookURL string) error
 	// String() ? - perhaps implement, but not add to this interface
 }
 
-// msgValidator is intended to cover MessageCard, AdaptiveCard,
+// MessageValidator is intended to cover MessageCard, AdaptiveCard,
 // botapi.Message, etc.
-type msgValidator interface {
+type MessageValidator interface {
 	Validate() error
 }
 
-func (c teamsClient) sendWithContext(ctx context.Context, webhookURL string, message msgPreparer) error {
+type Message interface {
+	MessagePreparer
+	MessageValidator
+}
+
+func (c teamsClient) sendWithContext(ctx context.Context, webhookURL string, message MessagePreparer) error {
 	// TODO: Do I need to implement String() method before this can be used?
 	logger.Printf("sendWithContext: Webhook message received: %#v\n", message)
 
@@ -69,7 +74,7 @@ func (c teamsClient) sendWithContext(ctx context.Context, webhookURL string, mes
 	return nil
 }
 
-func (c teamsClient) sendWithRetry(ctx context.Context, webhookURL string, message msgPreparer, retries int, retriesDelay int) error {
+func (c teamsClient) sendWithRetry(ctx context.Context, webhookURL string, message MessagePreparer, retries int, retriesDelay int) error {
 	var result error
 
 	// initial attempt + number of specified retries

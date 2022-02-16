@@ -9,10 +9,10 @@
 package goteamsnotify
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -96,6 +96,11 @@ type API interface {
 	Send(webhookURL string, webhookMessage MessageCard) error
 	SendWithContext(ctx context.Context, webhookURL string, webhookMessage MessageCard) error
 	SendWithRetry(ctx context.Context, webhookURL string, webhookMessage MessageCard, retries int, retriesDelay int) error
+
+	SendMessage(webhookURL string, message MessagePreparer) error
+	SendMessageWithContext(ctx context.Context, webhookURL string, message MessagePreparer) error
+	SendMessageWithRetry(ctx context.Context, webhookURL string, message MessagePreparer, retries int, retriesDelay int) error
+
 	SetHTTPClient(httpClient *http.Client) API
 	SetUserAgent(userAgent string) API
 	SkipWebhookURLValidationOnSend(skip bool) API
@@ -199,7 +204,7 @@ func (c *teamsClient) SkipWebhookURLValidationOnSend(skip bool) API {
 }
 
 // validateInput verifies if the input parameters are valid
-func (c teamsClient) validateInput(message msgValidator, webhookURL string) error {
+func (c teamsClient) validateInput(message MessageValidator, webhookURL string) error {
 	// validate url
 	if err := c.ValidateWebhook(webhookURL); err != nil {
 		return err
@@ -212,7 +217,7 @@ func (c teamsClient) validateInput(message msgValidator, webhookURL string) erro
 // prepareRequest is a helper method response for preparing a http.Request
 // (including all desired headers) in order to submit a given prepared message
 // to an endpoint.
-func (c teamsClient) prepareRequest(ctx context.Context, webhookURL string, preparedMessage *bytes.Buffer) (*http.Request, error) {
+func (c teamsClient) prepareRequest(ctx context.Context, webhookURL string, preparedMessage io.Reader) (*http.Request, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, webhookURL, preparedMessage)
 	if err != nil {
 		return nil, err
