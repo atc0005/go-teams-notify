@@ -18,7 +18,8 @@ import (
 // MessagePreparer is intended to cover MessageCard, AdaptiveCard,
 // botapi.Message, etc.
 type MessagePreparer interface {
-	Prepare(c teamsClient, webhookURL string) (io.Reader, error)
+	Prepare() (io.Reader, error)
+	// Prepare(c teamsClient, webhookURL string) (*bytes.Buffer, error)
 	// PrepareRequest(...) ?
 	// ProcessResponse() ?
 	// Validate(webhookURL string) error
@@ -36,11 +37,20 @@ type Message interface {
 	MessageValidator
 }
 
-func (c teamsClient) sendWithContext(ctx context.Context, webhookURL string, message MessagePreparer) error {
+func (c teamsClient) sendWithContext(ctx context.Context, webhookURL string, message Message) error {
 	// TODO: Do I need to implement String() method before this can be used?
 	logger.Printf("sendWithContext: Webhook message received: %#v\n", message)
 
-	messageBuffer, err := message.Prepare(c, webhookURL)
+	if c.skipWebhookURLValidation {
+		logger.Printf("Prepare: Webhook URL will not be validated: %#v\n", webhookURL)
+	}
+
+	// TODO: Break validation of Message into separate step from webhook URL?
+	if err := c.validateInput(message, webhookURL); err != nil {
+		return err
+	}
+
+	messageBuffer, err := message.Prepare()
 	if err != nil {
 		return err
 	}

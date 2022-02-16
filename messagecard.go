@@ -530,16 +530,10 @@ func (mc MessageCard) Validate() error {
 }
 
 // Prepare handles tasks needed to prepare a given webhook MessageCard for
-// delivery to an endpoint.
-func (mc MessageCard) Prepare(c teamsClient, webhookURL string) (io.Reader, error) {
-	if c.skipWebhookURLValidation {
-		logger.Printf("Prepare: Webhook URL will not be validated: %#v\n", webhookURL)
-	}
-
-	// TODO: Replace with mc.Validate() method call
-	// Use a helper function to validate webhook URL so that similar logic can
-	// be applied to the BotAPI also?
-	if err := c.validateInput(mc, webhookURL); err != nil {
+// delivery to an endpoint. Validation
+func (mc MessageCard) Prepare() (io.Reader, error) {
+	// TODO: Duplication of step handled by caller
+	if err := mc.Validate(); err != nil {
 		return nil, err
 	}
 
