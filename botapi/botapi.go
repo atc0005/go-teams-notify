@@ -104,6 +104,10 @@ func NewMessage() Message {
 	}
 }
 
+// private prevents client code from implementing the Message interface so
+// that any future changes to it will not violate backwards compatibility.
+func (m Message) private() {}
+
 // Validate implements goteamsnotify.msgValidator by performing basic
 // validation of required field values.
 func (m Message) Validate() error {

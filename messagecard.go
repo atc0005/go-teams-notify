@@ -509,6 +509,10 @@ func (mc *MessageCard) AddPotentialAction(actions ...*MessageCardPotentialAction
 	return addPotentialAction(&mc.PotentialActions, actions...)
 }
 
+// private prevents client code from implementing the Message interface so
+// that any future changes to it will not violate backwards compatibility.
+func (mc MessageCard) private() {}
+
 // Validate validates a MessageCard calling ValidateFunc if defined,
 // otherwise, a default validation occurs
 //
@@ -530,13 +534,9 @@ func (mc MessageCard) Validate() error {
 }
 
 // Prepare handles tasks needed to prepare a given webhook MessageCard for
-// delivery to an endpoint. Validation
+// delivery to an endpoint. Validation should be performed by the caller prior
+// to calling this method.
 func (mc MessageCard) Prepare() (io.Reader, error) {
-	// TODO: Duplication of step handled by caller
-	if err := mc.Validate(); err != nil {
-		return nil, err
-	}
-
 	webhookMessageByte, err := json.Marshal(mc)
 	if err != nil {
 		return nil, err

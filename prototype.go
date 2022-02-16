@@ -12,8 +12,23 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"time"
 )
+
+// MessageSender describes the behavior of a baseline Microsoft Teams client.
+type MessageSender interface {
+	validateInput(message MessageValidator, webhookURL string) error
+	HTTPClient() *http.Client
+	UserAgent() string
+	ValidateWebhook(webhookURL string) error
+
+	// TODO: Is this needed?
+	//
+	// A private method to prevent users implementing the interface so that
+	// any future changes to it will not violate backwards compatibility.
+	private()
+}
 
 // MessagePreparer is intended to cover MessageCard, AdaptiveCard,
 // botapi.Message, etc.
@@ -35,18 +50,21 @@ type MessageValidator interface {
 type Message interface {
 	MessagePreparer
 	MessageValidator
+
+	// TODO: Is this needed?
+	//
+	// A private method to prevent users implementing the interface so that
+	// any future changes to it will not violate backwards compatibility.
+	private()
 }
 
-func (c teamsClient) sendWithContext(ctx context.Context, webhookURL string, message Message) error {
+func sendWithContext(ctx context.Context, client MessageSender, webhookURL string, message Message) error {
 	// TODO: Do I need to implement String() method before this can be used?
 	logger.Printf("sendWithContext: Webhook message received: %#v\n", message)
 
-	if c.skipWebhookURLValidation {
-		logger.Printf("Prepare: Webhook URL will not be validated: %#v\n", webhookURL)
-	}
-
-	// TODO: Break validation of Message into separate step from webhook URL?
-	if err := c.validateInput(message, webhookURL); err != nil {
+	// TODO: Do we really need to combine validation of both the URL and
+	// message in one place?
+	if err := client.validateInput(message, webhookURL); err != nil {
 		return err
 	}
 
@@ -55,13 +73,13 @@ func (c teamsClient) sendWithContext(ctx context.Context, webhookURL string, mes
 		return err
 	}
 
-	req, err := c.prepareRequest(ctx, webhookURL, messageBuffer)
+	req, err := prepareRequest(ctx, client.UserAgent(), webhookURL, messageBuffer)
 	if err != nil {
 		return err
 	}
 
 	// Submit message to endpoint.
-	res, err := c.httpClient.Do(req)
+	res, err := client.HTTPClient().Do(req)
 	if err != nil {
 		logger.Println(err)
 		return err
@@ -84,7 +102,7 @@ func (c teamsClient) sendWithContext(ctx context.Context, webhookURL string, mes
 	return nil
 }
 
-func (c teamsClient) sendWithRetry(ctx context.Context, webhookURL string, message Message, retries int, retriesDelay int) error {
+func sendWithRetry(ctx context.Context, client MessageSender, webhookURL string, message Message, retries int, retriesDelay int) error {
 	var result error
 
 	// initial attempt + number of specified retries
@@ -94,7 +112,7 @@ func (c teamsClient) sendWithRetry(ctx context.Context, webhookURL string, messa
 	// times before giving up
 	for attempt := 1; attempt <= attemptsAllowed; attempt++ {
 		// the result from the last attempt is returned to the caller
-		result = c.sendWithContext(ctx, webhookURL, message)
+		result = sendWithContext(ctx, client, webhookURL, message)
 
 		switch {
 		case result != nil:

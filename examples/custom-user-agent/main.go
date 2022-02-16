@@ -31,8 +31,9 @@ func main() {
 }
 
 func sendTheMessage() error {
-	// init the client
-	mstClient := goteamsnotify.NewClient()
+
+	// Initialize a new client.
+	mstClient := goteamsnotify.New()
 
 	// override the project-specific default user agent
 	mstClient.SetUserAgent("go-teams-notify-example/1.0")
