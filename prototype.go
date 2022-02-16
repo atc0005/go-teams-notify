@@ -84,7 +84,7 @@ func (c teamsClient) sendWithContext(ctx context.Context, webhookURL string, mes
 	return nil
 }
 
-func (c teamsClient) sendWithRetry(ctx context.Context, webhookURL string, message MessagePreparer, retries int, retriesDelay int) error {
+func (c teamsClient) sendWithRetry(ctx context.Context, webhookURL string, message Message, retries int, retriesDelay int) error {
 	var result error
 
 	// initial attempt + number of specified retries

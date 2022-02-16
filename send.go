@@ -96,15 +96,20 @@ type API interface {
 	Send(webhookURL string, webhookMessage MessageCard) error
 	SendWithContext(ctx context.Context, webhookURL string, webhookMessage MessageCard) error
 	SendWithRetry(ctx context.Context, webhookURL string, webhookMessage MessageCard, retries int, retriesDelay int) error
-
-	SendMessage(webhookURL string, message MessagePreparer) error
-	SendMessageWithContext(ctx context.Context, webhookURL string, message MessagePreparer) error
-	SendMessageWithRetry(ctx context.Context, webhookURL string, message MessagePreparer, retries int, retriesDelay int) error
-
-	SetHTTPClient(httpClient *http.Client) API
-	SetUserAgent(userAgent string) API
 	SkipWebhookURLValidationOnSend(skip bool) API
 	AddWebhookURLValidationPatterns(patterns ...string) API
+	ValidateWebhook(webhookURL string) error
+}
+
+// APIv2 is an extension of the original Microsoft Teams client functionality.
+type APIv2 interface {
+	Send(webhookURL string, message Message) error
+	SendWithContext(ctx context.Context, webhookURL string, message Message) error
+	SendWithRetry(ctx context.Context, webhookURL string, message Message, retries int, retriesDelay int) error
+	SetHTTPClient(httpClient *http.Client) APIv2
+	SetUserAgent(userAgent string) APIv2
+	SkipWebhookURLValidationOnSend(skip bool) APIv2
+	AddWebhookURLValidationPatterns(patterns ...string) APIv2
 	ValidateWebhook(webhookURL string) error
 }
 
