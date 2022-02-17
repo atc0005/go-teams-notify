@@ -23,6 +23,7 @@ package main
 
 import (
 	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
+	"github.com/atc0005/go-teams-notify/v2/messagecard"
 )
 
 func main() {
@@ -31,13 +32,13 @@ func main() {
 
 func sendTheMessage() error {
 	// init the client
-	mstClient := goteamsnotify.NewClient()
+	mstClient := goteamsnotify.NewTeamsClient()
 
 	// setup webhook url
 	webhookUrl := "https://outlook.office.com/webhook/YOUR_WEBHOOK_URL_OF_TEAMS_CHANNEL"
 
 	// setup message card
-	msgCard := goteamsnotify.NewMessageCard()
+	msgCard := messagecard.NewMessageCard()
 	msgCard.Title = "Hello world"
 	msgCard.Text = "Here are some examples of formatted stuff like " +
 		"<br> * this list itself  <br> * **bold** <br> * *italic* <br> * ***bolditalic***"

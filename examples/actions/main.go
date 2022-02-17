@@ -31,6 +31,7 @@ import (
 	"log"
 
 	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
+	"github.com/atc0005/go-teams-notify/v2/messagecard"
 )
 
 func main() {
@@ -39,7 +40,7 @@ func main() {
 
 func sendTheMessage() error {
 	// init the client
-	mstClient := goteamsnotify.NewClient()
+	mstClient := goteamsnotify.NewTeamsClient()
 
 	// setup webhook url
 	webhookUrl := "https://outlook.office.com/webhook/YOUR_WEBHOOK_URL_OF_TEAMS_CHANNEL"
@@ -49,15 +50,15 @@ func sendTheMessage() error {
 	targetURLDesc := "Project Homepage"
 
 	// setup message card
-	msgCard := goteamsnotify.NewMessageCard()
+	msgCard := messagecard.NewMessageCard()
 	msgCard.Title = "Hello world"
 	msgCard.Text = "Here are some examples of formatted stuff like " +
 		"<br> * this list itself  <br> * **bold** <br> * *italic* <br> * ***bolditalic***"
 	msgCard.ThemeColor = "#DF813D"
 
 	// setup Action for message card
-	pa, err := goteamsnotify.NewMessageCardPotentialAction(
-		goteamsnotify.PotentialActionOpenURIType,
+	pa, err := messagecard.NewPotentialAction(
+		messagecard.PotentialActionOpenURIType,
 		targetURLDesc,
 	)
 
@@ -65,8 +66,8 @@ func sendTheMessage() error {
 		log.Fatal("error encountered when creating new action:", err)
 	}
 
-	pa.MessageCardPotentialActionOpenURI.Targets =
-		[]goteamsnotify.MessageCardPotentialActionOpenURITarget{
+	pa.PotentialActionOpenURI.Targets =
+		[]messagecard.PotentialActionOpenURITarget{
 			{
 				OS:  "default",
 				URI: targetURL,

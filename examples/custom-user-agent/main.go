@@ -24,6 +24,7 @@ package main
 
 import (
 	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
+	"github.com/atc0005/go-teams-notify/v2/messagecard"
 )
 
 func main() {
@@ -31,8 +32,9 @@ func main() {
 }
 
 func sendTheMessage() error {
-	// init the client
-	mstClient := goteamsnotify.NewClient()
+
+	// Initialize a new Microsoft Teams client.
+	mstClient := goteamsnotify.NewTeamsClient()
 
 	// override the project-specific default user agent
 	mstClient.SetUserAgent("go-teams-notify-example/1.0")
@@ -41,7 +43,7 @@ func sendTheMessage() error {
 	webhookUrl := "https://outlook.office.com/webhook/YOUR_WEBHOOK_URL_OF_TEAMS_CHANNEL"
 
 	// setup message card
-	msgCard := goteamsnotify.NewMessageCard()
+	msgCard := messagecard.NewMessageCard()
 	msgCard.Title = "Hello world"
 	msgCard.Text = "Here are some examples of formatted stuff like " +
 		"<br> * this list itself  <br> * **bold** <br> * *italic* <br> * ***bolditalic***"
