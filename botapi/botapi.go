@@ -8,13 +8,12 @@
 package botapi
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 )
-
-// import (
-// 	"github.com/atc0005/go-teams-notify/v2"
-// )
 
 const (
 	// MentionType is the type for a user mention for a BotAPI Message.
@@ -107,6 +106,8 @@ func NewMessage() Message {
 // private prevents client code from implementing the goteamsnotify.Message
 // interface so that any future changes to it will not violate backwards
 // compatibility.
+//
+// nolint:unused
 func (m Message) private() {}
 
 // Validate implements goteamsnotify.msgValidator by performing basic
@@ -192,4 +193,16 @@ func (m *Message) AddMention(mentions ...Mention) error {
 	return nil
 }
 
-// func (m Message) Prepare(c teamsClient, )
+// Prepare handles tasks needed to prepare a given Message for delivery to an
+// endpoint. Validation should be performed by the caller prior to calling
+// this method.
+func (m Message) Prepare() (io.Reader, error) {
+	jsonMessage, err := json.Marshal(m)
+	if err != nil {
+		return nil, err
+	}
+
+	jsonMessageBuffer := bytes.NewBuffer(jsonMessage)
+
+	return jsonMessageBuffer, nil
+}

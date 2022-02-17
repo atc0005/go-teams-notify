@@ -534,9 +534,9 @@ func (mc MessageCard) Validate() error {
 	return nil
 }
 
-// Prepare handles tasks needed to prepare a given webhook MessageCard for
-// delivery to an endpoint. Validation should be performed by the caller prior
-// to calling this method.
+// Prepare handles tasks needed to prepare a MessageCard for delivery to an
+// endpoint. Validation should be performed by the caller prior to calling
+// this method.
 func (mc MessageCard) Prepare() (io.Reader, error) {
 	webhookMessageByte, err := json.Marshal(mc)
 	if err != nil {
