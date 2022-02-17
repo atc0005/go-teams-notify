@@ -509,15 +509,13 @@ func (mc *MessageCard) AddPotentialAction(actions ...*MessageCardPotentialAction
 	return addPotentialAction(&mc.PotentialActions, actions...)
 }
 
-// private prevents client code from implementing the goteamsnotify.Message
-// interface so that any future changes to it will not violate backwards
-// compatibility.
+// private is used to satisfy the goteamsnotify.Message interface.
+//
+// nolint:unused
 func (mc MessageCard) private() {}
 
 // Validate validates a MessageCard calling ValidateFunc if defined,
-// otherwise, a default validation occurs
-//
-// TODO: Does changing the receiver type break v2 API compatibility?
+// otherwise, a default validation occurs.
 func (mc MessageCard) Validate() error {
 	if mc.ValidateFunc != nil {
 		return mc.ValidateFunc()
@@ -536,7 +534,7 @@ func (mc MessageCard) Validate() error {
 
 // Prepare handles tasks needed to prepare a MessageCard for delivery to an
 // endpoint. Validation should be performed by the caller prior to calling
-// this method.
+// this method. Prepare satisfies the goteamsnotify.Message interface.
 func (mc MessageCard) Prepare() (io.Reader, error) {
 	webhookMessageByte, err := json.Marshal(mc)
 	if err != nil {

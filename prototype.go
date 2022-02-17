@@ -17,16 +17,19 @@ import (
 )
 
 // MessageSender describes the behavior of a baseline Microsoft Teams client.
+//
+// An unexported method is used to prevent client code from implementing this
+// interface in order to support future changes (and not violate backwards
+// compatibility).
 type MessageSender interface {
 	// validateInput(message MessageValidator, webhookURL string) error
 	HTTPClient() *http.Client
 	UserAgent() string
 	ValidateWebhook(webhookURL string) error
 
-	// TODO: Is this needed?
-	//
-	// A private method to prevent users implementing the interface so that
-	// any future changes to it will not violate backwards compatibility.
+	// A private method to prevent client code from implementing the interface
+	// so that any future changes to it will not violate backwards
+	// compatibility.
 	private()
 }
 
@@ -44,17 +47,22 @@ type MessageValidator interface {
 
 // Message is the interface shared by all supported message formats for
 // submission to a Microsoft Teams channel.
+//
+// An unexported method is used to prevent client code from implementing this
+// interface in order to support future changes (and not violate backwards
+// compatibility).
 type Message interface {
 	MessagePreparer
 	MessageValidator
 
-	// TODO: Is this needed?
-	//
 	// A private method to prevent users implementing the interface so that
 	// any future changes to it will not violate backwards compatibility.
 	private()
 }
 
+// sendWithContext submits a given message to a Microsoft Teams channel using
+// the provided webhook URL and client. The http client request honors the
+// cancellation or timeout of the provided context.
 func sendWithContext(ctx context.Context, client MessageSender, webhookURL string, message Message) error {
 	logger.Printf("sendWithContext: Webhook message received: %#v\n", message)
 
@@ -117,6 +125,9 @@ func sendWithContext(ctx context.Context, client MessageSender, webhookURL strin
 	return nil
 }
 
+// sendWithRetry provides message retry support when submitting messages to a
+// Microsoft Teams channel. The caller is responsible for providing the
+// desired context timeout, the number of retries and retries delay.
 func sendWithRetry(ctx context.Context, client MessageSender, webhookURL string, message Message, retries int, retriesDelay int) error {
 	var result error
 

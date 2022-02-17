@@ -91,8 +91,8 @@ var ErrWebhookURLUnexpectedPrefix = ErrWebhookURLUnexpected
 // unsuccessful.
 var ErrInvalidWebhookURLResponseText = errors.New("invalid webhook URL response text")
 
-// API is the legacy interface of a client that is used to submit messages to
-// a Microsoft Teams channel.
+// API is the legacy interface representing a client used to submit messages
+// to a Microsoft Teams channel.
 type API interface {
 	Send(webhookURL string, webhookMessage MessageCard) error
 	SendWithContext(ctx context.Context, webhookURL string, webhookMessage MessageCard) error
@@ -168,14 +168,6 @@ func New() *TeamsClient {
 	return &client
 }
 
-// SetHTTPClient accepts a custom http.Client value which replaces the
-// existing default http.Client.
-func (c *TeamsClient) SetHTTPClient(httpClient *http.Client) *TeamsClient {
-	c.httpClient = httpClient
-
-	return c
-}
-
 // private prevents client code from implementing the MessageSender interface
 // so that any future changes to it will not violate backwards compatibility.
 func (c *teamsClient) private() {}
@@ -183,6 +175,14 @@ func (c *teamsClient) private() {}
 // private prevents client code from implementing the MessageSender interface
 // so that any future changes to it will not violate backwards compatibility.
 func (c *TeamsClient) private() {}
+
+// SetHTTPClient accepts a custom http.Client value which replaces the
+// existing default http.Client.
+func (c *TeamsClient) SetHTTPClient(httpClient *http.Client) *TeamsClient {
+	c.httpClient = httpClient
+
+	return c
+}
 
 // SetUserAgent accepts a custom user agent string. This custom user agent is
 // used when submitting messages to Microsoft Teams.
@@ -194,6 +194,8 @@ func (c *TeamsClient) SetUserAgent(userAgent string) *TeamsClient {
 
 // UserAgent returns the configured user agent string for the client. If a
 // custom value is not set the default package user agent is returned.
+//
+// Deprecated: use TeamsClient.UserAgent() method instead.
 func (c *teamsClient) UserAgent() string {
 	switch {
 	case c.userAgent != "":
@@ -232,6 +234,8 @@ func (c *TeamsClient) AddWebhookURLValidationPatterns(patterns ...string) *Teams
 
 // HTTPClient returns the internal pointer to an http.Client. This can be used
 // to further modify specific http.Client field values.
+//
+// Deprecated: use TeamsClient.HTTPClient() method instead.
 func (c *teamsClient) HTTPClient() *http.Client {
 	return c.httpClient
 }
@@ -264,36 +268,34 @@ func (c *TeamsClient) Send(webhookURL string, message Message) error {
 	return sendWithContext(ctx, c, webhookURL, message)
 }
 
-// SendWithContext posts a notification to the provided MS Teams webhook URL.
-// The http client request honors the cancellation or timeout of the provided
-// context.
+// SendWithContext submits a given message to a Microsoft Teams channel using
+// the provided webhook URL. The http client request honors the cancellation
+// or timeout of the provided context.
 //
 // Deprecated: use TeamsClient.SendWithContext() method instead.
 func (c *teamsClient) SendWithContext(ctx context.Context, webhookURL string, webhookMessage MessageCard) error {
 	return sendWithContext(ctx, c, webhookURL, webhookMessage)
 }
 
-// SendWithContext posts a notification to the provided MS Teams webhook URL.
-// The http client request honors the cancellation or timeout of the provided
-// context.
+// SendWithContext submits a given message to a Microsoft Teams channel using
+// the provided webhook URL. The http client request honors the cancellation
+// or timeout of the provided context.
 func (c *TeamsClient) SendWithContext(ctx context.Context, webhookURL string, message Message) error {
 	return sendWithContext(ctx, c, webhookURL, message)
 }
 
-// SendWithRetry is a wrapper function around the SendWithContext method in
-// order to provide message retry support. The caller is responsible for
-// provided the desired context timeout, the number of retries and retries
-// delay.
+// SendWithRetry provides message retry support when submitting messages to a
+// Microsoft Teams channel. The caller is responsible for providing the
+// desired context timeout, the number of retries and retries delay.
 //
 // Deprecated: use TeamsClient.SendWithRetry() method instead.
 func (c *teamsClient) SendWithRetry(ctx context.Context, webhookURL string, webhookMessage MessageCard, retries int, retriesDelay int) error {
 	return sendWithRetry(ctx, c, webhookURL, webhookMessage, retries, retriesDelay)
 }
 
-// SendWithRetry is a wrapper function around the SendWithContext method in
-// order to provide message retry support. The caller is responsible for
-// provided the desired context timeout, the number of retries and retries
-// delay.
+// SendWithRetry provides message retry support when submitting messages to a
+// Microsoft Teams channel. The caller is responsible for providing the
+// desired context timeout, the number of retries and retries delay.
 func (c *TeamsClient) SendWithRetry(ctx context.Context, webhookURL string, message Message, retries int, retriesDelay int) error {
 	return sendWithRetry(ctx, c, webhookURL, message, retries, retriesDelay)
 }
@@ -417,6 +419,8 @@ func validateWebhook(webhookURL string, skipWebhookValidation bool, patterns []s
 }
 
 // ValidateWebhook applies webhook URL validation unless explicitly disabled.
+//
+// Deprecated: use TeamsClient.ValidateWebhook() method instead.
 func (c *teamsClient) ValidateWebhook(webhookURL string) error {
 	return validateWebhook(webhookURL, c.skipWebhookURLValidation, c.webhookURLValidationPatterns)
 }

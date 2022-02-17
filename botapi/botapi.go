@@ -103,15 +103,12 @@ func NewMessage() Message {
 	}
 }
 
-// private prevents client code from implementing the goteamsnotify.Message
-// interface so that any future changes to it will not violate backwards
-// compatibility.
+// private is used to satisfy the goteamsnotify.Message interface.
 //
 // nolint:unused
 func (m Message) private() {}
 
-// Validate implements goteamsnotify.msgValidator by performing basic
-// validation of required field values.
+// Validate performs basic validation of required field values.
 func (m Message) Validate() error {
 	if m.Text == "" {
 		return fmt.Errorf(
