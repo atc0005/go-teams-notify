@@ -509,8 +509,9 @@ func (mc *MessageCard) AddPotentialAction(actions ...*MessageCardPotentialAction
 	return addPotentialAction(&mc.PotentialActions, actions...)
 }
 
-// private prevents client code from implementing the Message interface so
-// that any future changes to it will not violate backwards compatibility.
+// private prevents client code from implementing the goteamsnotify.Message
+// interface so that any future changes to it will not violate backwards
+// compatibility.
 func (mc MessageCard) private() {}
 
 // Validate validates a MessageCard calling ValidateFunc if defined,

@@ -315,27 +315,27 @@ func (c *TeamsClient) SkipWebhookURLValidationOnSend(skip bool) *TeamsClient {
 	return c
 }
 
-// validateInput verifies if the input parameters are valid
-func (c teamsClient) validateInput(message MessageValidator, webhookURL string) error {
-	// validate url
-	if err := c.ValidateWebhook(webhookURL); err != nil {
-		return err
-	}
-
-	// validate message
-	return message.Validate()
-}
-
-// validateInput verifies if the input parameters are valid
-func (c TeamsClient) validateInput(message MessageValidator, webhookURL string) error {
-	// validate url
-	if err := c.ValidateWebhook(webhookURL); err != nil {
-		return err
-	}
-
-	// validate message
-	return message.Validate()
-}
+// // validateInput verifies if the input parameters are valid
+// func (c teamsClient) validateInput(message MessageValidator, webhookURL string) error {
+// 	// validate url
+// 	if err := c.ValidateWebhook(webhookURL); err != nil {
+// 		return err
+// 	}
+//
+// 	// validate message
+// 	return message.Validate()
+// }
+//
+// // validateInput verifies if the input parameters are valid
+// func (c TeamsClient) validateInput(message MessageValidator, webhookURL string) error {
+// 	// validate url
+// 	if err := c.ValidateWebhook(webhookURL); err != nil {
+// 		return err
+// 	}
+//
+// 	// validate message
+// 	return message.Validate()
+// }
 
 // prepareRequest is a helper function that prepares a http.Request (including
 // all desired headers) in order to submit a given prepared message to an
@@ -420,7 +420,7 @@ func validateWebhook(webhookURL string, skipWebhookValidation bool, patterns []s
 		patterns = []string{DefaultWebhookURLValidationPattern}
 	}
 
-	// Return true if at least one pattern matches
+	// Indicate passing validation if at least one pattern matches.
 	for _, pat := range patterns {
 		matched, err := regexp.MatchString(pat, webhookURL)
 		if err != nil {

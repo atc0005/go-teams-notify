@@ -104,8 +104,9 @@ func NewMessage() Message {
 	}
 }
 
-// private prevents client code from implementing the Message interface so
-// that any future changes to it will not violate backwards compatibility.
+// private prevents client code from implementing the goteamsnotify.Message
+// interface so that any future changes to it will not violate backwards
+// compatibility.
 func (m Message) private() {}
 
 // Validate implements goteamsnotify.msgValidator by performing basic
@@ -177,8 +178,18 @@ func (m Mention) Validate() error {
 	return nil
 }
 
-func (m Message) AddMention(mention ...Mention) error {
-	return errors.New("TODO: Implement this")
+// AddMention adds one or many Mention values to a Message.
+func (m *Message) AddMention(mentions ...Mention) error {
+	for _, m := range mentions {
+		if err := m.Validate(); err != nil {
+			return fmt.Errorf(
+				"func AddMention: validation failed: %w",
+				ErrInvalidValue,
+			)
+		}
+	}
+
+	return nil
 }
 
 // func (m Message) Prepare(c teamsClient, )

@@ -18,7 +18,7 @@ import (
 
 // MessageSender describes the behavior of a baseline Microsoft Teams client.
 type MessageSender interface {
-	validateInput(message MessageValidator, webhookURL string) error
+	// validateInput(message MessageValidator, webhookURL string) error
 	HTTPClient() *http.Client
 	UserAgent() string
 	ValidateWebhook(webhookURL string) error
@@ -34,11 +34,6 @@ type MessageSender interface {
 // botapi.Message, etc.
 type MessagePreparer interface {
 	Prepare() (io.Reader, error)
-	// Prepare(c teamsClient, webhookURL string) (*bytes.Buffer, error)
-	// PrepareRequest(...) ?
-	// ProcessResponse() ?
-	// Validate(webhookURL string) error
-	// String() ? - perhaps implement, but not add to this interface
 }
 
 // MessageValidator is intended to cover MessageCard, AdaptiveCard,
@@ -47,6 +42,8 @@ type MessageValidator interface {
 	Validate() error
 }
 
+// Message is the interface shared by all supported message formats for
+// submission to a Microsoft Teams channel.
 type Message interface {
 	MessagePreparer
 	MessageValidator
@@ -59,30 +56,45 @@ type Message interface {
 }
 
 func sendWithContext(ctx context.Context, client MessageSender, webhookURL string, message Message) error {
-	// TODO: Do I need to implement String() method before this can be used?
 	logger.Printf("sendWithContext: Webhook message received: %#v\n", message)
 
-	// TODO: Do we really need to combine validation of both the URL and
-	// message in one place?
-	if err := client.validateInput(message, webhookURL); err != nil {
-		return err
+	if err := client.ValidateWebhook(webhookURL); err != nil {
+		return fmt.Errorf(
+			"failed to validate webhook URL: %w",
+			err,
+		)
+	}
+
+	if err := message.Validate(); err != nil {
+		return fmt.Errorf(
+			"failed to validate message: %w",
+			err,
+		)
 	}
 
 	messageBuffer, err := message.Prepare()
 	if err != nil {
-		return err
+		return fmt.Errorf(
+			"failed to prepare message: %w",
+			err,
+		)
 	}
 
 	req, err := prepareRequest(ctx, client.UserAgent(), webhookURL, messageBuffer)
 	if err != nil {
-		return err
+		return fmt.Errorf(
+			"failed to prepare request: %w",
+			err,
+		)
 	}
 
 	// Submit message to endpoint.
 	res, err := client.HTTPClient().Do(req)
 	if err != nil {
-		logger.Println(err)
-		return err
+		return fmt.Errorf(
+			"failed to submit message: %w",
+			err,
+		)
 	}
 
 	// Make sure that we close the response body once we're done with it
@@ -94,7 +106,10 @@ func sendWithContext(ctx context.Context, client MessageSender, webhookURL strin
 
 	responseText, err := processResponse(res)
 	if err != nil {
-		return err
+		return fmt.Errorf(
+			"failed to process response: %w",
+			err,
+		)
 	}
 
 	logger.Printf("sendWithContext: Response string from Microsoft Teams API: %v\n", responseText)
