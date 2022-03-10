@@ -68,11 +68,11 @@ type AdaptiveCardBody struct {
 	Columns []Column `json:"columns,omitempty"`
 }
 
-type Column struct {
-	Type  string      `json:"type"`
-	Width interface{} `json:"width"`
-	Items []Item      `json:"items"`
-}
+// type Column struct {
+// 	Type  string      `json:"type"`
+// 	Width interface{} `json:"width"`
+// 	Items []Item      `json:"items"`
+// }
 
 type Item struct {
 	Type    string   `json:"type"`

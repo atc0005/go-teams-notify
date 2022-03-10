@@ -142,6 +142,11 @@ type Content struct {
 	// building-blocks known as elements. Elements can be composed to create
 	// many types of cards. These elements are shown in the primary card
 	// region.
+	//
+	// NOTE: If we make this an interface type then the fields of the Element
+	// won't be exposed to client code. Perhaps it's better to create
+	// constructors for each supported Element type so that required fields
+	// are populated and unneeded fields are skipped.
 	Body []Element `json:"body"`
 
 	// MSTeams is a container for user mentions.
@@ -166,34 +171,79 @@ type Content struct {
 	// This doc:
 	// https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/connectors-using?tabs=cURL#send-adaptive-cards-using-an-incoming-webhook
 	// uses "1.2" as the version string.
+	//
+	// This doc:
+	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format?tabs=adaptive-md%2Cconnector-html
+	// uses "1.0" as the version string.
+	//
+	// Perhaps "1.0" is the baseline version required for user mention support
+	// with some of the other features tied to higher versions (e.g.,
+	// minHeight requires 1.2).
 	Version string `json:"version"`
 }
 
 // Element is a "building block" for the body of an Adaptive Card and is shown
-// in the primary card region.
+// in the primary card region. Not all fields are supported by all element types.
 type Element struct {
 
-	// Type is required; the type of the element used in the body of an
-	// Adaptive Card.
+	// Type is required and indicates the type of the element used in the body
+	// of an Adaptive Card.
+	// https://adaptivecards.io/explorer/AdaptiveCard.html
 	//
 	// TODO: Assert that this is present.
 	Type string `json:"type"`
 
 	// Text is used by supported element types to display text. A subset of
-	// markdown is supported.
+	// markdown is supported for text used in TextBlock elements, but no
+	// formatting is permitted in text used in TextRun elements.
 	//
 	// https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/text-features
+	// https://adaptivecards.io/explorer/TextBlock.html
+	// https://adaptivecards.io/explorer/TextRun.html
 	Text string `json:"text,omitempty"`
 
-	// Type is required and indicates the type of element used.
-	// https://adaptivecards.io/explorer/AdaptiveCard.html
-	//
+	// Size controls the size of text within a TextBlock element.
+	Size string `json:"size,omitempty"`
 
-	Size    string   `json:"size,omitempty"`
-	Weight  string   `json:"weight,omitempty"`
-	Color   string   `json:"color,omitempty"`
-	Wrap    bool     `json:"wrap,omitempty"`
+	// Weight controls the weight of text in TextBlock or TextRun elements.
+	Weight string `json:"weight,omitempty"`
+
+	// Color controls the color of TextBlock elements or text used in TextRun
+	// elements.
+	Color string `json:"color,omitempty"`
+
+	// Wrap controls whether text is allowed to wrap or is clipped for
+	// TextBlock elements.
+	Wrap bool `json:"wrap,omitempty"`
+
+	// Columns is a container used by a ColumnSet element type which contains
+	// one or more elements.
 	Columns []Column `json:"columns,omitempty"`
+}
+
+// Column is a container used by a ColumnSet element type. Each container
+// may contain one or more elements.
+//
+// https://adaptivecards.io/explorer/Column.html
+type Column struct {
+
+	// Type is required; must be set to "Column".
+	//
+	// TODO: Create a constant for this.
+	Type string `json:"type"`
+
+	// Width represents the width of a column in the column group. Valid
+	// values consist of fixed strings OR a number representing the relative
+	// width.
+	//
+	// TODO: Assert valid values; will require some thought regarding
+	// implementation.
+	//
+	// "auto", "stretch", a number representing relative width of the column
+	// in the column group, or in version 1.1 and higher, a specific pixel
+	// width, like "50px".
+	Width interface{} `json:"width"`
+	Items []Item      `json:"items"`
 }
 
 // MSTeams represents a container for a collection of user mentions.
