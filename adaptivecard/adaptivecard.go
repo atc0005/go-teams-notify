@@ -32,6 +32,31 @@ const (
 	MentionTextFormatTemplate string = "<at>%s</at>"
 )
 
+// Valid types for an Adaptive Card element. Not all types are supported by
+// Microsoft Teams.
+//
+// https://adaptivecards.io/explorer/AdaptiveCard.html
+//
+// TODO: Confirm whether all types are supported.
+const (
+	ElementTypeActionSet      string = "ActionSet"
+	ElementTypeColumnSet      string = "ColumnSet"
+	ElementTypeContainer      string = "Container"
+	ElementTypeFactSet        string = "FactSet"
+	ElementTypeImage          string = "Image"
+	ElementTypeImageSet       string = "ImageSet"
+	ElementTypeInputChoiceSet string = "Input.ChoiceSet"
+	ElementTypeInputDate      string = "Input.Date"
+	ElementTypeInputNumber    string = "Input.Number"
+	ElementTypeInputText      string = "Input.Text"
+	ElementTypeInputTime      string = "Input.Time"
+	ElementTypeInputToggle    string = "Input.Toggle"
+	ElementTypeMedia          string = "Media"
+	ElementTypeRichTextBlock  string = "RichTextBlock"
+	ElementTypeTable          string = "Table"
+	ElementTypeTextBlock      string = "TextBlock"
+)
+
 var (
 	// ErrInvalidType indicates that an invalid type was specified.
 	ErrInvalidType = errors.New("invalid type value")
@@ -115,10 +140,11 @@ type Content struct {
 
 	// Body represents the body of an Adaptive Card. The body is made up of
 	// building-blocks known as elements. Elements can be composed to create
-	// many types of cards.
+	// many types of cards. These elements are shown in the primary card
+	// region.
 	Body []Element `json:"body"`
 
-	// MSTeams is a container for
+	// MSTeams is a container for user mentions.
 	MSTeams MSTeams `json:"msteams"`
 
 	// Schema is required; schema represents the URI of the Adaptive Card
@@ -128,20 +154,52 @@ type Content struct {
 	Schema string `json:"schema"`
 
 	// Type is required; must be set to "AdaptiveCard"
-	Type    string `json:"type"`
+	//
+	// TODO: Assert that this is present.
+	Type string `json:"type"`
+
+	// Version is the schema version that the content for an Adaptive Card
+	// requires.
+	//
+	// TODO: Test & determine the minimum supported version that we can use.
+	//
+	// This doc:
+	// https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/connectors-using?tabs=cURL#send-adaptive-cards-using-an-incoming-webhook
+	// uses "1.2" as the version string.
 	Version string `json:"version"`
 }
 
+// Element is a "building block" for the body of an Adaptive Card and is shown
+// in the primary card region.
 type Element struct {
-	Text string `json:"text"`
 
-	// Type is ...
-	// e.g., TextBlock
-	// TODO: What types are supported?
+	// Type is required; the type of the element used in the body of an
+	// Adaptive Card.
+	//
+	// TODO: Assert that this is present.
 	Type string `json:"type"`
+
+	// Text is used by supported element types to display text. A subset of
+	// markdown is supported.
+	//
+	// https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/text-features
+	Text string `json:"text,omitempty"`
+
+	// Type is required and indicates the type of element used.
+	// https://adaptivecards.io/explorer/AdaptiveCard.html
+	//
+
+	Size    string   `json:"size,omitempty"`
+	Weight  string   `json:"weight,omitempty"`
+	Color   string   `json:"color,omitempty"`
+	Wrap    bool     `json:"wrap,omitempty"`
+	Columns []Column `json:"columns,omitempty"`
 }
 
+// MSTeams represents a container for a collection of user mentions.
 type MSTeams struct {
+
+	// Entities is a collection of user mentions.
 	Entities []Mention `json:"entities"`
 }
 
