@@ -52,6 +52,7 @@ const (
 	ColumnWidthPixelRegex string = "^[0-9]+px"
 )
 
+// Text size for text within a TextBlock element.
 const (
 	SizeSmall      string = "small"
 	SizeDefault    string = "default"
@@ -292,6 +293,10 @@ type Element struct {
 	// Actions is a collection of actions to show.
 	// TODO: Should this be a pointer?
 	Actions []Action `json:"actions,omitempty"`
+
+	// Facts is a collection of Fact values. Each entry is usually displayed
+	// in a two-column key/value format.
+	Facts []Fact `json:"facts,omitempty"`
 }
 
 // Column is a container used by a ColumnSet element type. Each container
@@ -319,6 +324,15 @@ type Column struct {
 	// column.
 	// TODO: Should this be a pointer?
 	Items []Element `json:"items"`
+}
+
+// Fact represents a Fact in a FactSet as a key/value pair.
+type Fact struct {
+	// Title is required; the title of the fact.
+	Title string `json:"title"`
+
+	// Value is required; the value of the fact.
+	Value string `json:"value"`
 }
 
 /*
