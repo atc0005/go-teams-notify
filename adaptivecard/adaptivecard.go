@@ -21,18 +21,31 @@ import (
 // TODO: Add one or more examples of using this package.
 
 const (
-	// ColumnType is the type for an Adaptive Card Column.
-	ColumnType string = "Column"
+	// TypeAdaptiveCard is the supported type value for an Adaptive Card.
+	TypeAdaptiveCard string = "AdaptiveCard"
 
-	// MessageType is the type for an Adaptive Card Message.
-	MessageType string = "message"
+	// TypeColumn is the type for an Adaptive Card Column.
+	TypeColumn string = "Column"
 
-	// MentionType is the type for a user mention for a Adaptive Card Message.
-	MentionType string = "mention"
+	// TypeMessage is the type for an Adaptive Card Message.
+	TypeMessage string = "message"
+
+	// TypeMention is the type for a user mention for a Adaptive Card Message.
+	TypeMention string = "mention"
 
 	// MentionTextFormatTemplate is the expected format of the Mention.Text
 	// field value.
 	MentionTextFormatTemplate string = "<at>%s</at>"
+)
+
+// Supported Actions
+const (
+	// TypeActionExecute is not supported in Microsoft Teams messages.
+	// TypeActionExecute          string = "Action.Execute"
+	TypeActionOpenURL          string = "Action.OpenUrl"
+	TypeActionShowCard         string = "Action.ShowCard"
+	TypeActionSubmit           string = "Action.Submit"
+	TypeActionToggleVisibility string = "Action.ToggleVisibility"
 )
 
 // Valid types for an Adaptive Card element. Not all types are supported by
@@ -41,23 +54,25 @@ const (
 // https://adaptivecards.io/explorer/AdaptiveCard.html
 //
 // TODO: Confirm whether all types are supported.
+// NOTE: Based on current docs, version 1.3 is the latest supported at this
+// time.
 const (
-	ElementTypeActionSet      string = "ActionSet"
-	ElementTypeColumnSet      string = "ColumnSet"
-	ElementTypeContainer      string = "Container"
-	ElementTypeFactSet        string = "FactSet"
-	ElementTypeImage          string = "Image"
-	ElementTypeImageSet       string = "ImageSet"
-	ElementTypeInputChoiceSet string = "Input.ChoiceSet"
-	ElementTypeInputDate      string = "Input.Date"
-	ElementTypeInputNumber    string = "Input.Number"
-	ElementTypeInputText      string = "Input.Text"
-	ElementTypeInputTime      string = "Input.Time"
-	ElementTypeInputToggle    string = "Input.Toggle"
-	ElementTypeMedia          string = "Media"
-	ElementTypeRichTextBlock  string = "RichTextBlock"
-	ElementTypeTable          string = "Table"
-	ElementTypeTextBlock      string = "TextBlock"
+	TypeElementActionSet      string = "ActionSet"
+	TypeElementColumnSet      string = "ColumnSet"
+	TypeElementContainer      string = "Container"
+	TypeElementFactSet        string = "FactSet"
+	TypeElementImage          string = "Image"
+	TypeElementImageSet       string = "ImageSet"
+	TypeElementInputChoiceSet string = "Input.ChoiceSet"
+	TypeElementInputDate      string = "Input.Date"
+	TypeElementInputNumber    string = "Input.Number"
+	TypeElementInputText      string = "Input.Text"
+	TypeElementInputTime      string = "Input.Time"
+	TypeElementInputToggle    string = "Input.Toggle"
+	TypeElementMedia          string = "Media"
+	TypeElementRichTextBlock  string = "RichTextBlock"
+	TypeElementTable          string = "Table"
+	TypeElementTextBlock      string = "TextBlock"
 )
 
 var (
@@ -71,49 +86,15 @@ var (
 	ErrMissingValue = errors.New("missing expected value")
 )
 
-// $ json2struct -f adaptive-card-with-mention.json
-// https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/connectors-using?tabs=cURL#send-adaptive-cards-using-an-incoming-webhook
-// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format?tabs=adaptive-md%2Cconnector-html#mention-support-within-adaptive-cards
-// https://stackoverflow.com/questions/50753072/microsoft-teams-webhook-generating-400-for-adaptive-card
-type JSONToStruct struct {
-	Attachments []struct {
-		Content struct {
-			Body []struct {
-				Text string `json:"text"`
-				Type string `json:"type"`
-			} `json:"body"`
-			Msteams struct {
-				Entities []struct {
-					Mentioned struct {
-						Id   string `json:"id"`
-						Name string `json:"name"`
-					} `json:"mentioned"`
-					Text string `json:"text"`
-					Type string `json:"type"`
-				} `json:"entities"`
-			} `json:"msteams"`
-			Schema  string `json:"schema"`
-			Type    string `json:"type"`
-			Version string `json:"version"`
-		} `json:"content"`
-		Contenttype string      `json:"contentType"`
-		Contenturl  interface{} `json:"contentUrl"`
-	} `json:"attachments"`
-	Type string `json:"type"`
-}
-
-// https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/connectors-using?tabs=cURL#send-adaptive-cards-using-an-incoming-webhook
-// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format?tabs=adaptive-md%2Cconnector-html#mention-support-within-adaptive-cards
-// https://stackoverflow.com/questions/50753072/microsoft-teams-webhook-generating-400-for-adaptive-card
-// https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/getting-started
+// Message represents an Adaptive Card used via Office 365 or Microsoft Teams
+// connectors.
 type Message struct {
 	// Type is required; must be set to "message".
+	// TODO: Assert that this is present.
 	Type string `json:"type"`
 
 	// Attachments is a collection of card objects.
 	Attachments []Card `json:"attachments"`
-
-	Content Content `json:"content"`
 
 	// payload is a prepared Message in JSON format for submission or pretty
 	// printing.
@@ -125,6 +106,7 @@ type Card struct {
 
 	// ContentType is required; must be set to
 	// "application/vnd.microsoft.card.adaptive".
+	// TODO: Assert that this is present.
 	ContentType string `json:"contentType"`
 
 	// ContentURL appears to be related to support for tabs. Most examples
@@ -146,28 +128,17 @@ type Content struct {
 	// TODO: Assert that this is present.
 	Type string `json:"type"`
 
-	// Schema is required; schema represents the URI of the Adaptive Card
-	// schema.
+	// Schema represents the URI of the Adaptive Card schema.
 	//
 	// TODO: Assert "http://adaptivecards.io/schemas/adaptive-card.json".
 	Schema string `json:"schema"`
 
-	// Version is the schema version that the content for an Adaptive Card
-	// requires.
+	// Version is required; the schema version that the content for an
+	// Adaptive Card requires.
 	//
-	// TODO: Test & determine the minimum supported version that we can use.
-	//
-	// This doc:
-	// https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/connectors-using?tabs=cURL#send-adaptive-cards-using-an-incoming-webhook
-	// uses "1.2" as the version string.
-	//
-	// This doc:
-	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format?tabs=adaptive-md%2Cconnector-html
-	// uses "1.0" as the version string.
-	//
-	// Perhaps "1.0" is the baseline version required for user mention support
-	// with some of the other features tied to higher versions (e.g.,
-	// minHeight requires 1.2).
+	// Version 1.3 is the highest supported for user-generated cards.
+	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference#support-for-adaptive-cards
+	// https://adaptivecards.io/designer
 	Version string `json:"version"`
 
 	// FallbackText is the text shown when the client doesn't support the
@@ -185,6 +156,10 @@ type Content struct {
 	// are populated and unneeded fields are skipped.
 	Body []Element `json:"body"`
 
+	// Actions is a collection of actions to show in the card's action bar.
+	// TODO: Should this be a pointer?
+	Actions []Action `json:"actions,omitempty"`
+
 	// MSTeams is a container for user mentions.
 	MSTeams MSTeams `json:"msteams"`
 
@@ -194,8 +169,44 @@ type Content struct {
 	VerticalContentAlignment string `json:"verticalContentAlignment"`
 }
 
+// MSTeams represents a container for a collection of user mentions.
+type MSTeams struct {
+
+	// Entities is a collection of user mentions.
+	// TODO: Should this be a pointer?
+	Entities []Mention `json:"entities"`
+}
+
+// Mention represents a mention in the message for a specific user.
+type Mention struct {
+	// Type is required; must be set to "mention".
+	Type string `json:"type"`
+
+	// Text must match a portion of the message text field. If it does not,
+	// the mention is ignored.
+	//
+	// Brief testing indicates that this needs to wrap a name/value in <at>NAME
+	// HERE</at> tags.
+	Text string `json:"text"`
+
+	// Mentioned represents a user that is mentioned.
+	Mentioned Mentioned `json:"mentioned"`
+}
+
+// Mentioned represents the user id and name of a user that is mentioned.
+type Mentioned struct {
+	// ID is the unique identifier for a user that is mentioned. This value
+	// can be an object ID (e.g., 5e8b0f4d-2cd4-4e17-9467-b0f6a5c0c4d0) or a
+	// UserPrincipalName (e.g., NewUser@contoso.onmicrosoft.com).
+	ID string `json:"id"`
+
+	// Name is the DisplayName of the user mentioned.
+	Name string `json:"name"`
+}
+
 // Element is a "building block" for the body of an Adaptive Card and is shown
-// in the primary card region. Not all fields are supported by all element types.
+// in the primary card region. Not all fields are supported by all element
+// types.
 type Element struct {
 
 	// Type is required and indicates the type of the element used in the body
@@ -232,7 +243,8 @@ type Element struct {
 	// one or more elements.
 	Columns []Column `json:"columns,omitempty"`
 
-	// Actions is a collection of actions to show in the card's action bar.
+	// Actions is a collection of actions to show.
+	// TODO: Should this be a pointer?
 	Actions []Action `json:"actions,omitempty"`
 }
 
@@ -249,46 +261,27 @@ type Column struct {
 	// values consist of fixed strings OR a number representing the relative
 	// width.
 	//
-	// TODO: Assert valid values; will require some thought regarding
-	// implementation.
+	// TODO: Assert string or integer type
 	//
 	// "auto", "stretch", a number representing relative width of the column
 	// in the column group, or in version 1.1 and higher, a specific pixel
 	// width, like "50px".
 	Width interface{} `json:"width"`
-	Items []Element   `json:"items"`
+
+	// Items are the card elements that should be rendered inside of the
+	// column.
+	// TODO: Should this be a pointer?
+	Items []Element `json:"items"`
 }
 
-// MSTeams represents a container for a collection of user mentions.
-type MSTeams struct {
+// Action represents an action that a user may take on a card. Actions
+// typically get rendered in an "action bar" at the bottom of a card.
+type Action struct {
 
-	// Entities is a collection of user mentions.
-	Entities []Mention `json:"entities"`
-}
-
-// Mention represents a mention in the message for a specific user.
-type Mention struct {
-	// Type is required; must be set to "mention".
-	Type string `json:"type"`
-
-	// Text must match a portion of the message text field. If it does not,
-	// the mention is ignored.
-	//
-	// Brief testing indicates that this needs to wrap a name/value in <at>NAME
-	// HERE</at> tags.
-	Text string `json:"text"`
-
-	// Mentioned represents a user that is mentioned.
-	Mentioned Mentioned `json:"mentioned"`
-}
-
-// Mentioned represents the user id and name of a user that is mentioned.
-type Mentioned struct {
-	// ID is the unique identifier for a user that is mentioned. This value
-	// can be an object ID (e.g., 5e8b0f4d-2cd4-4e17-9467-b0f6a5c0c4d0) or a
-	// UserPrincipalName (e.g., NewUser@contoso.onmicrosoft.com).
-	ID string `json:"id"`
-
-	// Name is the DisplayName of the user mentioned.
-	Name string `json:"name"`
+	// Type is required; specific values are supported.
+	// TODO: Assert that this is present for each action.
+	Type  string     `json:"type"`
+	Title string     `json:"title"`
+	Url   string     `json:"url,omitempty"`
+	Card  ActionCard `json:"card,omitempty"`
 }

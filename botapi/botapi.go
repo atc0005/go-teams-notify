@@ -17,11 +17,11 @@ import (
 )
 
 const (
-	// MessageType is the type for a BotAPI Message.
-	MessageType string = "message"
+	// TypeMessage is the type for a BotAPI Message.
+	TypeMessage string = "message"
 
-	// MentionType is the type for a user mention for a BotAPI Message.
-	MentionType string = "mention"
+	// TypeMention is the type for a user mention for a BotAPI Message.
+	TypeMention string = "mention"
 
 	// MentionTextFormatTemplate is the expected format of the Mention.Text
 	// field value.
@@ -92,7 +92,7 @@ type Mentioned struct {
 // NewMessage creates a new Message with required fields predefined.
 func NewMessage() *Message {
 	return &Message{
-		Type: MessageType,
+		Type: TypeMessage,
 	}
 }
 
@@ -100,7 +100,7 @@ func NewMessage() *Message {
 // predefined.
 // func NewMessage(text string) *Message {
 // 	return &Message{
-// 		Type: MessageType,
+// 		Type: TypeMessage,
 // 		Text: text,
 // 	}
 // }
@@ -166,11 +166,11 @@ func (m Message) Validate() error {
 		)
 	}
 
-	if m.Type != MessageType {
+	if m.Type != TypeMessage {
 		return fmt.Errorf(
 			"got %s; wanted %s: %w",
 			m.Type,
-			MessageType,
+			TypeMessage,
 			ErrInvalidType,
 		)
 	}
@@ -189,11 +189,11 @@ func (m Message) Validate() error {
 
 // Validate performs basic validation of required field values.
 func (m Mention) Validate() error {
-	if m.Type != MentionType {
+	if m.Type != TypeMention {
 		return fmt.Errorf(
 			"got %s; wanted %s: %w",
 			m.Type,
-			MentionType,
+			TypeMention,
 			ErrInvalidType,
 		)
 	}
@@ -302,7 +302,7 @@ func (m *Message) Mention(displayName string, id string, prependToText bool) err
 
 	default:
 		mention := Mention{
-			Type: MentionType,
+			Type: TypeMention,
 			// Text: textVal,
 			Text: fmt.Sprintf(MentionTextFormatTemplate, displayName),
 			Mentioned: Mentioned{

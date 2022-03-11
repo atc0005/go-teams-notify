@@ -1,13 +1,13 @@
 package adaptivecard
 
 const (
-	TypeTextBlock      = "TextBlock"
-	TypeColumnSet      = "ColumnSet"
-	TypeColumn         = "Column"
-	TypeActionSet      = "ActionSet"
-	TypeActionShowCard = "Action.ShowCard"
-	TypeActionOpenUrl  = "Action.OpenUrl"
-	TypeAdaptiveCard   = "AdaptiveCard"
+	// TypeTextBlock      = "TextBlock"
+	// TypeColumnSet      = "ColumnSet"
+	// TypeColumn         = "Column"
+	// TypeActionSet      = "ActionSet"
+	// TypeActionShowCard = "Action.ShowCard"
+	// TypeActionOpenUrl  = "Action.OpenUrl"
+	// TypeAdaptiveCard   = "AdaptiveCard"
 
 	WeightBorder  = "Border"
 	WeightLighter = "Lighter"
@@ -74,21 +74,21 @@ const (
 // 	Items []Item      `json:"items"`
 // }
 
-type Item struct {
-	Type    string   `json:"type"`
-	Text    string   `json:"text,omitempty"`
-	Wrap    bool     `json:"wrap,omitempty"`
-	Weight  string   `json:"weight,omitempty"`
-	Color   string   `json:"color,omitempty"`
-	Actions []Action `json:"actions,omitempty"`
-}
+// type Item struct {
+// 	Type    string   `json:"type"`
+// 	Text    string   `json:"text,omitempty"`
+// 	Wrap    bool     `json:"wrap,omitempty"`
+// 	Weight  string   `json:"weight,omitempty"`
+// 	Color   string   `json:"color,omitempty"`
+// 	Actions []Action `json:"actions,omitempty"`
+// }
 
-type Action struct {
-	Type  string     `json:"type"`
-	Title string     `json:"title"`
-	Url   string     `json:"url,omitempty"`
-	Card  ActionCard `json:"card,omitempty"`
-}
+// type Action struct {
+// 	Type  string     `json:"type"`
+// 	Title string     `json:"title"`
+// 	Url   string     `json:"url,omitempty"`
+// 	Card  ActionCard `json:"card,omitempty"`
+// }
 
 type ActionCard struct {
 	Type string           `json:"type"`
