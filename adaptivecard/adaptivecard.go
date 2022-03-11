@@ -321,6 +321,22 @@ type Column struct {
 	Items []Element `json:"items"`
 }
 
+/*
+
+
+
+TODO:
+
+Look at creating separate Action variants similar to what was done for the
+MessageCard format by Nicolas Maupu (potential actions). That approach has
+separate types for each action variant and has each field set as `omitempty`
+which effectively excludes the action from rendered JSON unless ...
+
+
+
+
+*/
+
 // Action represents an action that a user may take on a card. Actions
 // typically get rendered in an "action bar" at the bottom of a card.
 type Action struct {
