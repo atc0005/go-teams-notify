@@ -34,14 +34,14 @@ const (
 // 	Content     AdaptiveCardContent `json:"content"`
 // }
 
-type AdaptiveCardContent struct {
-	Type                     string             `json:"type"`
-	Schema                   string             `json:"$schema"`
-	Version                  string             `json:"version"`
-	Body                     []AdaptiveCardBody `json:"body"`
-	VerticalContentAlignment string             `json:"verticalContentAlignment"`
-	MSTeams                  MSTeams            `json:"msteams"`
-}
+// type AdaptiveCardContent struct {
+// 	Type                     string             `json:"type"`
+// 	Schema                   string             `json:"$schema"`
+// 	Version                  string             `json:"version"`
+// 	Body                     []AdaptiveCardBody `json:"body"`
+// 	VerticalContentAlignment string             `json:"verticalContentAlignment"`
+// 	MSTeams                  MSTeams            `json:"msteams"`
+// }
 
 // type MSTeams struct {
 // 	Entities []MSTeamsEntity `json:"entities"`
@@ -58,15 +58,15 @@ type AdaptiveCardContent struct {
 // 	Name string `json:"name"`
 // }
 
-type AdaptiveCardBody struct {
-	Type    string   `json:"type"`
-	Size    string   `json:"size,omitempty"`
-	Weight  string   `json:"weight,omitempty"`
-	Text    string   `json:"text,omitempty"`
-	Color   string   `json:"color,omitempty"`
-	Wrap    bool     `json:"wrap,omitempty"`
-	Columns []Column `json:"columns,omitempty"`
-}
+// type AdaptiveCardBody struct {
+// 	Type    string   `json:"type"`
+// 	Size    string   `json:"size,omitempty"`
+// 	Weight  string   `json:"weight,omitempty"`
+// 	Text    string   `json:"text,omitempty"`
+// 	Color   string   `json:"color,omitempty"`
+// 	Wrap    bool     `json:"wrap,omitempty"`
+// 	Columns []Column `json:"columns,omitempty"`
+// }
 
 // type Column struct {
 // 	Type  string      `json:"type"`

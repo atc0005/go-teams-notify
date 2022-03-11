@@ -21,6 +21,9 @@ import (
 // TODO: Add one or more examples of using this package.
 
 const (
+	// ColumnType is the type for an Adaptive Card Column.
+	ColumnType string = "Column"
+
 	// MessageType is the type for an Adaptive Card Message.
 	MessageType string = "message"
 
@@ -138,30 +141,16 @@ type Card struct {
 // https://adaptivecards.io/explorer/
 type Content struct {
 
-	// Body represents the body of an Adaptive Card. The body is made up of
-	// building-blocks known as elements. Elements can be composed to create
-	// many types of cards. These elements are shown in the primary card
-	// region.
+	// Type is required; must be set to "AdaptiveCard"
 	//
-	// NOTE: If we make this an interface type then the fields of the Element
-	// won't be exposed to client code. Perhaps it's better to create
-	// constructors for each supported Element type so that required fields
-	// are populated and unneeded fields are skipped.
-	Body []Element `json:"body"`
-
-	// MSTeams is a container for user mentions.
-	MSTeams MSTeams `json:"msteams"`
+	// TODO: Assert that this is present.
+	Type string `json:"type"`
 
 	// Schema is required; schema represents the URI of the Adaptive Card
 	// schema.
 	//
 	// TODO: Assert "http://adaptivecards.io/schemas/adaptive-card.json".
 	Schema string `json:"schema"`
-
-	// Type is required; must be set to "AdaptiveCard"
-	//
-	// TODO: Assert that this is present.
-	Type string `json:"type"`
 
 	// Version is the schema version that the content for an Adaptive Card
 	// requires.
@@ -180,6 +169,29 @@ type Content struct {
 	// with some of the other features tied to higher versions (e.g.,
 	// minHeight requires 1.2).
 	Version string `json:"version"`
+
+	// FallbackText is the text shown when the client doesn't support the
+	// version specified (may contain markdown).
+	FallbackText string `json:"fallbackText,omitempty"`
+
+	// Body represents the body of an Adaptive Card. The body is made up of
+	// building-blocks known as elements. Elements can be composed to create
+	// many types of cards. These elements are shown in the primary card
+	// region.
+	//
+	// NOTE: If we make this an interface type then the fields of the Element
+	// won't be exposed to client code. Perhaps it's better to create
+	// constructors for each supported Element type so that required fields
+	// are populated and unneeded fields are skipped.
+	Body []Element `json:"body"`
+
+	// MSTeams is a container for user mentions.
+	MSTeams MSTeams `json:"msteams"`
+
+	// VerticalContentAlignment defines how the content should be aligned
+	// vertically within the container. Only relevant for fixed-height cards,
+	// or cards with a minHeight specified.
+	VerticalContentAlignment string `json:"verticalContentAlignment"`
 }
 
 // Element is a "building block" for the body of an Adaptive Card and is shown
@@ -219,6 +231,9 @@ type Element struct {
 	// Columns is a container used by a ColumnSet element type which contains
 	// one or more elements.
 	Columns []Column `json:"columns,omitempty"`
+
+	// Actions is a collection of actions to show in the card's action bar.
+	Actions []Action `json:"actions,omitempty"`
 }
 
 // Column is a container used by a ColumnSet element type. Each container
@@ -228,8 +243,6 @@ type Element struct {
 type Column struct {
 
 	// Type is required; must be set to "Column".
-	//
-	// TODO: Create a constant for this.
 	Type string `json:"type"`
 
 	// Width represents the width of a column in the column group. Valid
@@ -243,7 +256,7 @@ type Column struct {
 	// in the column group, or in version 1.1 and higher, a specific pixel
 	// width, like "50px".
 	Width interface{} `json:"width"`
-	Items []Item      `json:"items"`
+	Items []Element   `json:"items"`
 }
 
 // MSTeams represents a container for a collection of user mentions.
