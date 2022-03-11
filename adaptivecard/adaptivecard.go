@@ -52,6 +52,21 @@ const (
 	ColumnWidthPixelRegex string = "^[0-9]+px"
 )
 
+const (
+	SizeSmall      string = "small"
+	SizeDefault    string = "default"
+	SizeMedium     string = "medium"
+	SizeLarge      string = "large"
+	SizeExtraLarge string = "extraLarge"
+)
+
+// Text weight for TextBlock or TextRun elements.
+const (
+	WeightBolder  string = "Bolder"
+	WeightLighter string = "Lighter"
+	WeightDefault string = "Default"
+)
+
 // Supported colors for TextBlock elements.
 const (
 	ColorDefault   string = "Default"
@@ -251,9 +266,13 @@ type Element struct {
 	Text string `json:"text,omitempty"`
 
 	// Size controls the size of text within a TextBlock element.
+	//
+	// TODO: Assert specific values
 	Size string `json:"size,omitempty"`
 
 	// Weight controls the weight of text in TextBlock or TextRun elements.
+	//
+	// TODO: Assert specific values
 	Weight string `json:"weight,omitempty"`
 
 	// Color controls the color of TextBlock elements or text used in TextRun
@@ -312,4 +331,20 @@ type Action struct {
 	Title string     `json:"title"`
 	Url   string     `json:"url,omitempty"`
 	Card  ActionCard `json:"card,omitempty"`
+}
+
+type ActionCard struct {
+	Type string           `json:"type"`
+	Body []ActionCardBody `json:"body"`
+}
+
+type ActionCardBody struct {
+	Type string `json:"type"`
+	Text string `json:"text"`
+	Wrap bool   `json:"wrap"`
+}
+
+type Condition struct {
+	Value  []string
+	Volume string
 }
