@@ -24,9 +24,6 @@ const (
 	// TypeAdaptiveCard is the supported type value for an Adaptive Card.
 	TypeAdaptiveCard string = "AdaptiveCard"
 
-	// TypeColumn is the type for an Adaptive Card Column.
-	TypeColumn string = "Column"
-
 	// TypeMessage is the type for an Adaptive Card Message.
 	TypeMessage string = "message"
 
@@ -36,6 +33,34 @@ const (
 	// MentionTextFormatTemplate is the expected format of the Mention.Text
 	// field value.
 	MentionTextFormatTemplate string = "<at>%s</at>"
+)
+
+const (
+	// TypeColumn is the type for an Adaptive Card Column.
+	TypeColumn string = "Column"
+
+	// ColumnWidthAuto indicates that a column's width should be determined
+	// automatically based on other columns in the column group.
+	ColumnWidthAuto string = "auto"
+
+	// ColumnWidthStretch indicates that a column's width should be stretched
+	// to fill the enclosing column group.
+	ColumnWidthStretch string = "stretch"
+
+	// ColumnWidthPixelRegex is a regular expression pattern intended to match
+	// specific pixel width values (e.g., 50px).
+	ColumnWidthPixelRegex string = "^[0-9]+px"
+)
+
+// Supported colors for TextBlock elements.
+const (
+	ColorDefault   string = "Default"
+	ColorDark      string = "Dark"
+	ColorLight     string = "Light"
+	ColorAccent    string = "Accent"
+	ColorGood      string = "Good"
+	ColorWarning   string = "Warning"
+	ColorAttention string = "Attention"
 )
 
 // Supported Actions
@@ -233,6 +258,8 @@ type Element struct {
 
 	// Color controls the color of TextBlock elements or text used in TextRun
 	// elements.
+	//
+	// TODO: Assert specific values
 	Color string `json:"color,omitempty"`
 
 	// Wrap controls whether text is allowed to wrap or is clipped for
@@ -261,11 +288,12 @@ type Column struct {
 	// values consist of fixed strings OR a number representing the relative
 	// width.
 	//
-	// TODO: Assert string or integer type
-	//
 	// "auto", "stretch", a number representing relative width of the column
 	// in the column group, or in version 1.1 and higher, a specific pixel
 	// width, like "50px".
+	//
+	// TODO: Assert fixed string constants, integer type OR pixel regex (use
+	// ColumnWidthPixelRegex)
 	Width interface{} `json:"width"`
 
 	// Items are the card elements that should be rendered inside of the

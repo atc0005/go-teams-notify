@@ -13,19 +13,19 @@ const (
 	WeightLighter = "Lighter"
 	WeightDefault = "Default"
 
-	WHAutomatic = "auto"
-	WHStretch   = "stretch"
+	// WHAutomatic = "auto"
+	// WHStretch   = "stretch"
 
 	SizeLarge  = "Large"
 	SizeMedium = "Medium"
 
-	ColorDefault   = "Default"
-	ColorDark      = "Dark"
-	ColorLight     = "Light"
-	ColorAccent    = "Accent"
-	ColorGood      = "Good"
-	ColorWarning   = "Warning"
-	ColorAttention = "Attention"
+	// ColorDefault   = "Default"
+	// ColorDark      = "Dark"
+	// ColorLight     = "Light"
+	// ColorAccent    = "Accent"
+	// ColorGood      = "Good"
+	// ColorWarning   = "Warning"
+	// ColorAttention = "Attention"
 )
 
 // type Attachment struct {
