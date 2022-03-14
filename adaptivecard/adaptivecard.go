@@ -79,8 +79,8 @@ const (
 	ColorAttention string = "Attention"
 )
 
-// Support spacing values for FactSet, Container, Table and other container
-// element types.
+// Support spacing values for FactSet, Container and other container element
+// types.
 const (
 	SpacingDefault    string = "default"
 	SpacingNone       string = "none"
@@ -122,10 +122,10 @@ const (
 	TypeElementInputText      string = "Input.Text"
 	TypeElementInputTime      string = "Input.Time"
 	TypeElementInputToggle    string = "Input.Toggle"
-	TypeElementMedia          string = "Media"
-	TypeElementRichTextBlock  string = "RichTextBlock"
-	TypeElementTable          string = "Table"
+	TypeElementMedia          string = "Media"         // Introduced in version 1.1 (TODO: Is this supported in Teams message?)
+	TypeElementRichTextBlock  string = "RichTextBlock" // Introduced in version 1.2
 	TypeElementTextBlock      string = "TextBlock"
+	TypeElementTextRun        string = "TextRun" // Introduced in version 1.2
 )
 
 var (
@@ -258,9 +258,9 @@ type Mentioned struct {
 }
 
 // Element is a "building block" for an Adaptive Card. Elements are shown
-// within the primary card region (aka, "body"), within columns, table cells
-// and other container types. Not all fields of this Go struct type are
-// supported by all Adaptive Card element types.
+// within the primary card region (aka, "body"), columns and other container
+// types. Not all fields of this Go struct type are supported by all Adaptive
+// Card element types.
 type Element struct {
 
 	// Type is required and indicates the type of the element used in the body
