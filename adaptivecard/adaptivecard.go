@@ -79,7 +79,7 @@ const (
 	ColorAttention string = "Attention"
 )
 
-// Support spacing values for FactSet, Container and other container element
+// Supported spacing values for FactSet, Container and other container element
 // types.
 const (
 	SpacingDefault    string = "default"
@@ -89,6 +89,12 @@ const (
 	SpacingLarge      string = "large"
 	SpacingExtraLarge string = "extraLarge"
 	SpacingPadding    string = "padding"
+)
+
+// Supported width values for the msteams property used in in Adaptive Card
+// messages sent via Microsoft Teams.
+const (
+	MSTeamsWidthFull string = "Full"
 )
 
 // Supported Actions
@@ -213,7 +219,8 @@ type Content struct {
 	// TODO: Should this be a pointer?
 	Actions []Action `json:"actions,omitempty"`
 
-	// MSTeams is a container for user mentions.
+	// MSTeams is a container for properties specific to Microsoft Teams
+	// messages, including formatting properties and user mentions.
 	MSTeams MSTeams `json:"msteams"`
 
 	// VerticalContentAlignment defines how the content should be aligned
@@ -222,12 +229,36 @@ type Content struct {
 	VerticalContentAlignment string `json:"verticalContentAlignment"`
 }
 
-// MSTeams represents a container for a collection of user mentions.
+// MSTeams represents a container for properties specific to Microsoft Teams
+// messages, including formatting properties and user mentions.
 type MSTeams struct {
+
+	// Width controls the width of Adaptive Cards within a Microsoft Teams
+	// messages.
+	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format#full-width-adaptive-card
+	//
+	// TODO: assert specific values
+	// TODO: Research supported values, add as MSTeamsWidthXYZ constants.
+	Width string `json:"width,omitempty"`
+
+	// Wrap indicates whether text is ...
+	//
+	// TODO: Research specific purpose of this field and how interacts with a
+	// value set on a specific element of an Adaptive Card.
+	//
+	// TODO: Confirm that this is a value field.
+	// https://github.com/MicrosoftDocs/msteams-docs/issues/5003
+	Wrap bool `json:"wrap,omitempty"`
+
+	// AllowExpand controls whether images can be displayed in stage view
+	// selectively.
+	//
+	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format#stage-view-for-images-in-adaptive-cards
+	AllowExpand bool `json:"allowExpand,omitempty"`
 
 	// Entities is a collection of user mentions.
 	// TODO: Should this be a pointer?
-	Entities []Mention `json:"entities"`
+	Entities []Mention `json:"entities,omitempty"`
 }
 
 // Mention represents a mention in the message for a specific user.
