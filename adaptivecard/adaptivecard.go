@@ -407,6 +407,9 @@ which effectively excludes the action from rendered JSON unless ...
 
 // Action represents an action that a user may take on a card. Actions
 // typically get rendered in an "action bar" at the bottom of a card.
+//
+// See https://adaptivecards.io/explorer/ActionSet.html
+// See https://adaptivecards.io/explorer/AdaptiveCard.html
 type Action struct {
 
 	// Type is required; specific values are supported.
