@@ -79,6 +79,18 @@ const (
 	ColorAttention string = "Attention"
 )
 
+// Support spacing values for FactSet, Container, Table and other container
+// element types.
+const (
+	SpacingDefault    string = "default"
+	SpacingNone       string = "none"
+	SpacingSmall      string = "small"
+	SpacingMedium     string = "medium"
+	SpacingLarge      string = "large"
+	SpacingExtraLarge string = "extraLarge"
+	SpacingPadding    string = "padding"
+)
+
 // Supported Actions
 const (
 	// TypeActionExecute is not supported in Microsoft Teams messages.
@@ -245,9 +257,10 @@ type Mentioned struct {
 	Name string `json:"name"`
 }
 
-// Element is a "building block" for the body of an Adaptive Card and is shown
-// in the primary card region. Not all fields are supported by all element
-// types.
+// Element is a "building block" for an Adaptive Card. Elements are shown
+// within the primary card region (aka, "body"), within columns, table cells
+// and other container types. Not all fields of this Go struct type are
+// supported by all Adaptive Card element types.
 type Element struct {
 
 	// Type is required and indicates the type of the element used in the body
@@ -282,9 +295,10 @@ type Element struct {
 	// TODO: Assert specific values
 	Color string `json:"color,omitempty"`
 
-	// Wrap controls whether text is allowed to wrap or is clipped for
-	// TextBlock elements.
-	Wrap bool `json:"wrap,omitempty"`
+	// Spacing controls the amount of spacing between this element and the
+	// preceding element.
+	// TODO: Assert specific values
+	Spacing string `json:"spacing,omitempty"`
 
 	// Columns is a container used by a ColumnSet element type which contains
 	// one or more elements.
@@ -294,9 +308,18 @@ type Element struct {
 	// TODO: Should this be a pointer?
 	Actions []Action `json:"actions,omitempty"`
 
-	// Facts is a collection of Fact values. Each entry is usually displayed
-	// in a two-column key/value format.
+	// Facts is a collection of Fact values that are part of a FactSet element
+	// type. Each Fact value is a key/value pair displayed in tabular form.
+	// TODO: Should this be a pointer?
 	Facts []Fact `json:"facts,omitempty"`
+
+	// Wrap controls whether text is allowed to wrap or is clipped for
+	// TextBlock elements.
+	Wrap bool `json:"wrap,omitempty"`
+
+	// Separator, when true, indicates that a separating line shown should
+	// drawn at the top of the element.
+	Separator bool `json:"separator,omitempty"`
 }
 
 // Column is a container used by a ColumnSet element type. Each container
