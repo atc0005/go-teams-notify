@@ -145,23 +145,24 @@ var (
 	ErrMissingValue = errors.New("missing expected value")
 )
 
-// Message represents an Adaptive Card used via Office 365 or Microsoft Teams
-// connectors.
+// Message represents a Microsoft Teams message containing one or more
+// Adaptive Cards.
 type Message struct {
 	// Type is required; must be set to "message".
 	// TODO: Assert that this is present.
 	Type string `json:"type"`
 
-	// Attachments is a collection of card objects.
-	Attachments []Card `json:"attachments"`
+	// Attachments is a collection of one or more Adaptive Cards.
+	Attachments []Attachment `json:"attachments"`
 
 	// payload is a prepared Message in JSON format for submission or pretty
 	// printing.
 	payload *bytes.Buffer `json:"-"`
 }
 
-// Card represents an Adaptive Card.
-type Card struct {
+// Attachment represents an attached Adaptive Card for a Microsoft Teams
+// message.
+type Attachment struct {
 
 	// ContentType is required; must be set to
 	// "application/vnd.microsoft.card.adaptive".
@@ -175,12 +176,12 @@ type Card struct {
 	ContentURL NullString `json:"contentUrl"`
 
 	// Content represents the content of an Adaptive Card.
-	Content Content `json:"content"`
+	Content Card `json:"content"`
 }
 
-// Content represents the content of an Adaptive Card.
+// Card represents the content of an Adaptive Card.
 // https://adaptivecards.io/explorer/
-type Content struct {
+type Card struct {
 
 	// Type is required; must be set to "AdaptiveCard"
 	//
@@ -408,16 +409,37 @@ which effectively excludes the action from rendered JSON unless ...
 // Action represents an action that a user may take on a card. Actions
 // typically get rendered in an "action bar" at the bottom of a card.
 //
-// See https://adaptivecards.io/explorer/ActionSet.html
-// See https://adaptivecards.io/explorer/AdaptiveCard.html
+// https://adaptivecards.io/explorer/ActionSet.html
+// https://adaptivecards.io/explorer/AdaptiveCard.html
+// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
 type Action struct {
 
 	// Type is required; specific values are supported.
 	// TODO: Assert that this is present for each action.
-	Type  string     `json:"type"`
-	Title string     `json:"title"`
-	Url   string     `json:"url,omitempty"`
-	Card  ActionCard `json:"card,omitempty"`
+	//
+	// For Adaptive Cards in Incoming Webhooks, all native Adaptive Card
+	// schema elements, except Action.Submit, are fully supported. The
+	// supported actions are Action.OpenURL, Action.ShowCard,
+	// Action.ToggleVisibility, and Action.Execute.
+	//
+	// See also https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
+	Type string `json:"type"`
+
+	// Title is a label for the button or link that represents this action.
+	Title string `json:"title"`
+
+	// URL is required for the Action.OpenUrl type, optional for other action
+	// types.
+	// TODO: Assert that this is present for Action.OpenUrl type.
+	URL string `json:"url,omitempty"`
+
+	// Card property is used by Action.ShowCard type.
+	//
+	// NOTE: Based on a review of JSON content, it looks like `ActionCard` is
+	// really just a `Card` type.
+	//
+	// refs https://github.com/matthidinger/ContosoScubaBot/blob/master/Cards/SubscriberNotification.JSON
+	Card ActionCard `json:"card,omitempty"`
 }
 
 type ActionCard struct {
@@ -425,13 +447,14 @@ type ActionCard struct {
 	Body []ActionCardBody `json:"body"`
 }
 
+// ActionCardBody ...
+//
+// TODO: This seems to be a subset of the `Card` type.
+//
+// Per https://github.com/matthidinger/ContosoScubaBot/blob/master/Cards/SubscriberNotification.JSON
+// the `Element` type seems to be a better fit here?
 type ActionCardBody struct {
 	Type string `json:"type"`
 	Text string `json:"text"`
 	Wrap bool   `json:"wrap"`
-}
-
-type Condition struct {
-	Value  []string
-	Volume string
 }
