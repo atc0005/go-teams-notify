@@ -1,11 +1,12 @@
 /*
-Package adaptivecard provides support for the Adaptive Card Microsoft Teams
-format.
+Package adaptivecard provides support for generating Microsoft Teams messages
+using the Adaptive Card format.
 
 See the following resources for more information:
 
 https://adaptivecards.io/explorer
 https://docs.microsoft.com/en-us/adaptive-cards/
+https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/what-are-cards
 https://docs.microsoft.com/en-us/adaptive-cards/getting-started/bots
 https://docs.microsoft.com/en-us/adaptive-cards/resources/principles
 https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference#support-for-adaptive-cards

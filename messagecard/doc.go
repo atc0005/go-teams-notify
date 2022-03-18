@@ -1,6 +1,6 @@
 /*
-Package messagecard provides support for the legacy MessageCard format in
-order to generate Microsoft Teams messages.
+Package messagecard provides support for generating Microsoft Teams messages
+using the legacy "actionable message card" (aka, "MessageCard") format.
 
 See the following resources for more information:
 
