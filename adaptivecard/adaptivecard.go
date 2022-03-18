@@ -99,11 +99,22 @@ const (
 
 // Supported Actions
 const (
-	// TypeActionExecute is not supported in Microsoft Teams messages.
-	// TypeActionExecute          string = "Action.Execute"
+	// TypeActionExecute was introduced in Adaptive Cards schema version 1.4.
+	// TypeActionExecute actions may not render with earlier versions of the
+	// Teams client. To ensure maximum compatibility in Teams, consider
+	// defining your TypeActionExecute actions with a TypeActionSubmit action
+	// in the fallback property.
+	//
+	// https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model
+	TypeActionExecute string = "Action.Execute"
+
+	// TypeActionSubmit is used in Adaptive Cards schema version 1.3 and
+	// earlier or as a fallback for TypeActionExecute in schema version 1.4.
+	TypeActionSubmit string = "Action.Submit"
+
+	// TODO: Fill in doc details for these action types.
 	TypeActionOpenURL          string = "Action.OpenUrl"
 	TypeActionShowCard         string = "Action.ShowCard"
-	TypeActionSubmit           string = "Action.Submit"
 	TypeActionToggleVisibility string = "Action.ToggleVisibility"
 )
 
@@ -113,7 +124,7 @@ const (
 // https://adaptivecards.io/explorer/AdaptiveCard.html
 //
 // TODO: Confirm whether all types are supported.
-// NOTE: Based on current docs, version 1.3 is the latest supported at this
+// NOTE: Based on current docs, version 1.4 is the latest supported at this
 // time.
 const (
 	TypeElementActionSet      string = "ActionSet"
