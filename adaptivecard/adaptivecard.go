@@ -191,14 +191,28 @@ type Card struct {
 	// Schema represents the URI of the Adaptive Card schema.
 	//
 	// TODO: Assert "http://adaptivecards.io/schemas/adaptive-card.json".
-	Schema string `json:"schema"`
+	Schema string `json:"$schema"`
 
-	// Version is required; the schema version that the content for an
-	// Adaptive Card requires.
+	// Version is required for top-level cards; the schema version that the
+	// content for an Adaptive Card requires.
 	//
 	// Version 1.3 is the highest supported for user-generated cards.
 	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference#support-for-adaptive-cards
 	// https://adaptivecards.io/designer
+	//
+	// Version 1.4 is when Action.Execute was introduced.
+	//
+	// Per this doc:
+	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
+	//
+	// the "Action.Execute" action is supported:
+	//
+	// "For Adaptive Cards in Incoming Webhooks, all native Adaptive Card
+	// schema elements, except Action.Submit, are fully supported. The
+	// supported actions are Action.OpenURL, Action.ShowCard,
+	// Action.ToggleVisibility, and Action.Execute."
+	//
+	// TODO: Assert that this is present for top-level cards only?
 	Version string `json:"version"`
 
 	// FallbackText is the text shown when the client doesn't support the
@@ -418,8 +432,9 @@ type Action struct {
 	// TODO: Assert that this is present for each action.
 	//
 	// For Adaptive Cards in Incoming Webhooks, all native Adaptive Card
-	// schema elements, except Action.Submit, are fully supported. The
-	// supported actions are Action.OpenURL, Action.ShowCard,
+	// schema elements, except Action.Submit, are fully supported.
+	//
+	// The supported actions are Action.OpenURL, Action.ShowCard,
 	// Action.ToggleVisibility, and Action.Execute.
 	//
 	// See also https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
@@ -443,18 +458,15 @@ type Action struct {
 }
 
 type ActionCard struct {
-	Type string           `json:"type"`
-	Body []ActionCardBody `json:"body"`
+	Type string `json:"type"`
+	// Body []ActionCardBody `json:"body"`
+	Body []Card `json:"body"`
 }
 
-// ActionCardBody ...
-//
-// TODO: This seems to be a subset of the `Card` type.
-//
-// Per https://github.com/matthidinger/ContosoScubaBot/blob/master/Cards/SubscriberNotification.JSON
-// the `Element` type seems to be a better fit here?
-type ActionCardBody struct {
-	Type string `json:"type"`
-	Text string `json:"text"`
-	Wrap bool   `json:"wrap"`
-}
+// ActionCardBody appears to be a slice of Card.
+// TODO: Duplicate?
+// type ActionCardBody struct {
+// 	Type string `json:"type"`
+// 	Text string `json:"text"`
+// 	Wrap bool   `json:"wrap"`
+// }
