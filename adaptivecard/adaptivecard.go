@@ -465,14 +465,17 @@ type Action struct {
 	// really just a `Card` type.
 	//
 	// refs https://github.com/matthidinger/ContosoScubaBot/blob/master/Cards/SubscriberNotification.JSON
-	Card ActionCard `json:"card,omitempty"`
+	Card Card `json:"card,omitempty"`
 }
 
-type ActionCard struct {
-	Type string `json:"type"`
-	// Body []ActionCardBody `json:"body"`
-	Body []Card `json:"body"`
-}
+// ActionCard is likely just a `Card` type?
+// NOTE: Based on a review of JSON content, it looks like `ActionCard` is
+// really just a `Card` type.
+// type ActionCard struct {
+// 	Type string `json:"type"`
+// 	// Body []ActionCardBody `json:"body"`
+// 	Body []Card `json:"body"`
+// }
 
 // ActionCardBody appears to be a slice of Card.
 // TODO: Duplicate?
