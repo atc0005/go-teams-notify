@@ -126,6 +126,7 @@ const (
 // TODO: Confirm whether all types are supported.
 // NOTE: Based on current docs, version 1.4 is the latest supported at this
 // time.
+// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference#support-for-adaptive-cards
 const (
 	TypeElementActionSet      string = "ActionSet"
 	TypeElementColumnSet      string = "ColumnSet"
@@ -404,6 +405,10 @@ type Column struct {
 	// column.
 	// TODO: Should this be a pointer?
 	Items []Element `json:"items"`
+
+	// SelectAction is an action that will be invoked when the Column is
+	// tapped or selected. Action.ShowCard is not supported.
+	SelectAction ISelectAction `json:"selectAction"`
 }
 
 // Fact represents a Fact in a FactSet as a key/value pair.
@@ -437,6 +442,8 @@ which effectively excludes the action from rendered JSON unless ...
 // https://adaptivecards.io/explorer/ActionSet.html
 // https://adaptivecards.io/explorer/AdaptiveCard.html
 // https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
+//
+// TODO: Extend with additional supported fields.
 type Action struct {
 
 	// Type is required; specific values are supported.
@@ -484,3 +491,32 @@ type Action struct {
 // 	Text string `json:"text"`
 // 	Wrap bool   `json:"wrap"`
 // }
+
+// ISelectAction represents an Action that will be invoked when a container
+// type (e.g., Column, ColumnSet, Container) is tapped or selected.
+// Action.ShowCard is not supported.
+//
+// https://adaptivecards.io/explorer/Container.html
+// https://adaptivecards.io/explorer/ColumnSet.html
+// https://adaptivecards.io/explorer/Column.html
+//
+// TODO: Extend with additional supported fields.
+type ISelectAction struct {
+
+	// Type is required; specific values are supported.
+	// TODO: Assert that this is present for each action.
+	//
+	// The supported actions are Action.Execute, Action.OpenUrl,
+	// Action.Submit, Action.ToggleVisibility.
+	//
+	// See also https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
+	Type string `json:"type"`
+
+	// Title is a label for the button or link that represents this action.
+	Title string `json:"title"`
+
+	// URL is required for the Action.OpenUrl type, optional for other action
+	// types.
+	// TODO: Assert that this is present for Action.OpenUrl type.
+	URL string `json:"url,omitempty"`
+}
