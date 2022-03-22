@@ -24,6 +24,33 @@ const (
 	// TypeAdaptiveCard is the supported type value for an Adaptive Card.
 	TypeAdaptiveCard string = "AdaptiveCard"
 
+	// SchemaAdaptiveCard represents the URI of the Adaptive Card schema.
+	SchemaAdaptiveCard string = "http://adaptivecards.io/schemas/adaptive-card.json"
+
+	// VersionAdaptiveCardMax represents the highest supported version of the
+	// Adaptive Card schema supported in Microsoft Teams messages.
+	//
+	// Version 1.3 is the highest supported for user-generated cards.
+	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference#support-for-adaptive-cards
+	// https://adaptivecards.io/designer
+	//
+	// Version 1.4 is when Action.Execute was introduced.
+	//
+	// Per this doc:
+	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
+	//
+	// the "Action.Execute" action is supported:
+	//
+	// "For Adaptive Cards in Incoming Webhooks, all native Adaptive Card
+	// schema elements, except Action.Submit, are fully supported. The
+	// supported actions are Action.OpenURL, Action.ShowCard,
+	// Action.ToggleVisibility, and Action.Execute."
+	VersionAdaptiveCardMax string = "1.4"
+
+	// AttachmentContentType is the supported type value for an attached
+	// Adaptive Card for a Microsoft Teams message.
+	AttachmentContentType string = "application/vnd.microsoft.card.adaptive"
+
 	// TypeMessage is the type for an Adaptive Card Message.
 	TypeMessage string = "message"
 
@@ -33,6 +60,12 @@ const (
 	// MentionTextFormatTemplate is the expected format of the Mention.Text
 	// field value.
 	MentionTextFormatTemplate string = "<at>%s</at>"
+)
+
+// Attachment Layout options
+const (
+	AttachmentLayoutList     string = "list"
+	AttachmentLayoutCarousel string = "carousel"
 )
 
 const (
@@ -167,6 +200,19 @@ type Message struct {
 	// Attachments is a collection of one or more Adaptive Cards.
 	Attachments []Attachment `json:"attachments"`
 
+	// AttachmentLayout controls the layout for Adaptive Cards in the
+	// Attachments collection.
+	//
+	// TODO: Assert valid value?
+	//
+	// TODO: Testing shows that only "carousel" is accepted as a valid value.
+	// Anything else flags the generated card as "Unsupported Card" by Teams
+	// mobile app.
+	//
+	// refs https://raw.githubusercontent.com/matthidinger/ContosoScubaBot/master/Cards/7-Confirmation.JSON
+	// refs https://docs.microsoft.com/en-us/javascript/api/botframework-schema/attachmentlayouttypes?view=botbuilder-ts-latest
+	AttachmentLayout string `json:"attachmentLayout,omitempty"`
+
 	// payload is a prepared Message in JSON format for submission or pretty
 	// printing.
 	payload *bytes.Buffer `json:"-"`
@@ -248,71 +294,14 @@ type Card struct {
 
 	// MSTeams is a container for properties specific to Microsoft Teams
 	// messages, including formatting properties and user mentions.
-	MSTeams MSTeams `json:"msteams"`
+	MSTeams MSTeams `json:"msteams,omitempty"`
 
 	// VerticalContentAlignment defines how the content should be aligned
 	// vertically within the container. Only relevant for fixed-height cards,
 	// or cards with a minHeight specified.
-	VerticalContentAlignment string `json:"verticalContentAlignment"`
-}
-
-// MSTeams represents a container for properties specific to Microsoft Teams
-// messages, including formatting properties and user mentions.
-type MSTeams struct {
-
-	// Width controls the width of Adaptive Cards within a Microsoft Teams
-	// messages.
-	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format#full-width-adaptive-card
 	//
-	// TODO: assert specific values
-	// TODO: Research supported values, add as MSTeamsWidthXYZ constants.
-	Width string `json:"width,omitempty"`
-
-	// Wrap indicates whether text is ...
-	//
-	// TODO: Research specific purpose of this field and how interacts with a
-	// value set on a specific element of an Adaptive Card.
-	//
-	// TODO: Confirm that this is a value field.
-	// https://github.com/MicrosoftDocs/msteams-docs/issues/5003
-	Wrap bool `json:"wrap,omitempty"`
-
-	// AllowExpand controls whether images can be displayed in stage view
-	// selectively.
-	//
-	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format#stage-view-for-images-in-adaptive-cards
-	AllowExpand bool `json:"allowExpand,omitempty"`
-
-	// Entities is a collection of user mentions.
-	// TODO: Should this be a pointer?
-	Entities []Mention `json:"entities,omitempty"`
-}
-
-// Mention represents a mention in the message for a specific user.
-type Mention struct {
-	// Type is required; must be set to "mention".
-	Type string `json:"type"`
-
-	// Text must match a portion of the message text field. If it does not,
-	// the mention is ignored.
-	//
-	// Brief testing indicates that this needs to wrap a name/value in <at>NAME
-	// HERE</at> tags.
-	Text string `json:"text"`
-
-	// Mentioned represents a user that is mentioned.
-	Mentioned Mentioned `json:"mentioned"`
-}
-
-// Mentioned represents the user id and name of a user that is mentioned.
-type Mentioned struct {
-	// ID is the unique identifier for a user that is mentioned. This value
-	// can be an object ID (e.g., 5e8b0f4d-2cd4-4e17-9467-b0f6a5c0c4d0) or a
-	// UserPrincipalName (e.g., NewUser@contoso.onmicrosoft.com).
-	ID string `json:"id"`
-
-	// Name is the DisplayName of the user mentioned.
-	Name string `json:"name"`
+	// TODO: Set if minHeight is specified.
+	VerticalContentAlignment string `json:"verticalContentAlignment,omitempty"`
 }
 
 // Element is a "building block" for an Adaptive Card. Elements are shown
@@ -408,6 +397,9 @@ type Column struct {
 
 	// SelectAction is an action that will be invoked when the Column is
 	// tapped or selected. Action.ShowCard is not supported.
+	//
+	// TODO: Should we use an Action type instead of providing a custom
+	// ISelectAction type?
 	SelectAction ISelectAction `json:"selectAction"`
 }
 
@@ -519,4 +511,63 @@ type ISelectAction struct {
 	// types.
 	// TODO: Assert that this is present for Action.OpenUrl type.
 	URL string `json:"url,omitempty"`
+}
+
+// MSTeams represents a container for properties specific to Microsoft Teams
+// messages, including formatting properties and user mentions.
+type MSTeams struct {
+
+	// Width controls the width of Adaptive Cards within a Microsoft Teams
+	// messages.
+	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format#full-width-adaptive-card
+	//
+	// TODO: assert specific values
+	// TODO: Research supported values, add as MSTeamsWidthXYZ constants.
+	Width string `json:"width,omitempty"`
+
+	// Wrap indicates whether text is ...
+	//
+	// TODO: Research specific purpose of this field and how interacts with a
+	// value set on a specific element of an Adaptive Card.
+	//
+	// TODO: Confirm that this is a value field.
+	// https://github.com/MicrosoftDocs/msteams-docs/issues/5003
+	Wrap bool `json:"wrap,omitempty"`
+
+	// AllowExpand controls whether images can be displayed in stage view
+	// selectively.
+	//
+	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format#stage-view-for-images-in-adaptive-cards
+	AllowExpand bool `json:"allowExpand,omitempty"`
+
+	// Entities is a collection of user mentions.
+	// TODO: Should this be a pointer?
+	Entities []Mention `json:"entities,omitempty"`
+}
+
+// Mention represents a mention in the message for a specific user.
+type Mention struct {
+	// Type is required; must be set to "mention".
+	Type string `json:"type"`
+
+	// Text must match a portion of the message text field. If it does not,
+	// the mention is ignored.
+	//
+	// Brief testing indicates that this needs to wrap a name/value in <at>NAME
+	// HERE</at> tags.
+	Text string `json:"text"`
+
+	// Mentioned represents a user that is mentioned.
+	Mentioned Mentioned `json:"mentioned"`
+}
+
+// Mentioned represents the user id and name of a user that is mentioned.
+type Mentioned struct {
+	// ID is the unique identifier for a user that is mentioned. This value
+	// can be an object ID (e.g., 5e8b0f4d-2cd4-4e17-9467-b0f6a5c0c4d0) or a
+	// UserPrincipalName (e.g., NewUser@contoso.onmicrosoft.com).
+	ID string `json:"id"`
+
+	// Name is the DisplayName of the user mentioned.
+	Name string `json:"name"`
 }
