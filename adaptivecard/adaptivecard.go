@@ -297,7 +297,12 @@ type Card struct {
 	//
 	// NOTE: Using pointer in order to omit unused field from JSON output.
 	// https://stackoverflow.com/questions/18088294/how-to-not-marshal-an-empty-struct-into-json-with-go
-	MSTeams *MSTeams `json:"msteams,omitempty"`
+	// MSTeams *MSTeams `json:"msteams,omitempty"`
+	//
+	// TODO: Revisit this and use a pointer if remote API doesn't like
+	// receiving an empty object, though brief testing doesn't show this to be
+	// a problem.
+	MSTeams MSTeams `json:"msteams,omitempty"`
 
 	// VerticalContentAlignment defines how the content should be aligned
 	// vertically within the container. Only relevant for fixed-height cards,
