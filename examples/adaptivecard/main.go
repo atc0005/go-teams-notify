@@ -44,6 +44,7 @@ func main() {
 	_ = webhookUrl
 
 	// setup message
+	// msg := adaptivecard.NewSimpleMessage("")
 	msg := adaptivecard.NewSimpleMessage("Hello there!")
 
 	fmt.Printf("%+v\n", msg)

@@ -541,6 +541,8 @@ func (mc *MessageCard) Prepare(recreate bool) error {
 
 // Payload returns the prepared MessageCard payload. The caller should call
 // Prepare() prior to calling this method, results are undefined otherwise.
+//
+// TODO: Perhaps handle calling Prepare() for the caller if mc.payload is nil?
 func (mc *MessageCard) Payload() io.Reader {
 	return mc.payload
 }

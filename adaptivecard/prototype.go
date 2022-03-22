@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"strings"
 )
 
@@ -142,6 +143,10 @@ func (m *Message) PrettyPrint() string {
 // endpoint. If specified, tasks are repeated regardless of whether a previous
 // Prepare call was made. Validation should be performed by the caller prior
 // to calling this method.
+//
+// TODO: Should we make the recreate argument optional? How much of an impact
+// is it to regenerate the payload field for each call? Does making this
+// optional really help the API any?
 func (m *Message) Prepare(recreate bool) error {
 	if m.payload != nil && !recreate {
 		return nil
@@ -158,4 +163,16 @@ func (m *Message) Prepare(recreate bool) error {
 	m.payload = bytes.NewBuffer(jsonMessage)
 
 	return nil
+}
+
+// Payload returns the prepared Message payload. The caller should call
+// Prepare() prior to calling this method, results are undefined otherwise.
+//
+// TODO: Perhaps handle calling Prepare() for the caller if mc.payload is nil?
+//
+// If we do, then this method would have to "eat" the error or its API would
+// need to be updated to return an error, which would make the API harder to
+// use?
+func (m *Message) Payload() io.Reader {
+	return m.payload
 }
