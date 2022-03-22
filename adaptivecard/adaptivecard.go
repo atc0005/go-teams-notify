@@ -24,8 +24,8 @@ const (
 	// TypeAdaptiveCard is the supported type value for an Adaptive Card.
 	TypeAdaptiveCard string = "AdaptiveCard"
 
-	// SchemaAdaptiveCard represents the URI of the Adaptive Card schema.
-	SchemaAdaptiveCard string = "http://adaptivecards.io/schemas/adaptive-card.json"
+	// AdaptiveCardSchema represents the URI of the Adaptive Card schema.
+	AdaptiveCardSchema string = "http://adaptivecards.io/schemas/adaptive-card.json"
 
 	// VersionAdaptiveCardMax represents the highest supported version of the
 	// Adaptive Card schema supported in Microsoft Teams messages.
@@ -45,7 +45,7 @@ const (
 	// schema elements, except Action.Submit, are fully supported. The
 	// supported actions are Action.OpenURL, Action.ShowCard,
 	// Action.ToggleVisibility, and Action.Execute."
-	VersionAdaptiveCardMax string = "1.4"
+	AdaptiveCardMaxVersion string = "1.4"
 
 	// AttachmentContentType is the supported type value for an attached
 	// Adaptive Card for a Microsoft Teams message.
@@ -198,7 +198,7 @@ type Message struct {
 	Type string `json:"type"`
 
 	// Attachments is a collection of one or more Adaptive Cards.
-	Attachments []Attachment `json:"attachments"`
+	Attachments Attachments `json:"attachments"`
 
 	// AttachmentLayout controls the layout for Adaptive Cards in the
 	// Attachments collection.
@@ -217,6 +217,13 @@ type Message struct {
 	// printing.
 	payload *bytes.Buffer `json:"-"`
 }
+
+// Attachments is a collection of Adaptive Cards for a Microsoft Teams
+// message.
+//
+// TODO: Creating a custom type in order to "hang" methods off of it.
+// TODO: May not need this if we expose bulk of functionality from Message type.
+type Attachments []Attachment
 
 // Attachment represents an attached Adaptive Card for a Microsoft Teams
 // message.

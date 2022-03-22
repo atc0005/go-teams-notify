@@ -58,28 +58,47 @@ func NewSimpleMessage(text string) *Message {
 		}
 	}
 
+	// 	msg := Message{
+	// 		Type: TypeMessage,
+	//
+	// 		// TODO: Add Attachments type with an Add method that accepts an
+	// 		// attachment?
+	// 		Attachments: []Attachment{
+	// 			{
+	// 				ContentType: AttachmentContentType,
+	// 				Content: Card{
+	// 					Type:    TypeAdaptiveCard,
+	// 					Schema:  AdaptiveCardSchema,
+	// 					Version: AdaptiveCardMaxVersion,
+	// 					Body: []Element{
+	// 						{
+	// 							Type: TypeElementTextBlock,
+	// 							Text: text,
+	// 						},
+	// 					},
+	// 				},
+	// 			},
+	// 		},
+	// 	}
 	msg := Message{
 		Type: TypeMessage,
+	}
 
-		// TODO: Add Attachments type with an Add method that accepts an
-		// attachment?
-		Attachments: []Attachment{
+	// TODO: Refactor further, make it easy to generate specific types of
+	// simple cards.
+	textCard := Card{
+		Type:    TypeAdaptiveCard,
+		Schema:  AdaptiveCardSchema,
+		Version: AdaptiveCardMaxVersion,
+		Body: []Element{
 			{
-				ContentType: AttachmentContentType,
-				Content: Card{
-					Type:    TypeAdaptiveCard,
-					Schema:  SchemaAdaptiveCard,
-					Version: VersionAdaptiveCardMax,
-					Body: []Element{
-						{
-							Type: TypeElementTextBlock,
-							Text: text,
-						},
-					},
-				},
+				Type: TypeElementTextBlock,
+				Text: text,
 			},
 		},
 	}
+
+	msg.Attach(&textCard)
 
 	return &msg
 }
@@ -102,6 +121,32 @@ func (m *Message) AddText(text string) *Message {
 	// PLACEHOLDER
 	return m
 
+}
+
+// TODO: Is this useful for anything? We can just append directly to the
+// Attachments field?
+func (a *Attachments) Add(attachment Attachment) *Attachments {
+	*a = append(*a, attachment)
+
+	return a
+}
+
+func (m *Message) Attach(cards ...*Card) *Message {
+
+	if len(cards) == 0 {
+		return m
+	}
+
+	for _, card := range cards {
+		attachment := Attachment{
+			ContentType: AttachmentContentType,
+			Content:     *card,
+		}
+
+		m.Attachments = append(m.Attachments, attachment)
+	}
+
+	return m
 }
 
 /*
