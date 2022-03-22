@@ -231,7 +231,7 @@ type Attachment struct {
 	// have this value set to null.
 	//
 	// TODO: Update this description with confirmed details.
-	ContentURL NullString `json:"contentUrl"`
+	ContentURL NullString `json:"contentUrl,omitempty"`
 
 	// Content represents the content of an Adaptive Card.
 	Content Card `json:"content"`
@@ -294,7 +294,10 @@ type Card struct {
 
 	// MSTeams is a container for properties specific to Microsoft Teams
 	// messages, including formatting properties and user mentions.
-	MSTeams MSTeams `json:"msteams,omitempty"`
+	//
+	// NOTE: Using pointer in order to omit unused field from JSON output.
+	// https://stackoverflow.com/questions/18088294/how-to-not-marshal-an-empty-struct-into-json-with-go
+	MSTeams *MSTeams `json:"msteams,omitempty"`
 
 	// VerticalContentAlignment defines how the content should be aligned
 	// vertically within the container. Only relevant for fixed-height cards,
