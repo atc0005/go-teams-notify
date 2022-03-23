@@ -49,7 +49,7 @@ func main() {
 
 	fmt.Printf("%+v\n", msg)
 
-	err := msg.Prepare(true)
+	err := msg.Prepare()
 	if err != nil {
 		fmt.Printf(
 			"failed to prepare message: %v",

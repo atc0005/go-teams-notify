@@ -183,27 +183,31 @@ func (m *Message) PrettyPrint() string {
 }
 
 // Prepare handles tasks needed to prepare a given Message for delivery to an
-// endpoint. If specified, tasks are repeated regardless of whether a previous
-// Prepare call was made. Validation should be performed by the caller prior
-// to calling this method.
-//
-// TODO: Should we make the recreate argument optional? How much of an impact
-// is it to regenerate the payload field for each call? Does making this
-// optional really help the API any?
-func (m *Message) Prepare(recreate bool) error {
-	if m.payload != nil && !recreate {
-		return nil
-	}
-
+// endpoint. Validation should be performed by the caller prior to calling
+// this method.
+func (m *Message) Prepare() error {
 	jsonMessage, err := json.Marshal(m)
 	if err != nil {
 		return fmt.Errorf(
-			"failed to prepare message: %w",
+			"error marshalling Message to JSON: %w",
 			err,
 		)
 	}
 
-	m.payload = bytes.NewBuffer(jsonMessage)
+	switch {
+	case m.payload == nil:
+		m.payload = &bytes.Buffer{}
+	default:
+		m.payload.Reset()
+	}
+
+	_, err = m.payload.Write(jsonMessage)
+	if err != nil {
+		return fmt.Errorf(
+			"error updating JSON payload for Message: %w",
+			err,
+		)
+	}
 
 	return nil
 }

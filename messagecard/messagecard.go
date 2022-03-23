@@ -521,20 +521,31 @@ func (mc *MessageCard) Validate() error {
 }
 
 // Prepare handles tasks needed to prepare a MessageCard for delivery to an
-// endpoint. If specified, tasks are repeated regardless of whether a previous
-// Prepare call was made. Validation should be performed by the caller prior
-// to calling this method.
-func (mc *MessageCard) Prepare(recreate bool) error {
-	if mc.payload != nil && !recreate {
-		return nil
-	}
-
+// endpoint. Validation should be performed by the caller prior to calling
+// this method.
+func (mc *MessageCard) Prepare() error {
 	jsonMessage, err := json.Marshal(mc)
 	if err != nil {
-		return err
+		return fmt.Errorf(
+			"error marshalling MessageCard to JSON: %w",
+			err,
+		)
 	}
 
-	mc.payload = bytes.NewBuffer(jsonMessage)
+	switch {
+	case mc.payload == nil:
+		mc.payload = &bytes.Buffer{}
+	default:
+		mc.payload.Reset()
+	}
+
+	_, err = mc.payload.Write(jsonMessage)
+	if err != nil {
+		return fmt.Errorf(
+			"error updating JSON payload for MessageCard: %w",
+			err,
+		)
+	}
 
 	return nil
 }
