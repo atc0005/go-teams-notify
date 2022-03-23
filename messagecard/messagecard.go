@@ -398,7 +398,9 @@ type MessageCard struct {
 	// displayed in a non-obtrusive manner.
 	ThemeColor string `json:"themeColor,omitempty"`
 
-	// ValidateFunc is a validation function that validates a MessageCard
+	// ValidateFunc is an optional user-specified validation function that is
+	// responsible for validating a MessageCard. If not specified, default
+	// validation is performed.
 	ValidateFunc func() error `json:"-"`
 
 	// Sections is a collection of sections to include in the card.
@@ -502,8 +504,8 @@ func (mc *MessageCard) AddPotentialAction(actions ...*PotentialAction) error {
 	return addPotentialAction(&mc.PotentialActions, actions...)
 }
 
-// Validate validates a MessageCard calling ValidateFunc if defined,
-// otherwise, a default validation occurs.
+// Validate performs validation for MessageCard using ValidateFunc if defined,
+// otherwise applying default validation.
 func (mc *MessageCard) Validate() error {
 	if mc.ValidateFunc != nil {
 		return mc.ValidateFunc()
