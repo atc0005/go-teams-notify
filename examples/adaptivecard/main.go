@@ -39,9 +39,11 @@ func main() {
 
 	webhookUrl := "https://outlook.office.com/webhook/YOUR_WEBHOOK_URL_OF_TEAMS_CHANNEL"
 
-	// TODO: Remove these placeholders
-	_ = mstClient
-	_ = webhookUrl
+	envWebhookURL := os.Getenv("WEBHOOK_URL")
+	if envWebhookURL != "" {
+		fmt.Println(envWebhookURL)
+		webhookUrl = envWebhookURL
+	}
 
 	// setup message
 	// msg := adaptivecard.NewSimpleMessage("")
@@ -69,11 +71,11 @@ func main() {
 	// 	}
 	//
 	// 	// send message
-	// 	if err := mstClient.Send(webhookUrl, msg); err != nil {
-	// 		fmt.Printf(
-	// 			"failed to send message: %v",
-	// 			err,
-	// 		)
-	// 		os.Exit(1)
-	// 	}
+	if err := mstClient.Send(webhookUrl, msg); err != nil {
+		fmt.Printf(
+			"failed to send message: %v",
+			err,
+		)
+		os.Exit(1)
+	}
 }

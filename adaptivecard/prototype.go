@@ -217,3 +217,33 @@ func (m *Message) Prepare() error {
 func (m *Message) Payload() io.Reader {
 	return m.payload
 }
+
+// Validate performs basic validation of required field values.
+func (m Message) Validate() error {
+	// if m.Text == "" {
+	// 	return fmt.Errorf(
+	// 		"required Text field is empty: %w",
+	// 		ErrInvalidFieldValue,
+	// 	)
+	// }
+
+	if m.Type != TypeMessage {
+		return fmt.Errorf(
+			"invalid message type %q; expected %q: %w",
+			m.Type,
+			TypeMessage,
+			ErrInvalidType,
+		)
+	}
+
+	// // If we have any recorded user mentions, check each of them.
+	// if len(m.Entities) > 0 {
+	// 	for _, mention := range m.Entities {
+	// 		if err := mention.Validate(); err != nil {
+	// 			return err
+	// 		}
+	// 	}
+	// }
+
+	return nil
+}
