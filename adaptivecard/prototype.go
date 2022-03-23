@@ -218,8 +218,13 @@ func (m *Message) Payload() io.Reader {
 	return m.payload
 }
 
-// Validate performs basic validation of required field values.
+// Validate performs validation for Message using ValidateFunc if defined,
+// otherwise applying default validation.
 func (m Message) Validate() error {
+	if m.ValidateFunc != nil {
+		return m.ValidateFunc()
+	}
+
 	// if m.Text == "" {
 	// 	return fmt.Errorf(
 	// 		"required Text field is empty: %w",

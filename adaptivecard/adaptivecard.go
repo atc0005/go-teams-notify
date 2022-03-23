@@ -213,6 +213,11 @@ type Message struct {
 	// refs https://docs.microsoft.com/en-us/javascript/api/botframework-schema/attachmentlayouttypes?view=botbuilder-ts-latest
 	AttachmentLayout string `json:"attachmentLayout,omitempty"`
 
+	// ValidateFunc is an optional user-specified validation function that is
+	// responsible for validating a Message. If not specified, default
+	// validation is performed.
+	ValidateFunc func() error `json:"-"`
+
 	// payload is a prepared Message in JSON format for submission or pretty
 	// printing.
 	payload *bytes.Buffer `json:"-"`
