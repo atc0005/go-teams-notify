@@ -227,6 +227,8 @@ func (m Message) Validate() error {
 	// 	)
 	// }
 
+	fmt.Printf("\n\nFIXME: Message.Validate() is INCOMPLETE\n\n")
+
 	if m.Type != TypeMessage {
 		return fmt.Errorf(
 			"invalid message type %q; expected %q: %w",
