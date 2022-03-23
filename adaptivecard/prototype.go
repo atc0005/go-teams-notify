@@ -174,8 +174,6 @@ Using that API makes sense: msg.Attachments.Add(...)
 func (m *Message) PrettyPrint() string {
 	if m.payload != nil {
 		var prettyJSON bytes.Buffer
-
-		// Validation is handled by the Message.Prepare() method.
 		_ = json.Indent(&prettyJSON, m.payload.Bytes(), "", "\t")
 
 		return prettyJSON.String()

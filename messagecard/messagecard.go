@@ -552,8 +552,6 @@ func (mc *MessageCard) Payload() io.Reader {
 func (mc *MessageCard) PrettyPrint() string {
 	if mc.payload != nil {
 		var prettyJSON bytes.Buffer
-
-		// Validation is handled by the MessageCard.Prepare() method.
 		_ = json.Indent(&prettyJSON, mc.payload.Bytes(), "", "\t")
 
 		return prettyJSON.String()
