@@ -266,4 +266,17 @@ User mentions:
 Perhaps provide an AddMention() method to a TextBlock element type? Or, to a
 Message type with an *Element method argument?
 
+Provide a function and a method.
+
+The method can call the function, passing in the pointer for the receiver it
+was called against. Probably best to put the method on the Element type.
+
+Not sure how to put it on the Message type, unless it tries to either create a
+new TextBlock Element on the fly or finds the first one in the collection and
+adds the mention there?
+
+Perhaps create a standalone Mention() method that accepts sufficient arguments
+to construct a Message with a TextBlock that generates a valid/minimal
+user mention.
+
 */
