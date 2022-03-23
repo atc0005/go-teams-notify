@@ -166,7 +166,7 @@ func (m Message) Validate() error {
 
 	if m.Type != TypeMessage {
 		return fmt.Errorf(
-			"got %s; wanted %s: %w",
+			"invalid message type %q; expected %q: %w",
 			m.Type,
 			TypeMessage,
 			ErrInvalidType,
