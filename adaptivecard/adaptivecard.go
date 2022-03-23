@@ -556,7 +556,7 @@ type MSTeams struct {
 	AllowExpand bool `json:"allowExpand,omitempty"`
 
 	// Entities is a collection of user mentions.
-	// TODO: Should this be a pointer?
+	// TODO: Should this be a slice of pointers?
 	Entities []Mention `json:"entities,omitempty"`
 }
 
