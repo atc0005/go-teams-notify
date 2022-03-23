@@ -214,12 +214,6 @@ func (m *Message) Prepare() error {
 
 // Payload returns the prepared Message payload. The caller should call
 // Prepare() prior to calling this method, results are undefined otherwise.
-//
-// TODO: Perhaps handle calling Prepare() for the caller if mc.payload is nil?
-//
-// If we do, then this method would have to "eat" the error or its API would
-// need to be updated to return an error, which would make the API harder to
-// use?
 func (m *Message) Payload() io.Reader {
 	return m.payload
 }
