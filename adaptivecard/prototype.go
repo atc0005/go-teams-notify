@@ -279,4 +279,8 @@ Perhaps create a standalone Mention() method that accepts sufficient arguments
 to construct a Message with a TextBlock that generates a valid/minimal
 user mention.
 
+Because each attachment (Card) has its own msteams JSON object, we'll need a
+pointer to the Card in addition to the Element, *unless* each Element knows
+which Card it is attached to?
+
 */
