@@ -254,3 +254,16 @@ func (m Message) Validate() error {
 
 	return nil
 }
+
+/*
+
+User mentions:
+
+- need to add a mention entity for each mentioned person
+- the text field of the mention entity has to be present elsewhere, presumably
+  a TextBlock
+
+Perhaps provide an AddMention() method to a TextBlock element type? Or, to a
+Message type with an *Element method argument?
+
+*/
