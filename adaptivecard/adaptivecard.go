@@ -246,6 +246,8 @@ type Attachment struct {
 	ContentURL NullString `json:"contentUrl,omitempty"`
 
 	// Content represents the content of an Adaptive Card.
+	//
+	// TODO: Should this be a pointer?
 	Content Card `json:"content"`
 }
 

@@ -106,33 +106,37 @@ func NewSimpleMessage(text string) *Message {
 // AddText appends given text to the message for delivery.
 //
 // TODO: What is needed to permit this to work?
-func (m *Message) AddText(text string) *Message {
-	if strings.TrimSpace(text) == "" {
-		return m
-	}
+// func (m *Message) AddText(text string) *Message {
+// 	if strings.TrimSpace(text) == "" {
+// 		return m
+// 	}
+//
+// 	if len(m.Attachments) == 0 {
+// 		// create new:
+// 		// attachment
+// 		// card
+// 		// element
+// 	}
+//
+// 	// PLACEHOLDER
+// 	return m
+//
+// }
 
-	if len(m.Attachments) == 0 {
-		// create new:
-		// attachment
-		// card
-		// element
-	}
-
-	// PLACEHOLDER
-	return m
-
-}
-
+// Add appends an Attachment to the Attachments collection for a Microsoft
+// Teams message.
+//
 // TODO: Is this useful for anything? We can just append directly to the
-// Attachments field?
+// Attachments field.
 func (a *Attachments) Add(attachment Attachment) *Attachments {
 	*a = append(*a, attachment)
 
 	return a
 }
 
+// Attach receives and adds one or more Card values to the Attachments
+// collection for a Microsoft Teams message.
 func (m *Message) Attach(cards ...*Card) *Message {
-
 	if len(cards) == 0 {
 		return m
 	}
