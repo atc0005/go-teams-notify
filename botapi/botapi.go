@@ -265,7 +265,7 @@ func (m *Message) AddMention(prependToText bool, separator string, mentions ...M
 	return nil
 }
 
-// Mention creates a new user Mention to be included in the Message entities
+// Mention creates a new user Mention and adds it to the Message entities
 // collection.
 //
 // This method receives a user's DisplayName, ID and a boolean value used to
