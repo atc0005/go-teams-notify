@@ -82,7 +82,11 @@ const (
 
 	// ColumnWidthPixelRegex is a regular expression pattern intended to match
 	// specific pixel width values (e.g., 50px).
-	ColumnWidthPixelRegex string = "^[0-9]+px"
+	ColumnWidthPixelRegex string = "^[0-9]+px$"
+
+	// ColumnWidthPixelWidthExample is an example of a valid pixel width for a
+	// Column.
+	ColumnWidthPixelWidthExample string = "50px"
 )
 
 // Text size for text within a TextBlock element.
@@ -194,7 +198,6 @@ var (
 // Adaptive Cards.
 type Message struct {
 	// Type is required; must be set to "message".
-	// TODO: Assert that this is present.
 	Type string `json:"type"`
 
 	// Attachments is a collection of one or more Adaptive Cards.
@@ -236,7 +239,6 @@ type Attachment struct {
 
 	// ContentType is required; must be set to
 	// "application/vnd.microsoft.card.adaptive".
-	// TODO: Assert that this is present.
 	ContentType string `json:"contentType"`
 
 	// ContentURL appears to be related to support for tabs. Most examples
@@ -256,13 +258,9 @@ type Attachment struct {
 type Card struct {
 
 	// Type is required; must be set to "AdaptiveCard"
-	//
-	// TODO: Assert that this is present.
 	Type string `json:"type"`
 
 	// Schema represents the URI of the Adaptive Card schema.
-	//
-	// TODO: Assert "http://adaptivecards.io/schemas/adaptive-card.json".
 	Schema string `json:"$schema"`
 
 	// Version is required for top-level cards (i.e., the outer card in an
@@ -344,8 +342,6 @@ type Element struct {
 	// Type is required and indicates the type of the element used in the body
 	// of an Adaptive Card.
 	// https://adaptivecards.io/explorer/AdaptiveCard.html
-	//
-	// TODO: Assert that this is present.
 	Type string `json:"type"`
 
 	// Text is used by supported element types to display text. A subset of
@@ -358,24 +354,17 @@ type Element struct {
 	Text string `json:"text,omitempty"`
 
 	// Size controls the size of text within a TextBlock element.
-	//
-	// TODO: Assert specific values
 	Size string `json:"size,omitempty"`
 
 	// Weight controls the weight of text in TextBlock or TextRun elements.
-	//
-	// TODO: Assert specific values
 	Weight string `json:"weight,omitempty"`
 
 	// Color controls the color of TextBlock elements or text used in TextRun
 	// elements.
-	//
-	// TODO: Assert specific values
 	Color string `json:"color,omitempty"`
 
 	// Spacing controls the amount of spacing between this element and the
 	// preceding element.
-	// TODO: Assert specific values
 	Spacing string `json:"spacing,omitempty"`
 
 	// Columns is a container used by a ColumnSet element type which contains
@@ -420,22 +409,16 @@ type Column struct {
 	// "auto", "stretch", a number representing relative width of the column
 	// in the column group, or in version 1.1 and higher, a specific pixel
 	// width, like "50px".
-	//
-	// TODO: Assert fixed string constants, integer type OR pixel regex (use
-	// ColumnWidthPixelRegex)
-	Width interface{} `json:"width"`
+	Width interface{} `json:"width,omitempty"`
 
 	// Items are the card elements that should be rendered inside of the
 	// column.
 	// TODO: Should this be a pointer?
-	Items []Element `json:"items"`
+	Items []Element `json:"items,omitempty"`
 
 	// SelectAction is an action that will be invoked when the Column is
 	// tapped or selected. Action.ShowCard is not supported.
-	//
-	// TODO: Should we use an Action type instead of providing a custom
-	// ISelectAction type?
-	SelectAction ISelectAction `json:"selectAction"`
+	SelectAction *ISelectAction `json:"selectAction,omitempty"`
 }
 
 // Fact represents a Fact in a FactSet as a key/value pair.

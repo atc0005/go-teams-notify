@@ -13,6 +13,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"regexp"
 	"strings"
 )
 
@@ -301,6 +302,17 @@ func (c Card) Validate() error {
 		)
 	}
 
+	if strings.TrimSpace(c.Schema) != "" {
+		if c.Schema != AdaptiveCardSchema {
+			return fmt.Errorf(
+				"invalid Schema value %q; expected %q: %w",
+				c.Schema,
+				AdaptiveCardSchema,
+				ErrInvalidFieldValue,
+			)
+		}
+	}
+
 	// The Version field is required for top-level cards, optional for
 	// Cards nested within an Action.ShowCard.
 	//
@@ -337,25 +349,150 @@ func (c Card) Validate() error {
 //
 // TODO: Should we support user-specified ValidateFunc() here as well?
 func (e Element) Validate() error {
+	isValidValue := func(specifiedValue string, what string, supportedValues []string) error {
+		for _, supportedValue := range supportedValues {
+			if !strings.EqualFold(specifiedValue, supportedValue) {
+				return fmt.Errorf(
+					"invalid %s %q for element; expected one of %v: %w",
+					what,
+					specifiedValue,
+					supportedValues,
+					ErrInvalidFieldValue,
+				)
+			}
+		}
+
+		return nil
+	}
+
 	supportedElementTypes := supportedElementTypes()
-	for _, supported := range supportedElementTypes {
-		if !strings.EqualFold(e.Type, supported) {
-			return fmt.Errorf(
-				"invalid value for element %q; expected one of %v: %w",
-				e.Type,
-				supportedElementTypes,
-				ErrInvalidType,
-			)
+	if err := isValidValue(e.Type, "type", supportedElementTypes); err != nil {
+		return err
+	}
+
+	if strings.TrimSpace(e.Size) != "" {
+		supportedSizeValues := supportedSizeValues()
+		if err := isValidValue(e.Size, "size", supportedSizeValues); err != nil {
+			return err
+		}
+	}
+
+	if strings.TrimSpace(e.Weight) != "" {
+		supportedWeightValues := supportedWeightValues()
+		if err := isValidValue(e.Weight, "weight", supportedWeightValues); err != nil {
+			return err
+		}
+	}
+
+	if strings.TrimSpace(e.Color) != "" {
+		supportedColorValues := supportedColorValues()
+		if err := isValidValue(e.Color, "color", supportedColorValues); err != nil {
+			return err
+		}
+	}
+
+	if strings.TrimSpace(e.Spacing) != "" {
+		supportedSpacingValues := supportedSpacingValues()
+		if err := isValidValue(e.Spacing, "spacing", supportedSpacingValues); err != nil {
+			return err
+		}
+	}
+
+	for _, column := range e.Columns {
+		if err := column.Validate(); err != nil {
+			return err
+		}
+	}
+
+	for _, action := range e.Actions {
+		if err := action.Validate(); err != nil {
+			return err
+		}
+	}
+
+	for _, fact := range e.Facts {
+		if err := fact.Validate(); err != nil {
+			return err
 		}
 	}
 
 	return nil
 }
+
+// Validate asserts that required fields have valid values.
+//
+// TODO: Should we support user-specified ValidateFunc() here as well?
 func (c Column) Validate() error {
-	return errors.New("error: Column.Validate() not implemented yet")
+	if c.Type != TypeColumn {
+		return fmt.Errorf(
+			"invalid column type %q; expected %q: %w",
+			c.Type,
+			TypeColumn,
+			ErrInvalidType,
+		)
+	}
+
+	if c.Width != nil {
+		switch v := c.Width.(type) {
+		// Assert fixed keyword values or valid pixel width.
+		case string:
+			v = strings.TrimSpace(v)
+
+			switch v {
+			case ColumnWidthAuto:
+			case ColumnWidthStretch:
+			default:
+				matched, _ := regexp.MatchString(ColumnWidthPixelRegex, v)
+				if !matched {
+					return fmt.Errorf(
+						"invalid pixel width %q; expected value in format %s: %w",
+						v,
+						ColumnWidthPixelWidthExample,
+						ErrInvalidFieldValue,
+					)
+				}
+			}
+
+		// Number representing relative width of the column.
+		case int:
+
+		// Unsupported value.
+		default:
+			return fmt.Errorf(
+				"invalid pixel width %q; "+
+					"expected one of keywords %q, int value (e.g., %d) "+
+					"or specific pixel width (e.g., %s): %w",
+				v,
+				strings.Join([]string{
+					ColumnWidthAuto,
+					ColumnWidthStretch,
+				}, ","),
+				1,
+				ColumnWidthPixelWidthExample,
+				ErrInvalidFieldValue,
+			)
+		}
+	}
+
+	for _, element := range c.Items {
+		if err := element.Validate(); err != nil {
+			return err
+		}
+	}
+
+	if c.SelectAction != nil {
+		return c.SelectAction.Validate()
+	}
+
+	return nil
+
+	// return errors.New("error: Column.Validate() not implemented yet")
 }
 func (f Fact) Validate() error {
 	return errors.New("error: Fact.Validate() not implemented yet")
+}
+func (i ISelectAction) Validate() error {
+	return errors.New("error: ISelectAction.Validate() not implemented yet")
 }
 func (a Action) Validate() error {
 	return errors.New("error: Action.Validate() not implemented yet")
