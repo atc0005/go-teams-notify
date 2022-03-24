@@ -1,8 +1,16 @@
+// Copyright 2022 Adam Chalkley
+//
+// https://github.com/atc0005/go-teams-notify
+//
+// Licensed under the MIT License. See LICENSE file in the project root for
+// full license information.
+
 package adaptivecard
 
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -257,6 +265,106 @@ func (m Message) Validate() error {
 	// }
 
 	return nil
+}
+
+//
+// TODO: Create Validate() methods for all custom types that require specific
+// type values.
+//
+
+// Validate asserts that required fields have valid values.
+//
+// TODO: Should we support user-specified ValidateFunc() here as well?
+func (a Attachment) Validate() error {
+	if a.ContentType != AttachmentContentType {
+		return fmt.Errorf(
+			"invalid attachment type %q; expected %q: %w",
+			a.ContentType,
+			AttachmentContentType,
+			ErrInvalidType,
+		)
+	}
+
+	return nil
+}
+
+// Validate asserts that required fields have valid values.
+//
+// TODO: Should we support user-specified ValidateFunc() here as well?
+func (c Card) Validate() error {
+	if c.Type != TypeAdaptiveCard {
+		return fmt.Errorf(
+			"invalid card type %q; expected %q: %w",
+			c.Type,
+			TypeAdaptiveCard,
+			ErrInvalidType,
+		)
+	}
+
+	// The Version field is required for top-level cards, optional for
+	// Cards nested within an Action.ShowCard.
+	//
+	// TODO: Should we apply this check? Client code is highly unlikely to set
+	// this value.
+	//
+	// TODO: Should we create a TopLevelCard type (embedding Card type) and
+	// apply Version field validation to it instead?
+	if !c.secondaryCard {
+		if strings.TrimSpace(c.Version) == "" {
+			return fmt.Errorf(
+				"required field Version is empty for top-level Card: %w",
+				ErrMissingValue,
+			)
+		}
+	}
+
+	for _, element := range c.Body {
+		if err := element.Validate(); err != nil {
+			return err
+		}
+	}
+
+	for _, action := range c.Actions {
+		if err := action.Validate(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Validate asserts that required fields have valid values.
+//
+// TODO: Should we support user-specified ValidateFunc() here as well?
+func (e Element) Validate() error {
+	supportedElementTypes := supportedElementTypes()
+	for _, supported := range supportedElementTypes {
+		if !strings.EqualFold(e.Type, supported) {
+			return fmt.Errorf(
+				"invalid value for element %q; expected one of %v: %w",
+				e.Type,
+				supportedElementTypes,
+				ErrInvalidType,
+			)
+		}
+	}
+
+	return nil
+}
+func (c Column) Validate() error {
+	return errors.New("error: Column.Validate() not implemented yet")
+}
+func (f Fact) Validate() error {
+	return errors.New("error: Fact.Validate() not implemented yet")
+}
+func (a Action) Validate() error {
+	return errors.New("error: Action.Validate() not implemented yet")
+}
+func (m Mention) Validate() error {
+	return errors.New("error: Mention.Validate() not implemented yet")
+}
+func (m Mentioned) Validate() error {
+	return errors.New("error: Mentioned.Validate() not implemented yet")
 }
 
 /*

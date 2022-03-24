@@ -27,7 +27,7 @@ const (
 	// AdaptiveCardSchema represents the URI of the Adaptive Card schema.
 	AdaptiveCardSchema string = "http://adaptivecards.io/schemas/adaptive-card.json"
 
-	// VersionAdaptiveCardMax represents the highest supported version of the
+	// AdaptiveCardMaxVersion represents the highest supported version of the
 	// Adaptive Card schema supported in Microsoft Teams messages.
 	//
 	// Version 1.3 is the highest supported for user-generated cards.
@@ -64,7 +64,7 @@ const (
 
 // Attachment Layout options
 const (
-	AttachmentLayoutList     string = "list"
+	AttachmentLayoutList     string = "list" // TODO: Is this a valid setting?
 	AttachmentLayoutCarousel string = "carousel"
 )
 
@@ -265,8 +265,9 @@ type Card struct {
 	// TODO: Assert "http://adaptivecards.io/schemas/adaptive-card.json".
 	Schema string `json:"$schema"`
 
-	// Version is required for top-level cards; the schema version that the
-	// content for an Adaptive Card requires.
+	// Version is required for top-level cards (i.e., the outer card in an
+	// attachment); the schema version that the content for an Adaptive Card
+	// requires.
 	//
 	// Version 1.3 is the highest supported for user-generated cards.
 	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference#support-for-adaptive-cards
@@ -299,7 +300,11 @@ type Card struct {
 	// NOTE: If we make this an interface type then the fields of the Element
 	// won't be exposed to client code. Perhaps it's better to create
 	// constructors for each supported Element type so that required fields
-	// are populated and unneeded fields are skipped.
+	// are populated and unneeded fields are skipped?
+	//
+	// TODO: Should this be a slice of pointers instead? If we do this AND add
+	// the pointer for this Card to the parent field in the Element then the
+	// Element will be able to detect its position in the collection.
 	Body []Element `json:"body"`
 
 	// Actions is a collection of actions to show in the card's action bar.
@@ -324,6 +329,10 @@ type Card struct {
 	//
 	// TODO: Set if minHeight is specified.
 	VerticalContentAlignment string `json:"verticalContentAlignment,omitempty"`
+
+	// secondaryCard indicates that this Card is not an outer or top-level
+	// Adaptive Card attached to a Microsoft Teams message.
+	secondaryCard bool `json:"-"`
 }
 
 // Element is a "building block" for an Adaptive Card. Elements are shown
@@ -389,6 +398,10 @@ type Element struct {
 	// Separator, when true, indicates that a separating line shown should
 	// drawn at the top of the element.
 	Separator bool `json:"separator,omitempty"`
+
+	// parent is an optional reference to the enclosing Card for the element.
+	// Not all elements are enclosed in a Card.
+	parent *Card `json:"-"`
 }
 
 // Column is a container used by a ColumnSet element type. Each container
