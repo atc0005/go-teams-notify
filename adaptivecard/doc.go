@@ -17,5 +17,7 @@ https://docs.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors
 https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format#mention-support-within-adaptive-cards
 https://stackoverflow.com/questions/50753072/microsoft-teams-webhook-generating-400-for-adaptive-card
 https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/getting-started
+https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model
+
 */
 package adaptivecard

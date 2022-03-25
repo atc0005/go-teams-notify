@@ -20,6 +20,13 @@ import (
 
 // TODO: Add one or more examples of using this package.
 
+// General constants.
+const (
+	// TypeMessage is the type for an Adaptive Card Message.
+	TypeMessage string = "message"
+)
+
+// Card & TopLevelCard specific constants.
 const (
 	// TypeAdaptiveCard is the supported type value for an Adaptive Card.
 	TypeAdaptiveCard string = "AdaptiveCard"
@@ -48,14 +55,10 @@ const (
 	AdaptiveCardMaxVersion  float64 = 1.4
 	AdaptiveCardMinVersion  float64 = 1.0
 	AdaptiveCardVersionTmpl string  = "%0.1f"
+)
 
-	// AttachmentContentType is the supported type value for an attached
-	// Adaptive Card for a Microsoft Teams message.
-	AttachmentContentType string = "application/vnd.microsoft.card.adaptive"
-
-	// TypeMessage is the type for an Adaptive Card Message.
-	TypeMessage string = "message"
-
+// Mention constants.
+const (
 	// TypeMention is the type for a user mention for a Adaptive Card Message.
 	TypeMention string = "mention"
 
@@ -64,15 +67,23 @@ const (
 	MentionTextFormatTemplate string = "<at>%s</at>"
 )
 
-// Attachment Layout options
+// Attachment constants.
+//
+// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
 // https://docs.microsoft.com/en-us/dotnet/api/microsoft.bot.schema.attachmentlayouttypes
 // https://docs.microsoft.com/en-us/javascript/api/botframework-schema/attachmentlayouttypes
 // https://github.com/matthidinger/ContosoScubaBot/blob/master/Cards/1-Schools.JSON
 const (
+
+	// AttachmentContentType is the supported type value for an attached
+	// Adaptive Card for a Microsoft Teams message.
+	AttachmentContentType string = "application/vnd.microsoft.card.adaptive"
+
 	AttachmentLayoutList     string = "list"
 	AttachmentLayoutCarousel string = "carousel"
 )
 
+// Column specific constants.
 const (
 	// TypeColumn is the type for an Adaptive Card Column.
 	TypeColumn string = "Column"

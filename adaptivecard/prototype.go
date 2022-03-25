@@ -547,6 +547,31 @@ func (c Column) Validate() error {
 func (f Fact) Validate() error {
 	return errors.New("error: Fact.Validate() not implemented yet")
 }
+
+func (m MSTeams) Validate() error {
+
+	// If a width value is set, assert that it is
+	if m.Width != "" {
+
+		// TODO: Replace this with an inCollection() function that asserts
+		// that m.Width in in the supported value collection. Replace other
+		// instances of similar broken logic with similar fixed logic.
+		for _, supportedValue := range supportedMSTeamsWidthValues() {
+			if !strings.EqualFold(m.Width, supportedValue) {
+				return fmt.Errorf(
+					"invalid %s %q for Action; expected one of %v: %w",
+					"Width",
+					m.Width,
+					supportedMSTeamsWidthValues(),
+					ErrInvalidFieldValue,
+				)
+			}
+		}
+	}
+
+	return errors.New("error: MSTeams.Validate() not implemented yet")
+}
+
 func (i ISelectAction) Validate() error {
 	for _, supportedValue := range supportedISelectActionValues() {
 		if !strings.EqualFold(i.Type, supportedValue) {
@@ -571,6 +596,7 @@ func (i ISelectAction) Validate() error {
 
 	return nil
 }
+
 func (a Action) Validate() error {
 	for _, supportedValue := range supportedActionValues() {
 		if !strings.EqualFold(a.Type, supportedValue) {

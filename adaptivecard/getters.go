@@ -142,3 +142,13 @@ func supportedAttachmentLayoutValues() []string {
 		AttachmentLayoutCarousel,
 	}
 }
+
+// supportedMSTeamsWidthValues returns a list of valid Width field values for
+// MSTeams type. This list is intended to be used for validation and display
+// purposes.
+func supportedMSTeamsWidthValues() []string {
+	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format#full-width-adaptive-card
+	return []string{
+		MSTeamsWidthFull,
+	}
+}
