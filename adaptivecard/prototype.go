@@ -96,14 +96,16 @@ func NewSimpleMessage(text string) *Message {
 
 	// TODO: Refactor further, make it easy to generate specific types of
 	// simple cards.
-	textCard := Card{
-		Type:    TypeAdaptiveCard,
-		Schema:  AdaptiveCardSchema,
-		Version: fmt.Sprintf(AdaptiveCardVersionTmpl, AdaptiveCardMaxVersion),
-		Body: []Element{
-			{
-				Type: TypeElementTextBlock,
-				Text: text,
+	textCard := TopLevelCard{
+		Card{
+			Type:    TypeAdaptiveCard,
+			Schema:  AdaptiveCardSchema,
+			Version: fmt.Sprintf(AdaptiveCardVersionTmpl, AdaptiveCardMaxVersion),
+			Body: []Element{
+				{
+					Type: TypeElementTextBlock,
+					Text: text,
+				},
 			},
 		},
 	}
