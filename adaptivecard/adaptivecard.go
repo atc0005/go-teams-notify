@@ -45,7 +45,9 @@ const (
 	// schema elements, except Action.Submit, are fully supported. The
 	// supported actions are Action.OpenURL, Action.ShowCard,
 	// Action.ToggleVisibility, and Action.Execute."
-	AdaptiveCardMaxVersion string = "1.4"
+	AdaptiveCardMaxVersion  float64 = 1.4
+	AdaptiveCardMinVersion  float64 = 1.0
+	AdaptiveCardVersionTmpl string  = "%0.1f"
 
 	// AttachmentContentType is the supported type value for an attached
 	// Adaptive Card for a Microsoft Teams message.
@@ -244,11 +246,19 @@ type Attachment struct {
 	// Content represents the content of an Adaptive Card.
 	//
 	// TODO: Should this be a pointer?
-	Content Card `json:"content"`
+	Content TopLevelCard `json:"content"`
 }
 
-// Card represents the content of an Adaptive Card.
-// https://adaptivecards.io/explorer/
+// TopLevelCard represents the outer or top-level Card for a Microsoft Teams
+// Message attachment.
+type TopLevelCard struct {
+	Card
+}
+
+// Card represents the content of an Adaptive Card. The TopLevelCard is a
+// superset of this one, asserting that the Version field is properly set.
+// That type is used exclusively for Message Attachments. This type is used
+// directly for the Action.ShowCard Card field.
 type Card struct {
 
 	// Type is required; must be set to "AdaptiveCard"
@@ -261,7 +271,9 @@ type Card struct {
 	// attachment); the schema version that the content for an Adaptive Card
 	// requires.
 	//
-	// TODO: Assert that this is present for top-level cards only?
+	// The TopLevelCard type is a superset of the Card type and asserts that
+	// this field is properly set, whereas the validation logic for this
+	// (Card) type skips that assertion.
 	Version string `json:"version"`
 
 	// FallbackText is the text shown when the client doesn't support the
@@ -305,10 +317,6 @@ type Card struct {
 	//
 	// TODO: Set if minHeight is specified.
 	VerticalContentAlignment string `json:"verticalContentAlignment,omitempty"`
-
-	// secondaryCard indicates that this Card is not an outer or top-level
-	// Adaptive Card attached to a Microsoft Teams message.
-	secondaryCard bool `json:"-"`
 }
 
 // Element is a "building block" for an Adaptive Card. Elements are shown
@@ -435,7 +443,6 @@ which effectively excludes the action from rendered JSON unless ...
 type Action struct {
 
 	// Type is required; specific values are supported.
-	// TODO: Assert that this is present for each action.
 	//
 	// For Adaptive Cards in Incoming Webhooks, all native Adaptive Card
 	// schema elements, except Action.Submit, are fully supported.
@@ -447,11 +454,10 @@ type Action struct {
 	Type string `json:"type"`
 
 	// Title is a label for the button or link that represents this action.
-	Title string `json:"title"`
+	Title string `json:"title,omitempty"`
 
-	// URL is required for the Action.OpenUrl type, optional for other action
-	// types.
-	// TODO: Assert that this is present for Action.OpenUrl type.
+	// URL to open; required for the Action.OpenUrl type, optional for other
+	// action types.
 	URL string `json:"url,omitempty"`
 
 	// Card property is used by Action.ShowCard type.
@@ -460,25 +466,8 @@ type Action struct {
 	// really just a `Card` type.
 	//
 	// refs https://github.com/matthidinger/ContosoScubaBot/blob/master/Cards/SubscriberNotification.JSON
-	Card Card `json:"card,omitempty"`
+	Card *Card `json:"card,omitempty"`
 }
-
-// ActionCard is likely just a `Card` type?
-// NOTE: Based on a review of JSON content, it looks like `ActionCard` is
-// really just a `Card` type.
-// type ActionCard struct {
-// 	Type string `json:"type"`
-// 	// Body []ActionCardBody `json:"body"`
-// 	Body []Card `json:"body"`
-// }
-
-// ActionCardBody appears to be a slice of Card.
-// TODO: Duplicate?
-// type ActionCardBody struct {
-// 	Type string `json:"type"`
-// 	Text string `json:"text"`
-// 	Wrap bool   `json:"wrap"`
-// }
 
 // ISelectAction represents an Action that will be invoked when a container
 // type (e.g., Column, ColumnSet, Container) is tapped or selected.
@@ -492,20 +481,18 @@ type Action struct {
 type ISelectAction struct {
 
 	// Type is required; specific values are supported.
-	// TODO: Assert that this is present for each action.
 	//
 	// The supported actions are Action.Execute, Action.OpenUrl,
-	// Action.Submit, Action.ToggleVisibility.
+	// Action.ToggleVisibility.
 	//
 	// See also https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
 	Type string `json:"type"`
 
 	// Title is a label for the button or link that represents this action.
-	Title string `json:"title"`
+	Title string `json:"title,omitempty"`
 
 	// URL is required for the Action.OpenUrl type, optional for other action
 	// types.
-	// TODO: Assert that this is present for Action.OpenUrl type.
 	URL string `json:"url,omitempty"`
 }
 

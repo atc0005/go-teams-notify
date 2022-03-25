@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"io"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -98,7 +99,7 @@ func NewSimpleMessage(text string) *Message {
 	textCard := Card{
 		Type:    TypeAdaptiveCard,
 		Schema:  AdaptiveCardSchema,
-		Version: AdaptiveCardMaxVersion,
+		Version: fmt.Sprintf(AdaptiveCardVersionTmpl, AdaptiveCardMaxVersion),
 		Body: []Element{
 			{
 				Type: TypeElementTextBlock,
@@ -137,15 +138,29 @@ func NewSimpleMessage(text string) *Message {
 //
 // TODO: Is this useful for anything? We can just append directly to the
 // Attachments field.
+//
+// C# snippet:
+//
+// Display a carousel of all the rich card types.
+// reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
+// reply.Attachments.Add(Cards.CreateAdaptiveCardAttachment());
+// reply.Attachments.Add(Cards.GetAnimationCard().ToAttachment());
+// reply.Attachments.Add(Cards.GetAudioCard().ToAttachment());
+// reply.Attachments.Add(Cards.GetHeroCard().ToAttachment());
+// reply.Attachments.Add(Cards.GetOAuthCard().ToAttachment());
+// reply.Attachments.Add(Cards.GetReceiptCard().ToAttachment());
+// reply.Attachments.Add(Cards.GetSigninCard().ToAttachment());
+// reply.Attachments.Add(Cards.GetThumbnailCard().ToAttachment());
+// reply.Attachments.Add(Cards.GetVideoCard().ToAttachment());
 func (a *Attachments) Add(attachment Attachment) *Attachments {
 	*a = append(*a, attachment)
 
 	return a
 }
 
-// Attach receives and adds one or more Card values to the Attachments
+// Attach receives and adds one or more TopLevelCard values to the Attachments
 // collection for a Microsoft Teams message.
-func (m *Message) Attach(cards ...*Card) *Message {
+func (m *Message) Attach(cards ...*TopLevelCard) *Message {
 	if len(cards) == 0 {
 		return m
 	}
@@ -161,26 +176,6 @@ func (m *Message) Attach(cards ...*Card) *Message {
 
 	return m
 }
-
-/*
-
-C# snippet:
-
-// Display a carousel of all the rich card types.
-reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
-reply.Attachments.Add(Cards.CreateAdaptiveCardAttachment());
-reply.Attachments.Add(Cards.GetAnimationCard().ToAttachment());
-reply.Attachments.Add(Cards.GetAudioCard().ToAttachment());
-reply.Attachments.Add(Cards.GetHeroCard().ToAttachment());
-reply.Attachments.Add(Cards.GetOAuthCard().ToAttachment());
-reply.Attachments.Add(Cards.GetReceiptCard().ToAttachment());
-reply.Attachments.Add(Cards.GetSigninCard().ToAttachment());
-reply.Attachments.Add(Cards.GetThumbnailCard().ToAttachment());
-reply.Attachments.Add(Cards.GetVideoCard().ToAttachment());
-
-Using that API makes sense: msg.Attachments.Add(...)
-
-*/
 
 // PrettyPrint returns a formatted JSON payload of the Message if the
 // Prepare() method has been called, or an empty string otherwise.
@@ -308,27 +303,13 @@ func (c Card) Validate() error {
 				"invalid Schema value %q; expected %q: %w",
 				c.Schema,
 				AdaptiveCardSchema,
-				ErrInvalidFieldValue,
+				ErrMissingValue,
 			)
 		}
 	}
 
 	// The Version field is required for top-level cards, optional for
 	// Cards nested within an Action.ShowCard.
-	//
-	// TODO: Should we apply this check? Client code is highly unlikely to set
-	// this value.
-	//
-	// TODO: Should we create a TopLevelCard type (embedding Card type) and
-	// apply Version field validation to it instead?
-	if !c.secondaryCard {
-		if strings.TrimSpace(c.Version) == "" {
-			return fmt.Errorf(
-				"required field Version is empty for top-level Card: %w",
-				ErrMissingValue,
-			)
-		}
-	}
 
 	for _, element := range c.Body {
 		if err := element.Validate(); err != nil {
@@ -340,6 +321,68 @@ func (c Card) Validate() error {
 		if err := action.Validate(); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+// Validate asserts that required fields have valid values.
+//
+// TODO: Should we support user-specified ValidateFunc() here as well?
+func (tc TopLevelCard) Validate() error {
+	// Validate embedded Card first as those validation requirements apply
+	// here also.
+	if err := tc.Card.Validate(); err != nil {
+		return err
+	}
+
+	// The Version field is required for top-level cards (this one), optional
+	// for Cards nested within an Action.ShowCard.
+	switch {
+	case strings.TrimSpace(tc.Version) == "":
+		return fmt.Errorf(
+			"required field Version is empty for top-level Card: %w",
+			ErrMissingValue,
+		)
+	default:
+		// Assert that Version value can be converted to the expected format.
+		versionNum, err := strconv.ParseFloat(tc.Version, 64)
+		if err != nil {
+			return fmt.Errorf(
+				"value %q incompatible with Version field: %w",
+				tc.Version,
+				ErrInvalidFieldValue,
+			)
+		}
+
+		// This is a high confidence validation failure.
+		if versionNum < AdaptiveCardMinVersion {
+			return fmt.Errorf(
+				"unsupported version %q;"+
+					" expected minimum value of %0.1f: %w",
+				tc.Version,
+				AdaptiveCardMinVersion,
+				ErrInvalidFieldValue,
+			)
+		}
+
+		// This is *NOT* a high confidence validation failure; it is likely
+		// that Microsoft Teams will gain support for future versions of the
+		// Adaptive Card greater than the current recorded max configured
+		// schema version. Because the max value constant is subject to fall
+		// out of sync (at least briefly), this is a risky assertion to make.
+		//
+		// if versionNum < AdaptiveCardMinVersion || versionNum > AdaptiveCardMinVersion {
+		// 	return fmt.Errorf(
+		// 		"unsupported version %q;"+
+		// 			" expected value between %0.1f and %0.1f: %w",
+		// 		tc.Version,
+		// 		AdaptiveCardMinVersion,
+		// 		AdaptiveCardMaxVersion,
+		// 		ErrInvalidFieldValue,
+		// 	)
+		// }
+
 	}
 
 	return nil
@@ -492,10 +535,62 @@ func (f Fact) Validate() error {
 	return errors.New("error: Fact.Validate() not implemented yet")
 }
 func (i ISelectAction) Validate() error {
-	return errors.New("error: ISelectAction.Validate() not implemented yet")
+	for _, supportedValue := range supportedISelectActionValues() {
+		if !strings.EqualFold(i.Type, supportedValue) {
+			return fmt.Errorf(
+				"invalid %s %q for ISelectAction; expected one of %v: %w",
+				"Type",
+				i.Type,
+				supportedISelectActionValues(),
+				ErrInvalidType,
+			)
+		}
+	}
+
+	if i.Type == TypeActionOpenURL {
+		if strings.TrimSpace(i.URL) == "" {
+			return fmt.Errorf(
+				"invalid URL for Action: %w",
+				ErrMissingValue,
+			)
+		}
+	}
+
+	return nil
 }
 func (a Action) Validate() error {
-	return errors.New("error: Action.Validate() not implemented yet")
+	for _, supportedValue := range supportedActionValues() {
+		if !strings.EqualFold(a.Type, supportedValue) {
+			return fmt.Errorf(
+				"invalid %s %q for Action; expected one of %v: %w",
+				"Type",
+				a.Type,
+				supportedActionValues(),
+				ErrInvalidType,
+			)
+		}
+	}
+
+	if a.Type == TypeActionOpenURL {
+		if strings.TrimSpace(a.URL) == "" {
+			return fmt.Errorf(
+				"invalid URL for Action: %w",
+				ErrMissingValue,
+			)
+		}
+	}
+
+	// Optional, but only supported by the Action.ShowCard type.
+	if a.Type != TypeActionShowCard && a.Card != nil {
+		return fmt.Errorf(
+			"error: specifying a Card is unsupported for Action type %q: %w",
+			a.Type,
+			ErrInvalidFieldValue,
+		)
+	}
+
+	return nil
+
 }
 func (m Mention) Validate() error {
 	return errors.New("error: Mention.Validate() not implemented yet")

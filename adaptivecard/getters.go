@@ -97,13 +97,15 @@ func supportedSpacingValues() []string {
 // supportedActionValues returns a list of valid Action types. This list is
 // intended to be used for validation and display purposes.
 //
-// NOTE: See also the supportedISelectActionValues() function.
+// NOTE: See also the supportedISelectActionValues() function. See ref links
+// for unsupported Action types.
 func supportedActionValues() []string {
 	// https://adaptivecards.io/explorer/AdaptiveCard.html
 	// https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model
+	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
 	return []string{
 		TypeActionExecute,
-		TypeActionSubmit,
+		// TypeActionSubmit,
 		TypeActionOpenURL,
 		TypeActionShowCard,
 		TypeActionToggleVisibility,
@@ -114,12 +116,17 @@ func supportedActionValues() []string {
 // which is a subset of the supported Action types. This list is intended to
 // be used for validation and display purposes.
 //
-// NOTE: See also the supportedActionValues() function.
+// NOTE: See also the supportedActionValues() function. See ref links for
+// unsupported Action types.
 func supportedISelectActionValues() []string {
+	// https://adaptivecards.io/explorer/Column.html
+	// https://adaptivecards.io/explorer/TableCell.html
+	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
 	return []string{
 		TypeActionExecute,
-		TypeActionSubmit,
+		// TypeActionSubmit,
 		TypeActionOpenURL,
+		// TypeActionShowCard,
 		TypeActionToggleVisibility,
 	}
 }
