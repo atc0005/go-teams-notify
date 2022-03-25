@@ -325,6 +325,17 @@ func (c Card) Validate() error {
 		}
 	}
 
+	// Both are optional fields, unless MinHeight is set in which case
+	// VerticalContentAlignment is required.
+	if c.MinHeight != "" && c.VerticalContentAlignment == "" {
+		return fmt.Errorf(
+			"field MinHeight is set, VerticalContentAlignment is not;"+
+				" field VerticalContentAlignment is only optional when MinHeight"+
+				" is not set: %w",
+			ErrMissingValue,
+		)
+	}
+
 	return nil
 }
 

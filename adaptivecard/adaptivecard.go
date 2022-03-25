@@ -311,11 +311,13 @@ type Card struct {
 	// a problem.
 	MSTeams MSTeams `json:"msteams,omitempty"`
 
+	// MinHeight specifies the minimum height of the card.
+	MinHeight string `json:"minHeight,omitempty"`
+
 	// VerticalContentAlignment defines how the content should be aligned
 	// vertically within the container. Only relevant for fixed-height cards,
-	// or cards with a minHeight specified.
-	//
-	// TODO: Set if minHeight is specified.
+	// or cards with a minHeight specified. If MinHeight field is specified,
+	// this field is required.
 	VerticalContentAlignment string `json:"verticalContentAlignment,omitempty"`
 }
 
