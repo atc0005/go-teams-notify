@@ -63,8 +63,11 @@ const (
 )
 
 // Attachment Layout options
+// https://docs.microsoft.com/en-us/dotnet/api/microsoft.bot.schema.attachmentlayouttypes
+// https://docs.microsoft.com/en-us/javascript/api/botframework-schema/attachmentlayouttypes
+// https://github.com/matthidinger/ContosoScubaBot/blob/master/Cards/1-Schools.JSON
 const (
-	AttachmentLayoutList     string = "list" // TODO: Is this a valid setting?
+	AttachmentLayoutList     string = "list"
 	AttachmentLayoutCarousel string = "carousel"
 )
 
@@ -205,15 +208,6 @@ type Message struct {
 
 	// AttachmentLayout controls the layout for Adaptive Cards in the
 	// Attachments collection.
-	//
-	// TODO: Assert valid value?
-	//
-	// TODO: Testing shows that only "carousel" is accepted as a valid value.
-	// Anything else flags the generated card as "Unsupported Card" by Teams
-	// mobile app.
-	//
-	// refs https://raw.githubusercontent.com/matthidinger/ContosoScubaBot/master/Cards/7-Confirmation.JSON
-	// refs https://docs.microsoft.com/en-us/javascript/api/botframework-schema/attachmentlayouttypes?view=botbuilder-ts-latest
 	AttachmentLayout string `json:"attachmentLayout,omitempty"`
 
 	// ValidateFunc is an optional user-specified validation function that is

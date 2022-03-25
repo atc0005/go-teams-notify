@@ -256,14 +256,23 @@ func (m Message) Validate() error {
 		)
 	}
 
-	// // If we have any recorded user mentions, check each of them.
-	// if len(m.Entities) > 0 {
-	// 	for _, mention := range m.Entities {
-	// 		if err := mention.Validate(); err != nil {
-	// 			return err
-	// 		}
-	// 	}
-	// }
+	for _, attachment := range m.Attachments {
+		if err := attachment.Validate(); err != nil {
+			return err
+		}
+	}
+
+	for _, supportedValue := range supportedAttachmentLayoutValues() {
+		if !strings.EqualFold(m.AttachmentLayout, supportedValue) {
+			return fmt.Errorf(
+				"invalid %s %q for Message; expected one of %v: %w",
+				"AttachmentLayout",
+				m.AttachmentLayout,
+				supportedAttachmentLayoutValues(),
+				ErrInvalidFieldValue,
+			)
+		}
+	}
 
 	return nil
 }

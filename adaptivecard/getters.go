@@ -123,3 +123,15 @@ func supportedISelectActionValues() []string {
 		TypeActionToggleVisibility,
 	}
 }
+
+// supportedAttachmentLayoutValues returns a list of valid AttachmentLayout
+// values for Message type. This list is intended to be used for validation
+// and display purposes.
+//
+// NOTE: See also the supportedActionValues() function.
+func supportedAttachmentLayoutValues() []string {
+	return []string{
+		AttachmentLayoutList,
+		AttachmentLayoutCarousel,
+	}
+}
