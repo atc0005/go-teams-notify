@@ -261,22 +261,6 @@ type Card struct {
 	// attachment); the schema version that the content for an Adaptive Card
 	// requires.
 	//
-	// Version 1.3 is the highest supported for user-generated cards.
-	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference#support-for-adaptive-cards
-	// https://adaptivecards.io/designer
-	//
-	// Version 1.4 is when Action.Execute was introduced.
-	//
-	// Per this doc:
-	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
-	//
-	// the "Action.Execute" action is supported:
-	//
-	// "For Adaptive Cards in Incoming Webhooks, all native Adaptive Card
-	// schema elements, except Action.Submit, are fully supported. The
-	// supported actions are Action.OpenURL, Action.ShowCard,
-	// Action.ToggleVisibility, and Action.Execute."
-	//
 	// TODO: Assert that this is present for top-level cards only?
 	Version string `json:"version"`
 

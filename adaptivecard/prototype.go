@@ -238,15 +238,6 @@ func (m Message) Validate() error {
 		return m.ValidateFunc()
 	}
 
-	// if m.Text == "" {
-	// 	return fmt.Errorf(
-	// 		"required Text field is empty: %w",
-	// 		ErrInvalidFieldValue,
-	// 	)
-	// }
-
-	fmt.Printf("\n\nFIXME: Message.Validate() is INCOMPLETE\n\n")
-
 	if m.Type != TypeMessage {
 		return fmt.Errorf(
 			"invalid message type %q; expected %q: %w",
