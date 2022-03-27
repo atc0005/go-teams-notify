@@ -389,6 +389,8 @@ type Element struct {
 
 	// parent is an optional reference to the enclosing Card for the element.
 	// Not all elements are enclosed in a Card.
+	//
+	// TODO: How is this used?
 	parent *Card `json:"-"`
 }
 
@@ -510,7 +512,7 @@ type MSTeams struct {
 	// TODO: Research specific purpose of this field and how interacts with a
 	// value set on a specific element of an Adaptive Card.
 	//
-	// TODO: Confirm that this is a value field.
+	// TODO: Confirm that this is a valid field.
 	// https://github.com/MicrosoftDocs/msteams-docs/issues/5003
 	Wrap bool `json:"wrap,omitempty"`
 
@@ -523,6 +525,12 @@ type MSTeams struct {
 	// Entities is a collection of user mentions.
 	// TODO: Should this be a slice of pointers?
 	Entities []Mention `json:"entities,omitempty"`
+
+	// parent is an optional reference to the enclosing Card for the MSTeams
+	// value.
+	//
+	// TODO: What is responsible for setting this?
+	parent *Card `json:"-"`
 }
 
 // Mention represents a mention in the message for a specific user.
@@ -535,10 +543,18 @@ type Mention struct {
 	//
 	// Brief testing indicates that this needs to wrap a name/value in <at>NAME
 	// HERE</at> tags.
+	//
+	// TODO: This will require specific validation logic which (likely) needs
+	// access to the enclosing Attachment.
 	Text string `json:"text"`
 
 	// Mentioned represents a user that is mentioned.
 	Mentioned Mentioned `json:"mentioned"`
+
+	// parent is an optional reference to the enclosing MSTeams value.
+	//
+	// TODO: What is responsible for setting this?
+	parent *MSTeams `json:"-"`
 }
 
 // Mentioned represents the user id and name of a user that is mentioned.

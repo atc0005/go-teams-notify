@@ -10,7 +10,6 @@ package adaptivecard
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"regexp"
@@ -272,8 +271,6 @@ func (m Message) Validate() error {
 //
 
 // Validate asserts that required fields have valid values.
-//
-// TODO: Should we support user-specified ValidateFunc() here as well?
 func (a Attachment) Validate() error {
 	if a.ContentType != AttachmentContentType {
 		return fmt.Errorf(
@@ -288,8 +285,6 @@ func (a Attachment) Validate() error {
 }
 
 // Validate asserts that required fields have valid values.
-//
-// TODO: Should we support user-specified ValidateFunc() here as well?
 func (c Card) Validate() error {
 	if c.Type != TypeAdaptiveCard {
 		return fmt.Errorf(
@@ -306,7 +301,7 @@ func (c Card) Validate() error {
 				"invalid Schema value %q; expected %q: %w",
 				c.Schema,
 				AdaptiveCardSchema,
-				ErrMissingValue,
+				ErrInvalidFieldValue,
 			)
 		}
 	}
@@ -341,8 +336,6 @@ func (c Card) Validate() error {
 }
 
 // Validate asserts that required fields have valid values.
-//
-// TODO: Should we support user-specified ValidateFunc() here as well?
 func (tc TopLevelCard) Validate() error {
 	// Validate embedded Card first as those validation requirements apply
 	// here also.
@@ -396,15 +389,12 @@ func (tc TopLevelCard) Validate() error {
 		// 		ErrInvalidFieldValue,
 		// 	)
 		// }
-
 	}
 
 	return nil
 }
 
 // Validate asserts that required fields have valid values.
-//
-// TODO: Should we support user-specified ValidateFunc() here as well?
 func (e Element) Validate() error {
 	supportedElementTypes := supportedElementTypes()
 	if !goteamsnotify.InList(e.Type, supportedElementTypes, false) {
@@ -491,8 +481,6 @@ func (e Element) Validate() error {
 }
 
 // Validate asserts that required fields have valid values.
-//
-// TODO: Should we support user-specified ValidateFunc() here as well?
 func (c Column) Validate() error {
 	if c.Type != TypeColumn {
 		return fmt.Errorf(
@@ -558,13 +546,26 @@ func (c Column) Validate() error {
 	return nil
 }
 
+// Validate asserts that required fields have valid values.
 func (f Fact) Validate() error {
-	return errors.New("error: Fact.Validate() not implemented yet")
+	if f.Title == "" {
+		return fmt.Errorf(
+			"required field Title is empty for Fact: %w",
+			ErrMissingValue,
+		)
+	}
+
+	if f.Value == "" {
+		return fmt.Errorf(
+			"required field Value is empty for Fact: %w",
+			ErrMissingValue,
+		)
+	}
+
+	return nil
 }
 
 // Validate asserts that required fields have valid values.
-//
-// TODO: Should we support user-specified ValidateFunc() here as well?
 func (m MSTeams) Validate() error {
 	// If an optional width value is set, assert that it is a valid value.
 	if m.Width != "" {
@@ -580,12 +581,16 @@ func (m MSTeams) Validate() error {
 		}
 	}
 
+	for _, mention := range m.Entities {
+		if err := mention.Validate(); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
 // Validate asserts that required fields have valid values.
-//
-// TODO: Should we support user-specified ValidateFunc() here as well?
 func (i ISelectAction) Validate() error {
 	supportedValues := supportedISelectActionValues()
 	if !goteamsnotify.InList(i.Type, supportedValues, false) {
@@ -611,8 +616,6 @@ func (i ISelectAction) Validate() error {
 }
 
 // Validate asserts that required fields have valid values.
-//
-// TODO: Should we support user-specified ValidateFunc() here as well?
 func (a Action) Validate() error {
 	supportedValues := supportedActionValues()
 	if !goteamsnotify.InList(a.Type, supportedValues, false) {
@@ -644,13 +647,100 @@ func (a Action) Validate() error {
 	}
 
 	return nil
+}
 
-}
+// Validate asserts that required fields have valid values.
 func (m Mention) Validate() error {
-	return errors.New("error: Mention.Validate() not implemented yet")
+	if m.Type != TypeMention {
+		return fmt.Errorf(
+			"invalid Mention type %q; expected %q: %w",
+			m.Type,
+			TypeMention,
+			ErrInvalidType,
+		)
+	}
+
+	if m.Text == "" {
+		return fmt.Errorf(
+			"required field Text is empty for Mention: %w",
+			ErrMissingValue,
+		)
+	}
+
+	// TODO: Need to assert that Text field of this Mention matches a portion
+	// of a text field for a supported element in the same enclosing Card.
+	//
+	// This will require a "handle" to the enclosing Card in order to
+	// loop over all elements in the body so that we can assert a text match.
+	//
+	// Expose the parent field as ParentCard or EnclosingCard and skip
+	// recording the parent field as a MSTeams pointer. This will allow client
+	// code to manage this directly if needed. For our purposes we can set the
+	// EnclosingCard via Mention() methods:
+	//
+	// - method attached to a Card
+	//
+	// perhaps this method can look for the existing mention text and skip
+	// adding it if found, otherwise add it.
+	//
+	// - method attached directly to an Element that requires a pointer to Card
+	//
+	// use pointer to a Card to apply the same logic?
+	//
+	//
+	if m.parent != nil {
+		// If we have a pointer to the Card, we can evaluate supported
+		// elements of the Card body to assert that the required text string
+		// is present.
+		//
+		// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format#mention-support-within-adaptive-cards
+		if m.parent.parent != nil {
+			var foundValidTextType bool
+			var foundExpectedTextString bool
+			for _, element := range m.parent.parent.Body {
+				// Look for valid text element types.
+				if element.Type == TypeElementTextBlock ||
+					element.Type == TypeElementFactSet {
+					foundValidTextType = true
+
+					// Look for the expected mention text.
+					if strings.Contains(element.Text, m.Text) {
+						foundExpectedTextString = true
+						break
+					}
+				}
+			}
+
+			if !foundValidTextType {
+				// note that a supported text type wasn't found.
+			}
+
+			if !foundExpectedTextString {
+				// note that the expected mention text was not found.
+			}
+		}
+	}
+
+	return nil
 }
+
+// Validate asserts that required fields have valid values.
 func (m Mentioned) Validate() error {
-	return errors.New("error: Mentioned.Validate() not implemented yet")
+	if m.ID == "" {
+		return fmt.Errorf(
+			"required field ID is empty: %w",
+			ErrMissingValue,
+		)
+	}
+
+	if m.Name == "" {
+		return fmt.Errorf(
+			"required field Name is empty: %w",
+			ErrMissingValue,
+		)
+	}
+
+	return nil
 }
 
 /*
