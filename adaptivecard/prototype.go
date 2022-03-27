@@ -16,6 +16,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
 )
 
 /*
@@ -250,16 +252,15 @@ func (m Message) Validate() error {
 		}
 	}
 
-	for _, supportedValue := range supportedAttachmentLayoutValues() {
-		if !strings.EqualFold(m.AttachmentLayout, supportedValue) {
-			return fmt.Errorf(
-				"invalid %s %q for Message; expected one of %v: %w",
-				"AttachmentLayout",
-				m.AttachmentLayout,
-				supportedAttachmentLayoutValues(),
-				ErrInvalidFieldValue,
-			)
-		}
+	supportedValues := supportedAttachmentLayoutValues()
+	if !goteamsnotify.InList(m.AttachmentLayout, supportedValues, false) {
+		return fmt.Errorf(
+			"invalid %s %q for Message; expected one of %v: %w",
+			"AttachmentLayout",
+			m.AttachmentLayout,
+			supportedValues,
+			ErrInvalidFieldValue,
+		)
 	}
 
 	return nil
@@ -405,52 +406,66 @@ func (tc TopLevelCard) Validate() error {
 //
 // TODO: Should we support user-specified ValidateFunc() here as well?
 func (e Element) Validate() error {
-	isValidValue := func(specifiedValue string, what string, supportedValues []string) error {
-		for _, supportedValue := range supportedValues {
-			if !strings.EqualFold(specifiedValue, supportedValue) {
-				return fmt.Errorf(
-					"invalid %s %q for element; expected one of %v: %w",
-					what,
-					specifiedValue,
-					supportedValues,
-					ErrInvalidFieldValue,
-				)
-			}
-		}
-
-		return nil
-	}
-
 	supportedElementTypes := supportedElementTypes()
-	if err := isValidValue(e.Type, "type", supportedElementTypes); err != nil {
-		return err
+	if !goteamsnotify.InList(e.Type, supportedElementTypes, false) {
+		return fmt.Errorf(
+			"invalid %s %q for element; expected one of %v: %w",
+			"Type",
+			e.Type,
+			supportedElementTypes,
+			ErrInvalidType,
+		)
 	}
 
 	if strings.TrimSpace(e.Size) != "" {
 		supportedSizeValues := supportedSizeValues()
-		if err := isValidValue(e.Size, "size", supportedSizeValues); err != nil {
-			return err
+		if !goteamsnotify.InList(e.Size, supportedSizeValues, false) {
+			return fmt.Errorf(
+				"invalid %s %q for element; expected one of %v: %w",
+				"Size",
+				e.Size,
+				supportedSizeValues,
+				ErrInvalidFieldValue,
+			)
 		}
 	}
 
 	if strings.TrimSpace(e.Weight) != "" {
 		supportedWeightValues := supportedWeightValues()
-		if err := isValidValue(e.Weight, "weight", supportedWeightValues); err != nil {
-			return err
+		if !goteamsnotify.InList(e.Weight, supportedWeightValues, false) {
+			return fmt.Errorf(
+				"invalid %s %q for element; expected one of %v: %w",
+				"Weight",
+				e.Weight,
+				supportedWeightValues,
+				ErrInvalidFieldValue,
+			)
 		}
 	}
 
 	if strings.TrimSpace(e.Color) != "" {
 		supportedColorValues := supportedColorValues()
-		if err := isValidValue(e.Color, "color", supportedColorValues); err != nil {
-			return err
+		if !goteamsnotify.InList(e.Color, supportedColorValues, false) {
+			return fmt.Errorf(
+				"invalid %s %q for element; expected one of %v: %w",
+				"Color",
+				e.Color,
+				supportedColorValues,
+				ErrInvalidFieldValue,
+			)
 		}
 	}
 
 	if strings.TrimSpace(e.Spacing) != "" {
 		supportedSpacingValues := supportedSpacingValues()
-		if err := isValidValue(e.Spacing, "spacing", supportedSpacingValues); err != nil {
-			return err
+		if !goteamsnotify.InList(e.Spacing, supportedSpacingValues, false) {
+			return fmt.Errorf(
+				"invalid %s %q for element; expected one of %v: %w",
+				"Spacing",
+				e.Spacing,
+				supportedSpacingValues,
+				ErrInvalidFieldValue,
+			)
 		}
 	}
 
@@ -541,48 +556,46 @@ func (c Column) Validate() error {
 	}
 
 	return nil
-
-	// return errors.New("error: Column.Validate() not implemented yet")
 }
+
 func (f Fact) Validate() error {
 	return errors.New("error: Fact.Validate() not implemented yet")
 }
 
+// Validate asserts that required fields have valid values.
+//
+// TODO: Should we support user-specified ValidateFunc() here as well?
 func (m MSTeams) Validate() error {
-
-	// If a width value is set, assert that it is
+	// If an optional width value is set, assert that it is a valid value.
 	if m.Width != "" {
-
-		// TODO: Replace this with an inCollection() function that asserts
-		// that m.Width in in the supported value collection. Replace other
-		// instances of similar broken logic with similar fixed logic.
-		for _, supportedValue := range supportedMSTeamsWidthValues() {
-			if !strings.EqualFold(m.Width, supportedValue) {
-				return fmt.Errorf(
-					"invalid %s %q for Action; expected one of %v: %w",
-					"Width",
-					m.Width,
-					supportedMSTeamsWidthValues(),
-					ErrInvalidFieldValue,
-				)
-			}
+		supportedValues := supportedMSTeamsWidthValues()
+		if !goteamsnotify.InList(m.Width, supportedValues, false) {
+			return fmt.Errorf(
+				"invalid %s %q for Action; expected one of %v: %w",
+				"Width",
+				m.Width,
+				supportedValues,
+				ErrInvalidFieldValue,
+			)
 		}
 	}
 
-	return errors.New("error: MSTeams.Validate() not implemented yet")
+	return nil
 }
 
+// Validate asserts that required fields have valid values.
+//
+// TODO: Should we support user-specified ValidateFunc() here as well?
 func (i ISelectAction) Validate() error {
-	for _, supportedValue := range supportedISelectActionValues() {
-		if !strings.EqualFold(i.Type, supportedValue) {
-			return fmt.Errorf(
-				"invalid %s %q for ISelectAction; expected one of %v: %w",
-				"Type",
-				i.Type,
-				supportedISelectActionValues(),
-				ErrInvalidType,
-			)
-		}
+	supportedValues := supportedISelectActionValues()
+	if !goteamsnotify.InList(i.Type, supportedValues, false) {
+		return fmt.Errorf(
+			"invalid %s %q for ISelectAction; expected one of %v: %w",
+			"Type",
+			i.Type,
+			supportedValues,
+			ErrInvalidType,
+		)
 	}
 
 	if i.Type == TypeActionOpenURL {
@@ -597,17 +610,19 @@ func (i ISelectAction) Validate() error {
 	return nil
 }
 
+// Validate asserts that required fields have valid values.
+//
+// TODO: Should we support user-specified ValidateFunc() here as well?
 func (a Action) Validate() error {
-	for _, supportedValue := range supportedActionValues() {
-		if !strings.EqualFold(a.Type, supportedValue) {
-			return fmt.Errorf(
-				"invalid %s %q for Action; expected one of %v: %w",
-				"Type",
-				a.Type,
-				supportedActionValues(),
-				ErrInvalidType,
-			)
-		}
+	supportedValues := supportedActionValues()
+	if !goteamsnotify.InList(a.Type, supportedValues, false) {
+		return fmt.Errorf(
+			"invalid %s %q for Action; expected one of %v: %w",
+			"Type",
+			a.Type,
+			supportedValues,
+			ErrInvalidType,
+		)
 	}
 
 	if a.Type == TypeActionOpenURL {
