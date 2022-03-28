@@ -319,9 +319,8 @@ func (m *Message) Mention(displayName string, id string, prependToText bool) err
 	return nil
 }
 
-// Prepare handles tasks needed to prepare a given Message for delivery to an
-// endpoint. Validation should be performed by the caller prior to calling
-// this method.
+// Prepare handles tasks needed to construct a payload from a Message for
+// delivery to an endpoint.
 func (m *Message) Prepare() error {
 	jsonMessage, err := json.Marshal(m)
 	if err != nil {

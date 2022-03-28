@@ -522,9 +522,8 @@ func (mc *MessageCard) Validate() error {
 	return nil
 }
 
-// Prepare handles tasks needed to prepare a MessageCard for delivery to an
-// endpoint. Validation should be performed by the caller prior to calling
-// this method.
+// Prepare handles tasks needed to construct a payload from a MessageCard for
+// delivery to an endpoint.
 func (mc *MessageCard) Prepare() error {
 	jsonMessage, err := json.Marshal(mc)
 	if err != nil {

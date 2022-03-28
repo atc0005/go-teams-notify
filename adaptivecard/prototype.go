@@ -193,9 +193,8 @@ func (m *Message) PrettyPrint() string {
 	return ""
 }
 
-// Prepare handles tasks needed to prepare a given Message for delivery to an
-// endpoint. Validation should be performed by the caller prior to calling
-// this method.
+// Prepare handles tasks needed to construct a payload from a Message for
+// delivery to an endpoint.
 func (m *Message) Prepare() error {
 	jsonMessage, err := json.Marshal(m)
 	if err != nil {
@@ -839,7 +838,6 @@ func (e *Element) Mention(card *Card, displayName string, id string, msgText str
 // new Message. An error is returned if provided values are insufficient to
 // create the user mention.
 func NewMentionMessage(displayName string, id string, msgText string) (*Message, error) {
-
 	switch {
 	case displayName == "":
 		return nil, fmt.Errorf(
