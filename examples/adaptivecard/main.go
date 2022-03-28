@@ -47,12 +47,11 @@ func main() {
 
 	// setup message
 	// msg := adaptivecard.NewSimpleMessage("")
-	msg := adaptivecard.NewSimpleMessage("Hello there!")
+	simpleMsg := adaptivecard.NewSimpleMessage("Hello there!")
 
-	fmt.Printf("%+v\n", msg)
+	// fmt.Printf("%+v\n", simpleMsg)
 
-	err := msg.Prepare()
-	if err != nil {
+	if err := simpleMsg.Prepare(); err != nil {
 		fmt.Printf(
 			"failed to prepare message: %v",
 			err,
@@ -60,7 +59,46 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Print(msg.PrettyPrint())
+	fmt.Print(simpleMsg.PrettyPrint())
+
+	if err := mstClient.Send(webhookUrl, simpleMsg); err != nil {
+		fmt.Printf(
+			"failed to send message: %v",
+			err,
+		)
+		os.Exit(1)
+	}
+
+	mentionMsg, err := adaptivecard.NewMentionMsg(
+		"Adam Chalkley",
+		"atc0005@auburn.edu",
+		"My spiffy new message!",
+	)
+	if err != nil {
+		fmt.Printf(
+			"failed to create mention message: %v",
+			err,
+		)
+		os.Exit(1)
+	}
+
+	if err := mentionMsg.Prepare(); err != nil {
+		fmt.Printf(
+			"failed to prepare message: %v",
+			err,
+		)
+		os.Exit(1)
+	}
+
+	fmt.Print(mentionMsg.PrettyPrint())
+
+	if err := mstClient.Send(webhookUrl, mentionMsg); err != nil {
+		fmt.Printf(
+			"failed to send message: %v",
+			err,
+		)
+		os.Exit(1)
+	}
 
 	// 	// add user mention
 	// 	if err := msg.Mention("John Doe", "jdoe@example.com", true); err != nil {
@@ -71,11 +109,5 @@ func main() {
 	// 	}
 	//
 	// 	// send message
-	if err := mstClient.Send(webhookUrl, msg); err != nil {
-		fmt.Printf(
-			"failed to send message: %v",
-			err,
-		)
-		os.Exit(1)
-	}
+
 }

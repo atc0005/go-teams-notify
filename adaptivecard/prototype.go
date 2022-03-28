@@ -784,3 +784,67 @@ pointer to the Card in addition to the Element, *unless* each Element knows
 which Card it is attached to?
 
 */
+
+func (m *Message) Mention() error {
+	return fmt.Errorf("error: not implemented yet")
+}
+
+func NewMentionMsg(displayName string, id string, msgText string) (*Message, error) {
+
+	switch {
+	case displayName == "":
+		return nil, fmt.Errorf(
+			"func NewMentionMsg: required name argument is empty: %w",
+			ErrMissingValue,
+		)
+
+	case id == "":
+		return nil, fmt.Errorf(
+			"func NewMentionMsg: required id argument is empty: %w",
+			ErrMissingValue,
+		)
+
+	case msgText == "":
+		return nil, fmt.Errorf(
+			"func NewMentionMsg: required msgText argument is empty: %w",
+			ErrMissingValue,
+		)
+
+	default:
+
+		msg := Message{
+			Type: TypeMessage,
+		}
+
+		mention := Mention{
+			Type: TypeMention,
+			Text: fmt.Sprintf(MentionTextFormatTemplate, displayName),
+			Mentioned: Mentioned{
+				ID:   id,
+				Name: displayName,
+			},
+		}
+
+		textBlock := Element{
+			Type: TypeElementTextBlock,
+			Text: mention.Text + " " + msgText,
+		}
+
+		textCard := TopLevelCard{
+			Card{
+				Type:    TypeAdaptiveCard,
+				Schema:  AdaptiveCardSchema,
+				Version: fmt.Sprintf(AdaptiveCardVersionTmpl, AdaptiveCardMaxVersion),
+				Body: []Element{
+					textBlock,
+				},
+			},
+		}
+
+		textCard.MSTeams.Entities = append(textCard.MSTeams.Entities, mention)
+
+		msg.Attach(&textCard)
+
+		return &msg, nil
+	}
+}
