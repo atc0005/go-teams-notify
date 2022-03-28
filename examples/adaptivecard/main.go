@@ -74,7 +74,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Print(simpleMsg.PrettyPrint())
+	fmt.Println(simpleMsg.PrettyPrint())
 
 	if err := mstClient.Send(webhookUrl, simpleMsg); err != nil {
 		fmt.Printf(
@@ -105,7 +105,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Print(mentionMsg.PrettyPrint())
+	fmt.Println(mentionMsg.PrettyPrint())
 
 	if err := mstClient.Send(webhookUrl, mentionMsg); err != nil {
 		fmt.Printf(

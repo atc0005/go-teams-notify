@@ -824,7 +824,13 @@ func (c *Card) Mention() error {
 // collection and each Mention.Text value is not represented in the Text field
 // of an applicable Element type then I suspect *that* would be an error
 // scenario.
-func (e *Element) Mention(card *Card) error {
+
+// Mention creates a new user Mention and appends it to the specified Card,
+// and prepends the user Mention Text field contents to the associated
+// Element. An error is returned if
+//
+//
+func (e *Element) Mention(card *Card, displayName string, id string, msgText string) error {
 	return fmt.Errorf("error: not implemented yet")
 }
 
