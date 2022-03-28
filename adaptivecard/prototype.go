@@ -785,7 +785,37 @@ which Card it is attached to?
 
 */
 
+// TODO: Accept values needed to create Mention, create our own Card, text
+// block, etc.
 func (m *Message) Mention() error {
+	return fmt.Errorf("error: not implemented yet")
+}
+
+// TODO: Accept Mention value, but create our own Card, text block, etc.
+func (m *Message) AddMention() error {
+	return fmt.Errorf("error: not implemented yet")
+}
+
+// TODO: Accept values needed to create Mention, create text block, then
+// append to Card.
+func (c *Card) Mention() error {
+	return fmt.Errorf("error: not implemented yet")
+}
+
+// TODO: Accept values needed to create Mention, update Element receiver (if
+// applicable type), then append to Card (using provided pointer).
+//
+// TODO: What happens if there is already a Mention in the entities
+// collection? For example, one single text block with required mention.Text
+// content in the textBlock.Text field, but two Mention values in the entities
+// collection. Is this an error?
+//
+// A: No, I put 10 duplicate Mention values in the entities collection without
+// issue. That said, if you have a unique Mention value in the entities
+// collection and each Mention.Text value is not represented in the Text field
+// of an applicable Element type then I suspect *that* would be an error
+// scenario.
+func (e *Element) Mention(card *Card) error {
 	return fmt.Errorf("error: not implemented yet")
 }
 
@@ -816,6 +846,9 @@ func NewMentionMsg(displayName string, id string, msgText string) (*Message, err
 			Type: TypeMessage,
 		}
 
+		// Build mention.
+		//
+		// TODO: Create constructor for this step.
 		mention := Mention{
 			Type: TypeMention,
 			Text: fmt.Sprintf(MentionTextFormatTemplate, displayName),
@@ -825,11 +858,23 @@ func NewMentionMsg(displayName string, id string, msgText string) (*Message, err
 			},
 		}
 
+		// Create a text block to contain the mention text string (required)
+		// and user-specified message text string. Combine the mention text
+		// and user-specified message text to comply with API requirements
+		// *and* in a way that visually makes sense. In our case, we use the
+		// mention text as a "greeting" or lead-in for the user-specified
+		// message text.
+		//
+		// TODO: We likely need a way to get a pointer to this Element type so
+		// that we can programatically prepend the Mention.Text field content
+		// to the Text field. We also need a pointer to the enclosing Card so
+		// that we can append the Mention to the MSTeams.Entities collection.
 		textBlock := Element{
 			Type: TypeElementTextBlock,
 			Text: mention.Text + " " + msgText,
 		}
 
+		// Combine generated textBlock with a top-level card.
 		textCard := TopLevelCard{
 			Card{
 				Type:    TypeAdaptiveCard,
