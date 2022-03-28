@@ -279,7 +279,7 @@ func (m *Message) AddMention(prependToText bool, separator string, mentions ...M
 //
 // NOTE: Brief testing suggests that the user's display name (e.g., "John
 // Doe") is required instead of a firstname (e.g., "John"), lastname ("Doe")
-// or custom value (e.g., "JD") is required.
+// or custom value (e.g., "JD").
 //
 // The ID value can be an object ID (e.g.,
 // 5e8b0f4d-2cd4-4e17-9467-b0f6a5c0c4d0) or a UserPrincipalName (e.g.,
