@@ -251,15 +251,18 @@ func (m Message) Validate() error {
 		}
 	}
 
-	supportedValues := supportedAttachmentLayoutValues()
-	if !goteamsnotify.InList(m.AttachmentLayout, supportedValues, false) {
-		return fmt.Errorf(
-			"invalid %s %q for Message; expected one of %v: %w",
-			"AttachmentLayout",
-			m.AttachmentLayout,
-			supportedValues,
-			ErrInvalidFieldValue,
-		)
+	// Optional field, but only specific values permitted if set.
+	if m.AttachmentLayout != "" {
+		supportedValues := supportedAttachmentLayoutValues()
+		if !goteamsnotify.InList(m.AttachmentLayout, supportedValues, false) {
+			return fmt.Errorf(
+				"invalid %s %q for Message; expected one of %v: %w",
+				"AttachmentLayout",
+				m.AttachmentLayout,
+				supportedValues,
+				ErrInvalidFieldValue,
+			)
+		}
 	}
 
 	return nil
