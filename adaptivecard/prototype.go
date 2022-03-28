@@ -63,7 +63,7 @@ func NewMessage() *Message {
 // NewSimpleMessage creates a new simple Message using given text. If given an
 // empty string a minimal Message is returned.
 func NewSimpleMessage(text string) *Message {
-	if strings.TrimSpace(text) == "" {
+	if text == "" {
 		return &Message{
 			Type: TypeMessage,
 		}
@@ -120,7 +120,7 @@ func NewSimpleMessage(text string) *Message {
 //
 // TODO: What is needed to permit this to work?
 // func (m *Message) AddText(text string) *Message {
-// 	if strings.TrimSpace(text) == "" {
+// 	if text == "" {
 // 		return m
 // 	}
 //
@@ -295,7 +295,7 @@ func (c Card) Validate() error {
 		)
 	}
 
-	if strings.TrimSpace(c.Schema) != "" {
+	if c.Schema != "" {
 		if c.Schema != AdaptiveCardSchema {
 			return fmt.Errorf(
 				"invalid Schema value %q; expected %q: %w",
@@ -407,7 +407,7 @@ func (e Element) Validate() error {
 		)
 	}
 
-	if strings.TrimSpace(e.Size) != "" {
+	if e.Size != "" {
 		supportedSizeValues := supportedSizeValues()
 		if !goteamsnotify.InList(e.Size, supportedSizeValues, false) {
 			return fmt.Errorf(
@@ -420,7 +420,7 @@ func (e Element) Validate() error {
 		}
 	}
 
-	if strings.TrimSpace(e.Weight) != "" {
+	if e.Weight != "" {
 		supportedWeightValues := supportedWeightValues()
 		if !goteamsnotify.InList(e.Weight, supportedWeightValues, false) {
 			return fmt.Errorf(
@@ -433,7 +433,7 @@ func (e Element) Validate() error {
 		}
 	}
 
-	if strings.TrimSpace(e.Color) != "" {
+	if e.Color != "" {
 		supportedColorValues := supportedColorValues()
 		if !goteamsnotify.InList(e.Color, supportedColorValues, false) {
 			return fmt.Errorf(
@@ -446,7 +446,7 @@ func (e Element) Validate() error {
 		}
 	}
 
-	if strings.TrimSpace(e.Spacing) != "" {
+	if e.Spacing != "" {
 		supportedSpacingValues := supportedSpacingValues()
 		if !goteamsnotify.InList(e.Spacing, supportedSpacingValues, false) {
 			return fmt.Errorf(
@@ -604,7 +604,7 @@ func (i ISelectAction) Validate() error {
 	}
 
 	if i.Type == TypeActionOpenURL {
-		if strings.TrimSpace(i.URL) == "" {
+		if i.URL == "" {
 			return fmt.Errorf(
 				"invalid URL for Action: %w",
 				ErrMissingValue,
@@ -629,7 +629,7 @@ func (a Action) Validate() error {
 	}
 
 	if a.Type == TypeActionOpenURL {
-		if strings.TrimSpace(a.URL) == "" {
+		if a.URL == "" {
 			return fmt.Errorf(
 				"invalid URL for Action: %w",
 				ErrMissingValue,
