@@ -199,6 +199,7 @@ const (
 	TypeElementTextRun        string = "TextRun" // Introduced in version 1.2
 )
 
+// Sentinel errors for this package.
 var (
 	// ErrInvalidType indicates that an invalid type was specified.
 	ErrInvalidType = errors.New("invalid type value")
