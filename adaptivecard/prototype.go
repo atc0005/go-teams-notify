@@ -712,6 +712,7 @@ func (m Mention) Validate() error {
 				// Look for valid text element types.
 				if element.Type == TypeElementTextBlock ||
 					element.Type == TypeElementFactSet {
+
 					foundValidTextType = true
 
 					// Look for the expected mention text.
