@@ -45,6 +45,21 @@ func main() {
 		webhookUrl = envWebhookURL
 	}
 
+	// Test handling of incomplete message
+	bareMsg := adaptivecard.NewSimpleMessage("")
+	if err := bareMsg.Validate(); err != nil {
+		fmt.Printf("test message fails validation: %v\n", err)
+		// os.Exit(1)
+	} else {
+		if err := mstClient.Send(webhookUrl, bareMsg); err != nil {
+			fmt.Printf(
+				"failed to send message: %v",
+				err,
+			)
+			os.Exit(1)
+		}
+	}
+
 	// setup message
 	// msg := adaptivecard.NewSimpleMessage("")
 	simpleMsg := adaptivecard.NewSimpleMessage("Hello there!")
@@ -69,7 +84,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	mentionMsg, err := adaptivecard.NewMentionMsg(
+	mentionMsg, err := adaptivecard.NewMentionMessage(
 		"Adam Chalkley",
 		"atc0005@auburn.edu",
 		"My spiffy new message!",

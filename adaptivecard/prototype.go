@@ -245,6 +245,15 @@ func (m Message) Validate() error {
 		)
 	}
 
+	// We need an attachment (containing one or more Adaptive Cards) in order
+	// to generate a valid Message for Microsoft Teams delivery.
+	if len(m.Attachments) == 0 {
+		return fmt.Errorf(
+			"required field Attachments is empty for Message: %w",
+			ErrMissingValue,
+		)
+	}
+
 	for _, attachment := range m.Attachments {
 		if err := attachment.Validate(); err != nil {
 			return err
@@ -819,7 +828,11 @@ func (e *Element) Mention(card *Card) error {
 	return fmt.Errorf("error: not implemented yet")
 }
 
-func NewMentionMsg(displayName string, id string, msgText string) (*Message, error) {
+// NewMentionMessage creates a new simple Message. Using the given message
+// text, displayName and ID, a user Mention is also created and added to the
+// new Message. An error is returned if provided values are insufficient to
+// create the user mention.
+func NewMentionMessage(displayName string, id string, msgText string) (*Message, error) {
 
 	switch {
 	case displayName == "":
