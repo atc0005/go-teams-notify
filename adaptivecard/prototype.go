@@ -800,13 +800,13 @@ func (m *Message) Mention() error {
 }
 
 // TODO: Accept Mention value, but create our own Card, text block, etc.
-func (m *Message) AddMention() error {
+func (m *Message) AddMention(mention *Mention) error {
 	return fmt.Errorf("error: not implemented yet")
 }
 
 // TODO: Accept values needed to create Mention, create text block, then
 // append to Card.
-func (c *Card) Mention() error {
+func (c *Card) Mention(displayName string, id string, msgText string) error {
 	return fmt.Errorf("error: not implemented yet")
 }
 
@@ -829,7 +829,76 @@ func (c *Card) Mention() error {
 // Element. An error is returned if
 //
 //
+// func (e *Element) Mention(card *Card, displayName string, id string, msgText string) error {}
+
+// Mention creates a new user Mention and appends it to the specified Card. If
+// the Element is of TextBlock type then its Text field is prepended with a
+// and prepends the user Mention Text field contents to the associated
+// Element. An error is returned if ...
+//
+//
+// TODO: Implement unexported mention() function (which operates pretty much
+// as is shown here or in  NewMentionMessage()) and add Mention() methods to
+// Card type, but likely remove it from this type; I don't see a reliable way
+// to append the Mention Text field content to a FactSet without adding
+// another Fact entry and skewing the formatting.
 func (e *Element) Mention(card *Card, displayName string, id string, msgText string) error {
+
+	switch {
+	case displayName == "":
+		return fmt.Errorf(
+			"required name argument is empty: %w",
+			ErrMissingValue,
+		)
+
+	case id == "":
+		return fmt.Errorf(
+			"required id argument is empty: %w",
+			ErrMissingValue,
+		)
+
+	case msgText == "":
+		return fmt.Errorf(
+			"required msgText argument is empty: %w",
+			ErrMissingValue,
+		)
+
+	case e == nil:
+		return fmt.Errorf(
+			"required Element is nil: %w",
+			ErrMissingValue,
+		)
+
+	case card == nil:
+		return fmt.Errorf(
+			"required Card is nil: %w",
+			ErrMissingValue,
+		)
+
+	case e.Type != TypeElementFactSet || e.Type != TypeElementTextBlock:
+		return fmt.Errorf(
+			"element is of type %q; expected one of %q or %q: %w",
+			e.Type,
+			TypeElementFactSet,
+			TypeElementTextBlock,
+			ErrMissingValue,
+		)
+
+	default:
+
+		// Build mention.
+		//
+		// TODO: Create constructor for this step.
+		mention := Mention{
+			Type: TypeMention,
+			Text: fmt.Sprintf(MentionTextFormatTemplate, displayName),
+			Mentioned: Mentioned{
+				ID:   id,
+				Name: displayName,
+			},
+		}
+	}
+
 	return fmt.Errorf("error: not implemented yet")
 }
 

@@ -64,8 +64,6 @@ func main() {
 	// msg := adaptivecard.NewSimpleMessage("")
 	simpleMsg := adaptivecard.NewSimpleMessage("Hello there!")
 
-	// fmt.Printf("%+v\n", simpleMsg)
-
 	if err := simpleMsg.Prepare(); err != nil {
 		fmt.Printf(
 			"failed to prepare message: %v",
