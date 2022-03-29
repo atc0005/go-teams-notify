@@ -39,10 +39,19 @@ func main() {
 
 	webhookUrl := "https://outlook.office.com/webhook/YOUR_WEBHOOK_URL_OF_TEAMS_CHANNEL"
 
-	envWebhookURL := os.Getenv("WEBHOOK_URL")
-	if envWebhookURL != "" {
-		fmt.Println(envWebhookURL)
+	expectedEnvVar := "WEBHOOK_URL"
+	envWebhookURL := os.Getenv(expectedEnvVar)
+	switch {
+	case envWebhookURL != "":
+		fmt.Printf(
+			"Using webhook URL %q from environment variable %q\n\n",
+			envWebhookURL,
+			expectedEnvVar,
+		)
 		webhookUrl = envWebhookURL
+	default:
+		fmt.Println(expectedEnvVar, "environment variable not set.")
+		fmt.Printf("Using hardcoded value %q as fallback\n\n", webhookUrl)
 	}
 
 	// Test handling of incomplete message
