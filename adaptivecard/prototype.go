@@ -69,30 +69,13 @@ func NewSimpleMessage(text string) *Message {
 		}
 	}
 
-	// 	msg := Message{
-	// 		Type: TypeMessage,
-	//
-	// 		// TODO: Add Attachments type with an Add method that accepts an
-	// 		// attachment?
-	// 		Attachments: []Attachment{
-	// 			{
-	// 				ContentType: AttachmentContentType,
-	// 				Content: Card{
-	// 					Type:    TypeAdaptiveCard,
-	// 					Schema:  AdaptiveCardSchema,
-	// 					Version: AdaptiveCardMaxVersion,
-	// 					Body: []Element{
-	// 						{
-	// 							Type: TypeElementTextBlock,
-	// 							Text: text,
-	// 						},
-	// 					},
-	// 				},
-	// 			},
-	// 		},
-	// 	}
 	msg := Message{
 		Type: TypeMessage,
+	}
+
+	textBlock := Element{
+		Type: TypeElementTextBlock,
+		Text: text,
 	}
 
 	// TODO: Refactor further, make it easy to generate specific types of
@@ -103,10 +86,7 @@ func NewSimpleMessage(text string) *Message {
 			Schema:  AdaptiveCardSchema,
 			Version: fmt.Sprintf(AdaptiveCardVersionTmpl, AdaptiveCardMaxVersion),
 			Body: []Element{
-				{
-					Type: TypeElementTextBlock,
-					Text: text,
-				},
+				textBlock,
 			},
 		},
 	}
@@ -114,6 +94,26 @@ func NewSimpleMessage(text string) *Message {
 	msg.Attach(&textCard)
 
 	return &msg
+}
+
+// NewTextBlockCard creates and returns a new Card composed of a single
+// TextBlock composed of the given text.
+func NewTextBlockCard(text string) Card {
+	textBlock := Element{
+		Type: TypeElementTextBlock,
+		Text: text,
+	}
+
+	textCard := Card{
+		Type:    TypeAdaptiveCard,
+		Schema:  AdaptiveCardSchema,
+		Version: fmt.Sprintf(AdaptiveCardVersionTmpl, AdaptiveCardMaxVersion),
+		Body: []Element{
+			textBlock,
+		},
+	}
+
+	return textCard
 }
 
 // AddText appends given text to the message for delivery.
@@ -810,6 +810,45 @@ func (c *Card) Mention(displayName string, id string, msgText string) error {
 	return fmt.Errorf("error: not implemented yet")
 }
 
+// mention uses the given display name, ID and message text to create a user
+// Mention value for inclusion in a Card. An error is returned if provided
+// values are insufficient to create the user mention.
+func mention(displayName string, id string, msgText string) (Mention, error) {
+	switch {
+	case displayName == "":
+		return Mention{}, fmt.Errorf(
+			"required name argument is empty: %w",
+			ErrMissingValue,
+		)
+
+	case id == "":
+		return Mention{}, fmt.Errorf(
+			"required id argument is empty: %w",
+			ErrMissingValue,
+		)
+
+	case msgText == "":
+		return Mention{}, fmt.Errorf(
+			"required msgText argument is empty: %w",
+			ErrMissingValue,
+		)
+
+	default:
+
+		// Build mention.
+		mention := Mention{
+			Type: TypeMention,
+			Text: fmt.Sprintf(MentionTextFormatTemplate, displayName),
+			Mentioned: Mentioned{
+				ID:   id,
+				Name: displayName,
+			},
+		}
+
+		return mention, nil
+	}
+}
+
 // TODO: Accept values needed to create Mention, update Element receiver (if
 // applicable type), then append to Card (using provided pointer).
 //
@@ -897,6 +936,9 @@ func (e *Element) Mention(card *Card, displayName string, id string, msgText str
 				Name: displayName,
 			},
 		}
+
+		// TODO: Finish or delete this method.
+		_ = mention
 	}
 
 	return fmt.Errorf("error: not implemented yet")
@@ -907,75 +949,53 @@ func (e *Element) Mention(card *Card, displayName string, id string, msgText str
 // new Message. An error is returned if provided values are insufficient to
 // create the user mention.
 func NewMentionMessage(displayName string, id string, msgText string) (*Message, error) {
+
+	msg := Message{
+		Type: TypeMessage,
+	}
+
+	// Build mention.
+	mention, err := mention(displayName, id, msgText)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create basic card.
+	textCard := NewTextBlockCard(msgText)
+	topLevelTextCard := TopLevelCard{textCard}
+
+	// Assert that the first element in the Card body is of TextBlock type.
 	switch {
-	case displayName == "":
+	case len(topLevelTextCard.Body) == 0:
 		return nil, fmt.Errorf(
-			"func NewMentionMsg: required name argument is empty: %w",
+			"empty Card Body: %w",
 			ErrMissingValue,
 		)
 
-	case id == "":
+	case topLevelTextCard.Body[0].Type != TypeElementTextBlock:
 		return nil, fmt.Errorf(
-			"func NewMentionMsg: required id argument is empty: %w",
-			ErrMissingValue,
-		)
-
-	case msgText == "":
-		return nil, fmt.Errorf(
-			"func NewMentionMsg: required msgText argument is empty: %w",
-			ErrMissingValue,
+			"first element in Card Body is of type %q; expected %q: %w",
+			topLevelTextCard.Body[0].Type,
+			TypeElementTextBlock,
+			ErrInvalidType,
 		)
 
 	default:
-
-		msg := Message{
-			Type: TypeMessage,
-		}
-
-		// Build mention.
-		//
-		// TODO: Create constructor for this step.
-		mention := Mention{
-			Type: TypeMention,
-			Text: fmt.Sprintf(MentionTextFormatTemplate, displayName),
-			Mentioned: Mentioned{
-				ID:   id,
-				Name: displayName,
-			},
-		}
-
-		// Create a text block to contain the mention text string (required)
-		// and user-specified message text string. Combine the mention text
-		// and user-specified message text to comply with API requirements
-		// *and* in a way that visually makes sense. In our case, we use the
-		// mention text as a "greeting" or lead-in for the user-specified
-		// message text.
-		//
-		// TODO: We likely need a way to get a pointer to this Element type so
-		// that we can programatically prepend the Mention.Text field content
-		// to the Text field. We also need a pointer to the enclosing Card so
-		// that we can append the Mention to the MSTeams.Entities collection.
-		textBlock := Element{
-			Type: TypeElementTextBlock,
-			Text: mention.Text + " " + msgText,
-		}
-
-		// Combine generated textBlock with a top-level card.
-		textCard := TopLevelCard{
-			Card{
-				Type:    TypeAdaptiveCard,
-				Schema:  AdaptiveCardSchema,
-				Version: fmt.Sprintf(AdaptiveCardVersionTmpl, AdaptiveCardMaxVersion),
-				Body: []Element{
-					textBlock,
-				},
-			},
-		}
-
-		textCard.MSTeams.Entities = append(textCard.MSTeams.Entities, mention)
-
-		msg.Attach(&textCard)
-
-		return &msg, nil
+		// Update the text block so that it contains the mention text string
+		// (required) and user-specified message text string. Use the mention
+		// text as a "greeting" or lead-in for the user-specified message
+		// text.
+		topLevelTextCard.Body[0].Text = mention.Text +
+			" " + topLevelTextCard.Body[0].Text
 	}
+
+	topLevelTextCard.MSTeams.Entities = append(
+		topLevelTextCard.MSTeams.Entities,
+		mention,
+	)
+
+	msg.Attach(&topLevelTextCard)
+
+	return &msg, nil
+
 }
