@@ -69,8 +69,7 @@ func main() {
 		}
 	}
 
-	// setup message
-	// msg := adaptivecard.NewSimpleMessage("")
+	// Create, print & send simple message.
 	simpleMsg := adaptivecard.NewSimpleMessage("Hello there!")
 
 	if err := simpleMsg.Prepare(); err != nil {
@@ -91,6 +90,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Create, print & send user mention message.
 	mentionMsg, err := adaptivecard.NewMentionMessage(
 		"Adam Chalkley",
 		"atc0005@auburn.edu",
@@ -122,14 +122,29 @@ func main() {
 		os.Exit(1)
 	}
 
-	// 	// add user mention
-	// 	if err := msg.Mention("John Doe", "jdoe@example.com", true); err != nil {
-	// 		fmt.Printf(
-	// 			"failed to add user mention: %v",
-	// 			err,
-	// 		)
-	// 	}
-	//
-	// 	// send message
+	// TODO: Create simple message, then add a user mention to it.
+	customMsg := adaptivecard.NewSimpleMessage("custom user mention msg")
+	customMsg.Mention(
+		"Adam Chalkley",
+		"atc0005@auburn.edu",
+		"Testing method.",
+	)
+	if err := customMsg.Prepare(); err != nil {
+		fmt.Printf(
+			"failed to prepare message: %v",
+			err,
+		)
+		os.Exit(1)
+	}
+
+	fmt.Println(customMsg.PrettyPrint())
+
+	if err := mstClient.Send(webhookUrl, customMsg); err != nil {
+		fmt.Printf(
+			"failed to send message: %v",
+			err,
+		)
+		os.Exit(1)
+	}
 
 }
