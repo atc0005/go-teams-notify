@@ -55,12 +55,12 @@ func main() {
 	}
 
 	// Test handling of incomplete message
-	bareMsg := adaptivecard.NewSimpleMessage("")
-	if err := bareMsg.Validate(); err != nil {
+	stubMsg := adaptivecard.NewSimpleMessage("")
+	if err := stubMsg.Validate(); err != nil {
 		fmt.Printf("test message fails validation: %v\n", err)
 		// os.Exit(1)
 	} else {
-		if err := mstClient.Send(webhookUrl, bareMsg); err != nil {
+		if err := mstClient.Send(webhookUrl, stubMsg); err != nil {
 			fmt.Printf(
 				"failed to send message: %v",
 				err,
@@ -122,12 +122,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	// TODO: Create simple message, then add a user mention to it.
+	// Create simple message, then add a user mention to it.
 	customMsg := adaptivecard.NewSimpleMessage("custom user mention msg")
 	customMsg.Mention(
 		"Adam Chalkley",
 		"atc0005@auburn.edu",
-		"Testing method.",
+		"Testing Message.Mention() method on card with existing TextBlock.",
+		true,
 	)
 	if err := customMsg.Prepare(); err != nil {
 		fmt.Printf(
@@ -140,6 +141,22 @@ func main() {
 	fmt.Println(customMsg.PrettyPrint())
 
 	if err := mstClient.Send(webhookUrl, customMsg); err != nil {
+		fmt.Printf(
+			"failed to send message: %v",
+			err,
+		)
+		os.Exit(1)
+	}
+
+	// Create empty message, add a user mention to it.
+	bareMsg := adaptivecard.NewMessage()
+	bareMsg.Mention(
+		"Adam Chalkley",
+		"atc0005@auburn.edu",
+		"Testing Message.Mention() method on card with no prior Elements.",
+		false,
+	)
+	if err := mstClient.Send(webhookUrl, bareMsg); err != nil {
 		fmt.Printf(
 			"failed to send message: %v",
 			err,

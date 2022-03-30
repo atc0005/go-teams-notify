@@ -75,6 +75,7 @@ func NewSimpleMessage(text string) *Message {
 
 	textBlock := Element{
 		Type: TypeElementTextBlock,
+		Wrap: true,
 		Text: text,
 	}
 
@@ -99,6 +100,7 @@ func NewSimpleMessage(text string) *Message {
 func NewTextBlockCard(text string) Card {
 	textBlock := Element{
 		Type: TypeElementTextBlock,
+		Wrap: true,
 		Text: text,
 	}
 
@@ -161,11 +163,7 @@ func (a *Attachments) Add(attachment Attachment) *Attachments {
 
 // Attach receives and adds one or more Card values to the Attachments
 // collection for a Microsoft Teams message.
-func (m *Message) Attach(cards ...*Card) *Message {
-	if len(cards) == 0 {
-		return m
-	}
-
+func (m *Message) Attach(cards ...*Card) {
 	for _, card := range cards {
 		attachment := Attachment{
 			ContentType: AttachmentContentType,
@@ -178,8 +176,6 @@ func (m *Message) Attach(cards ...*Card) *Message {
 
 		m.Attachments = append(m.Attachments, attachment)
 	}
-
-	return m
 }
 
 // PrettyPrint returns a formatted JSON payload of the Message if the
@@ -709,39 +705,39 @@ func (m Mention) Validate() error {
 	// be set in those cases.
 	//
 	//
-	if m.parent != nil {
-		// If we have a pointer to the Card, we can evaluate supported
-		// elements of the Card body to assert that the required text string
-		// is present.
-		//
-		// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format#mention-support-within-adaptive-cards
-		if m.parent.parent != nil {
-			var foundValidTextType bool
-			var foundExpectedTextString bool
-			for _, element := range m.parent.parent.Body {
-				// Look for valid text element types.
-				if element.Type == TypeElementTextBlock ||
-					element.Type == TypeElementFactSet {
-
-					foundValidTextType = true
-
-					// Look for the expected mention text.
-					if strings.Contains(element.Text, m.Text) {
-						foundExpectedTextString = true
-						break
-					}
-				}
-			}
-
-			if !foundValidTextType {
-				// note that a supported text type wasn't found.
-			}
-
-			if !foundExpectedTextString {
-				// note that the expected mention text was not found.
-			}
-		}
-	}
+	// 	if m.parent != nil {
+	// 		// If we have a pointer to the Card, we can evaluate supported
+	// 		// elements of the Card body to assert that the required text string
+	// 		// is present.
+	// 		//
+	// 		// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format#mention-support-within-adaptive-cards
+	// 		if m.parent.parent != nil {
+	// 			var foundValidTextType bool
+	// 			var foundExpectedTextString bool
+	// 			for _, element := range m.parent.parent.Body {
+	// 				// Look for valid text element types.
+	// 				if element.Type == TypeElementTextBlock ||
+	// 					element.Type == TypeElementFactSet {
+	//
+	// 					foundValidTextType = true
+	//
+	// 					// Look for the expected mention text.
+	// 					if strings.Contains(element.Text, m.Text) {
+	// 						foundExpectedTextString = true
+	// 						break
+	// 					}
+	// 				}
+	// 			}
+	//
+	// 			if !foundValidTextType {
+	// 				// note that a supported text type wasn't found.
+	// 			}
+	//
+	// 			if !foundExpectedTextString {
+	// 				// note that the expected mention text was not found.
+	// 			}
+	// 		}
+	// 	}
 
 	return nil
 }
@@ -795,23 +791,74 @@ which Card it is attached to?
 
 */
 
-// Mention uses the provided display name, ID and text values to create and
-// attach a new Card with user mention to the existing Message.
-func (m *Message) Mention(displayName string, id string, msgText string) error {
-	mentionCard, err := NewMentionCard(displayName, id, msgText)
-	if err != nil {
-		return err
-	}
+// Mention uses the provided display name, ID and text values to add a new
+// user Mention and TextBlock element to the first Card in the Message.
+//
+// If no Cards are yet attached to the Message, a new card is created using
+// the Mention and TextBlock element. If specified, the new TextBlock element
+// is added as the first element of the Card, otherwise it is added last. An
+// error is returned if insufficient values are provided.
+func (m *Message) Mention(displayName string, id string, msgText string, prependElement bool) error {
+	switch {
+	// If no existing cards, add a new one.
+	case len(m.Attachments) == 0:
+		mentionCard, err := NewMentionCard(displayName, id, msgText)
+		if err != nil {
+			return err
+		}
 
-	m.Attach(&mentionCard)
+		m.Attach(&mentionCard)
+
+	// We have at least one Card already, use it.
+	default:
+
+		// Build mention.
+		mention, err := mention(displayName, id)
+		if err != nil {
+			return fmt.Errorf(
+				"add new Mention to Message: %w",
+				err,
+			)
+		}
+
+		textBlock := Element{
+			Type: TypeElementTextBlock,
+			Wrap: true,
+
+			// The text block contains the mention text string (required) and
+			// user-specified message text string. Use the mention text as a
+			// "greeting" or lead-in for the user-specified message text.
+			Text: mention.Text + " " + msgText,
+		}
+
+		switch {
+		case prependElement:
+			m.Attachments[0].Content.Body = append(
+				[]Element{textBlock},
+				m.Attachments[0].Content.Body...,
+			)
+		default:
+			m.Attachments[0].Content.Body = append(
+				m.Attachments[0].Content.Body,
+				textBlock,
+			)
+		}
+
+		m.Attachments[0].Content.MSTeams.Entities = append(
+			m.Attachments[0].Content.MSTeams.Entities,
+			mention,
+		)
+	}
 
 	return nil
 }
 
-// Mention uses the given display name, ID and message text to create and
-// attach a user Mention value to the Card. An error is returned if provided
-// values are insufficient to create the user mention.
-func (c *Card) Mention(displayName string, id string, msgText string) error {
+// Mention uses the given display name, ID and message text to add a new user
+// Mention and TextBlock element to the Card. If specified, the new TextBlock
+// element is added as the first element of the Card, otherwise it is added
+// last. An error is returned if provided values are insufficient to create
+// the user mention.
+func (c *Card) Mention(displayName string, id string, msgText string, prependElement bool) error {
 	if msgText == "" {
 		return fmt.Errorf(
 			"required msgText argument is empty: %w",
@@ -826,10 +873,16 @@ func (c *Card) Mention(displayName string, id string, msgText string) error {
 
 	textBlock := Element{
 		Type: TypeElementTextBlock,
+		Wrap: true,
 		Text: mention.Text + " " + msgText,
 	}
 
-	c.Body = append(c.Body, textBlock)
+	switch {
+	case prependElement:
+		c.Body = append(c.Body, textBlock)
+	default:
+		c.Body = append([]Element{textBlock}, c.Body...)
+	}
 
 	return nil
 }
@@ -881,85 +934,53 @@ func mention(displayName string, id string) (Mention, error) {
 // of an applicable Element type then I suspect *that* would be an error
 // scenario.
 
-// Mention creates a new user Mention and appends it to the specified Card,
-// and prepends the user Mention Text field contents to the associated
-// Element. An error is returned if
-//
-//
-// func (e *Element) Mention(card *Card, displayName string, id string, msgText string) error {}
-
-// Mention creates a new user Mention and appends it to the specified Card. If
-// the Element is of TextBlock type then its Text field is prepended with a
-// and prepends the user Mention Text field contents to the associated
-// Element. An error is returned if ...
-//
-//
-// TODO: Implement unexported mention() function (which operates pretty much
-// as is shown here or in  NewMentionMessage()) and add Mention() methods to
-// Card type, but likely remove it from this type; I don't see a reliable way
-// to append the Mention Text field content to a FactSet without adding
-// another Fact entry and skewing the formatting.
-func (e *Element) Mention(card *Card, displayName string, id string, msgText string) error {
-
-	switch {
-	case displayName == "":
+// AddMention adds a provided Mention to the specified Card. The Text field
+// for the specified TextBlock element is updated with the Mention Text. If
+// specified, the Mention Text is prepended, otherwise appended.
+func AddMention(card *Card, textBlock *Element, mention Mention, prependText bool) error {
+	if card == nil {
 		return fmt.Errorf(
-			"required name argument is empty: %w",
+			"specified pointer to Card is nil: %w",
 			ErrMissingValue,
 		)
-
-	case id == "":
-		return fmt.Errorf(
-			"required id argument is empty: %w",
-			ErrMissingValue,
-		)
-
-	case msgText == "":
-		return fmt.Errorf(
-			"required msgText argument is empty: %w",
-			ErrMissingValue,
-		)
-
-	case e == nil:
-		return fmt.Errorf(
-			"required Element is nil: %w",
-			ErrMissingValue,
-		)
-
-	case card == nil:
-		return fmt.Errorf(
-			"required Card is nil: %w",
-			ErrMissingValue,
-		)
-
-	case e.Type != TypeElementFactSet || e.Type != TypeElementTextBlock:
-		return fmt.Errorf(
-			"element is of type %q; expected one of %q or %q: %w",
-			e.Type,
-			TypeElementFactSet,
-			TypeElementTextBlock,
-			ErrMissingValue,
-		)
-
-	default:
-
-		// Build mention.
-		//
-		// TODO: Create constructor for this step.
-		mention := Mention{
-			Type: TypeMention,
-			Text: fmt.Sprintf(MentionTextFormatTemplate, displayName),
-			Mentioned: Mentioned{
-				ID:   id,
-				Name: displayName,
-			},
-		}
-
-		// TODO: Finish or delete this method.
-		_ = mention
 	}
 
-	return fmt.Errorf("error: not implemented yet")
+	if textBlock == nil {
+		return fmt.Errorf(
+			"specified pointer to TextBlock element is nil: %w",
+			ErrMissingValue,
+		)
+	}
+
+	if textBlock.Type != TypeElementTextBlock {
+		return fmt.Errorf(
+			"invalid element type %q; expected %q: %w",
+			textBlock.Type,
+			TypeElementTextBlock,
+			ErrInvalidType,
+		)
+	}
+
+	// Fail early here vs waiting for later validation of the entire Message.
+	if err := mention.Validate(); err != nil {
+		return err
+	}
+
+	// The original text may have been sufficiently short to not be truncated,
+	// but once we add the user mention text it likely would, so explicitly
+	// indicate that we wish to disable wrapping.
+	textBlock.Wrap = true
+
+	switch prependText {
+	case true:
+		textBlock.Text = mention.Text + " " + textBlock.Text
+	case false:
+		textBlock.Text = textBlock.Text + " " + mention.Text
+	}
+
+	card.MSTeams.Entities = append(card.MSTeams.Entities, mention)
+
+	return nil
 }
 
 // NewMentionMessage creates a new simple Message. Using the given message
@@ -1001,30 +1022,12 @@ func NewMentionCard(displayName string, id string, msgText string) (Card, error)
 	// Create basic card.
 	textCard := NewTextBlockCard(msgText)
 
-	// Assert that the first element in the Card body is of TextBlock type.
-	switch {
-	case len(textCard.Body) == 0:
-		return Card{}, fmt.Errorf(
-			"empty Card Body: %w",
-			ErrMissingValue,
-		)
-
-	case textCard.Body[0].Type != TypeElementTextBlock:
-		return Card{}, fmt.Errorf(
-			"first element in Card Body is of type %q; expected %q: %w",
-			textCard.Body[0].Type,
-			TypeElementTextBlock,
-			ErrInvalidType,
-		)
-
-	default:
-		// Update the text block so that it contains the mention text string
-		// (required) and user-specified message text string. Use the mention
-		// text as a "greeting" or lead-in for the user-specified message
-		// text.
-		textCard.Body[0].Text = mention.Text +
-			" " + textCard.Body[0].Text
-	}
+	// Update the text block so that it contains the mention text string
+	// (required) and user-specified message text string. Use the mention
+	// text as a "greeting" or lead-in for the user-specified message
+	// text.
+	textCard.Body[0].Text = mention.Text +
+		" " + textCard.Body[0].Text
 
 	textCard.MSTeams.Entities = append(
 		textCard.MSTeams.Entities,
@@ -1032,5 +1035,4 @@ func NewMentionCard(displayName string, id string, msgText string) (Card, error)
 	)
 
 	return textCard, nil
-
 }
