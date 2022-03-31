@@ -522,9 +522,21 @@ func (e Element) Validate() error {
 		}
 	}
 
-	for _, action := range e.Actions {
-		if err := action.Validate(); err != nil {
-			return err
+	if e.Type == TypeElementActionSet {
+		// Actions collection is required for ActionSet element type.
+		// https://adaptivecards.io/explorer/ActionSet.html
+		if len(e.Actions) == 0 {
+			return fmt.Errorf(
+				"required Actions collection is empty for %s: %w",
+				e.Type,
+				ErrMissingValue,
+			)
+		}
+
+		for _, action := range e.Actions {
+			if err := action.Validate(); err != nil {
+				return err
+			}
 		}
 	}
 

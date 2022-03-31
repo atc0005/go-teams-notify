@@ -390,7 +390,9 @@ type Element struct {
 	// is used by a ColumnSet element type.
 	Columns []Column `json:"columns,omitempty"`
 
-	// Actions is a collection of actions to show.
+	// Actions is required for the ActionSet element type. Actions is a
+	// collection of Actions to show for an ActionSet element type.
+	//
 	// TODO: Should this be a pointer?
 	Actions []Action `json:"actions,omitempty"`
 
