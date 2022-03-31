@@ -403,6 +403,13 @@ func (tc TopLevelCard) Validate() error {
 	return nil
 }
 
+// WithSeparator indicates that a separating line should be drawn at the top
+// of the element.
+func (e *Element) WithSeparator() *Element {
+	e.Separator = true
+	return e
+}
+
 // Validate asserts that required fields have valid values.
 func (e Element) Validate() error {
 	supportedElementTypes := supportedElementTypes()
@@ -659,6 +666,8 @@ func (a Action) Validate() error {
 }
 
 // Validate asserts that required fields have valid values.
+//
+// TODO: Need to assert that Text field of this Mention matches a portion of
 func (m Mention) Validate() error {
 	if m.Type != TypeMention {
 		return fmt.Errorf(
@@ -934,10 +943,12 @@ func mention(displayName string, id string) (Mention, error) {
 // of an applicable Element type then I suspect *that* would be an error
 // scenario.
 
-// AddMention adds a provided Mention to the specified Card. The Text field
-// for the specified TextBlock element is updated with the Mention Text. If
-// specified, the Mention Text is prepended, otherwise appended.
-func AddMention(card *Card, textBlock *Element, mention Mention, prependText bool) error {
+// AddMention adds one or more provided user mentions to the specified Card.
+// The Text field for the specified TextBlock element is updated with the
+// Mention Text. If specified, the Mention Text is prepended, otherwise
+// appended. An error is returned if specified Mention values fail validation,
+// or one of Card or Element pointers are null .
+func AddMention(card *Card, textBlock *Element, prependText bool, mentions ...Mention) error {
 	if card == nil {
 		return fmt.Errorf(
 			"specified pointer to Card is nil: %w",
@@ -961,24 +972,29 @@ func AddMention(card *Card, textBlock *Element, mention Mention, prependText boo
 		)
 	}
 
-	// Fail early here vs waiting for later validation of the entire Message.
-	if err := mention.Validate(); err != nil {
-		return err
+	// Validate all user mentions before modifying Card or Element.
+	for _, mention := range mentions {
+		if err := mention.Validate(); err != nil {
+			return err
+		}
+	}
+
+	// Update TextBlock element text with required user mention text string.
+	for _, mention := range mentions {
+		switch prependText {
+		case true:
+			textBlock.Text = mention.Text + " " + textBlock.Text
+		case false:
+			textBlock.Text = textBlock.Text + " " + mention.Text
+		}
+
+		card.MSTeams.Entities = append(card.MSTeams.Entities, mention)
 	}
 
 	// The original text may have been sufficiently short to not be truncated,
 	// but once we add the user mention text it likely would, so explicitly
 	// indicate that we wish to disable wrapping.
 	textBlock.Wrap = true
-
-	switch prependText {
-	case true:
-		textBlock.Text = mention.Text + " " + textBlock.Text
-	case false:
-		textBlock.Text = textBlock.Text + " " + mention.Text
-	}
-
-	card.MSTeams.Entities = append(card.MSTeams.Entities, mention)
 
 	return nil
 }
@@ -1035,4 +1051,13 @@ func NewMentionCard(displayName string, id string, msgText string) (Card, error)
 	)
 
 	return textCard, nil
+}
+
+// NewMessageFromCard is a helper function for creating a new Message based
+// off of an existing Card value.
+//
+// TODO: Use pointer for Card?
+func NewMessageFromCard(card Card) *Message {
+	// TODO: Placeholder only
+	return &Message{}
 }

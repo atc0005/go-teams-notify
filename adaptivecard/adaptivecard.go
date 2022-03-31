@@ -392,7 +392,7 @@ type Element struct {
 	// Not all elements are enclosed in a Card.
 	//
 	// TODO: How is this used?
-	parent *Card `json:"-"`
+	// parent *Card `json:"-"`
 }
 
 // Column is a container used by a ColumnSet element type. Each container
@@ -531,7 +531,7 @@ type MSTeams struct {
 	// value.
 	//
 	// TODO: What is responsible for setting this?
-	parent *Card `json:"-"`
+	// parent *Card `json:"-"`
 }
 
 // Mention represents a mention in the message for a specific user.
@@ -555,7 +555,7 @@ type Mention struct {
 	// parent is an optional reference to the enclosing MSTeams value.
 	//
 	// TODO: What is responsible for setting this?
-	parent *MSTeams `json:"-"`
+	// parent *MSTeams `json:"-"`
 }
 
 // Mentioned represents the user id and name of a user that is mentioned.

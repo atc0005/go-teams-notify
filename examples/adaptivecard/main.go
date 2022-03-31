@@ -70,7 +70,7 @@ func main() {
 	}
 
 	// Create, print & send simple message.
-	simpleMsg := adaptivecard.NewSimpleMessage("Hello there!")
+	simpleMsg := adaptivecard.NewSimpleMessage("Hello from NewSimpleMessage!")
 
 	if err := simpleMsg.Prepare(); err != nil {
 		fmt.Printf(
@@ -94,7 +94,7 @@ func main() {
 	mentionMsg, err := adaptivecard.NewMentionMessage(
 		"Adam Chalkley",
 		"atc0005@auburn.edu",
-		"My spiffy new message!",
+		"New user mention message.",
 	)
 	if err != nil {
 		fmt.Printf(
@@ -123,13 +123,14 @@ func main() {
 	}
 
 	// Create simple message, then add a user mention to it.
-	customMsg := adaptivecard.NewSimpleMessage("custom user mention msg")
+	customMsg := adaptivecard.NewSimpleMessage("NewSimpleMessage.")
 	customMsg.Mention(
 		"Adam Chalkley",
 		"atc0005@auburn.edu",
-		"Testing Message.Mention() method on card with existing TextBlock.",
-		true,
+		"with a user mentioned added as a second step.",
+		false,
 	)
+
 	if err := customMsg.Prepare(); err != nil {
 		fmt.Printf(
 			"failed to prepare message: %v",
