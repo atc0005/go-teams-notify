@@ -1150,10 +1150,46 @@ func NewMessageFromCard(card Card) *Message {
 	return &Message{}
 }
 
-// NewContainer creates an empty Container with all required fields set.
+// NewContainer creates an empty Container.
 func NewContainer() *Element {
-	// TODO: Placeholder only
-	container := Element{}
+	container := Element{
+		Type: TypeElementContainer,
+	}
 
 	return &container
+}
+
+// NewFactSet creates an empty FactSet.
+func NewFactSet() *Element {
+	factSet := Element{
+		Type: TypeElementFactSet,
+	}
+
+	return &factSet
+}
+
+// AddFact adds one or many Fact values to a FactSet. An error is returned if
+// the Fact fails validation or if AddFact is called on an unsupported Element
+// type.
+func (e *Element) AddFact(facts ...Fact) error {
+	// Fail early if called on the wrong Element type.
+	if e.Type != TypeElementFactSet {
+		return fmt.Errorf(
+			"unsupported element type %s; expected %s: %w",
+			e.Type,
+			TypeElementFactSet,
+			ErrInvalidType,
+		)
+	}
+
+	// Validate all Fact values before adding them to the collection.
+	for _, fact := range facts {
+		if err := fact.Validate(); err != nil {
+			return err
+		}
+	}
+
+	e.Facts = append(e.Facts, facts...)
+
+	return nil
 }

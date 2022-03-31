@@ -244,6 +244,7 @@ type Message struct {
 //
 // TODO: Creating a custom type in order to "hang" methods off of it.
 // TODO: May not need this if we expose bulk of functionality from Message type.
+// TODO: Use slice of pointers?
 type Attachments []Attachment
 
 // Attachment represents an attached Adaptive Card for a Microsoft Teams
@@ -373,13 +374,11 @@ type Element struct {
 
 	// Items is required for the Container element type. Items is a collection
 	// of card elements to render inside the Container.
-	//
-	// TODO: Should this be a pointer?
-	Items []Element `json:"items,omitempty"`
+	Items []*Element `json:"items,omitempty"`
 
 	// Columns is a collection of Columns used to divide a region. This field
 	// is used by a ColumnSet element type.
-	Columns []Column `json:"columns,omitempty"`
+	Columns []*Column `json:"columns,omitempty"`
 
 	// Actions is required for the ActionSet element type. Actions is a
 	// collection of Actions to show for an ActionSet element type.
@@ -429,8 +428,7 @@ type Column struct {
 
 	// Items are the card elements that should be rendered inside of the
 	// column.
-	// TODO: Should this be a pointer?
-	Items []Element `json:"items,omitempty"`
+	Items []*Element `json:"items,omitempty"`
 
 	// SelectAction is an action that will be invoked when the Column is
 	// tapped or selected. Action.ShowCard is not supported.
