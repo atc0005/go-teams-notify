@@ -415,6 +415,8 @@ func (tc TopLevelCard) Validate() error {
 
 // WithSeparator indicates that a separating line should be drawn at the top
 // of the element.
+//
+// TODO: Are there any element types which do not support this?
 func (e *Element) WithSeparator() *Element {
 	e.Separator = true
 	return e
@@ -906,6 +908,29 @@ func (c *Card) Mention(displayName string, id string, msgText string, prependEle
 	return nil
 }
 
+// AddMention adds one or more provided user mentions to the specified Card
+// along with a single TextBlock element as the first element in the Card
+// body. The Text field for the specified TextBlock element is updated with
+// the Mention Text. If specified, the Mention Text is prepended, otherwise
+// appended to the new TextBlock element.
+//
+// An error is returned if specified Mention values fail validation.
+func (c *Card) AddMention(prependText bool, mentions ...Mention) error {
+	textBlock := Element{
+		Type: TypeElementTextBlock,
+		Wrap: true,
+	}
+
+	// Insert new TextBlock as the first element.
+	c.Body = append([]Element{textBlock}, c.Body...)
+
+	if err := AddMention(c, &textBlock, prependText, mentions...); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // NewMention uses the given display name and ID to create a user Mention
 // value for inclusion in a Card. An error is returned if provided values are
 // insufficient to create the user mention.
@@ -957,7 +982,7 @@ func NewMention(displayName string, id string) (Mention, error) {
 // The Text field for the specified TextBlock element is updated with the
 // Mention Text. If specified, the Mention Text is prepended, otherwise
 // appended. An error is returned if specified Mention values fail validation,
-// or one of Card or Element pointers are null .
+// or one of Card or Element pointers are null.
 func AddMention(card *Card, textBlock *Element, prependText bool, mentions ...Mention) error {
 	if card == nil {
 		return fmt.Errorf(

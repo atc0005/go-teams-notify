@@ -10,7 +10,7 @@
 ### Equivalent mention (via botapi package)
 
 1. Create Card with user specified text. [first TextBlock]
-1. Add mentions to Card.
+1. Add mentions to Card (which modify the first TextBlock)
 1. Add trailer to Card [second TextBlock]
 1. Set separator to true.
 
@@ -32,13 +32,8 @@
 
 ## Unordered thoughts / Next Steps
 
-continue filling out Validate() functions
-add Validate() function for MSTeams type
 indicate that MSTeams type is optional by using pointer type?
 review other field types to determine which of those should be pointers
-
-~Implement unexported mention() function, use it from Mention() methods.~
-Created exported version instead.
 
 TODO: Create multiple helper functions to create useful intermediate values
 from common values.
@@ -49,9 +44,6 @@ attachment.
 
 Maybe not worth adding NewXYZFromFile variants now, but perhaps something
 similar. Perhaps along the lines of NewMessageFromCard().
-
-Add WithSeparator() method to element types that support it. The method is
-responsible for enabling the separating line at the top of the element.
 
 Add method or function for adding multiple Mentions to a message. For example,
 send2teams accepts a user-specified slice of ID/Name pairs which are intended
