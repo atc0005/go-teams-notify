@@ -7,14 +7,10 @@
 
 ## send2teams prototype
 
-### Equivalent mention (via botapi package)
+### Current MessageCard functionality
 
-1. Create Card with user specified text. [first TextBlock]
-1. Add mentions to Card (which modify the first TextBlock)
-1. Add trailer to Card [second TextBlock]
-1. Set separator to true.
-
-### Equivalent MessageCard functionality
+See this doc for info on sections:
+<https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#using-sections>
 
 1. Create new MessageCard
 1. Set title
@@ -29,6 +25,46 @@
 1. StartGroup
 1. Add trailerSection to MessageCard
 1. Send MessageCard to Teams
+
+### Adaptive Card functionality
+
+1. Create new Message
+1. Create new Card
+1. Create new Container [initial Container]
+1. Create new TextBlock element
+1. Set TextBlock.Text to user-specified text
+1. Add TextBlock to Container
+1. Add Container to Card Body
+1. If user specified target URLs, add a new Container [for actions]
+1. Enable Separator for new Container [actions]
+1. Add new ActionSet
+1. Range over target URLs
+   1. build Action.OpenUrl value
+   1. add value to ActionSet
+1. Add ActionSet to Container [actions]
+1. Add Container to Card Body [actions]
+1. Create new Container [trailer]
+1. Enable Separator for new Container [trailer]
+1. Create new TextBlock element
+1. Set TextBlock.Text to config.MessageTrailer(...)
+1. Add TextBlock to Container [trailer]
+1. Add Container to Card Body [trailer]
+1. Add Card to Message
+1. Send Message to Teams
+
+### User mention (via botapi package)
+
+1. Create Card with user specified text. [first TextBlock]
+1. Add mentions to Card (which modify the first TextBlock)
+1. Add trailer to Card [second TextBlock]
+1. Set separator to true.
+
+### User mention (via adaptivecard package)
+
+1. Create Card with user specified text. [first TextBlock]
+1. Add mentions to Card (which modify the first TextBlock)
+1. Add trailer to Card [second TextBlock]
+1. Set separator to true.
 
 ## Unordered thoughts / Next Steps
 
