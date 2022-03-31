@@ -380,8 +380,14 @@ type Element struct {
 	// preceding element.
 	Spacing string `json:"spacing,omitempty"`
 
-	// Columns is a container used by a ColumnSet element type which contains
-	// one or more elements.
+	// Items is required for the Container element type. Items is a collection
+	// of card elements to render inside the Container.
+	//
+	// TODO: Should this be a pointer?
+	Items []Element `json:"items,omitempty"`
+
+	// Columns is a collection of Columns used to divide a region. This field
+	// is used by a ColumnSet element type.
 	Columns []Column `json:"columns,omitempty"`
 
 	// Actions is a collection of actions to show.

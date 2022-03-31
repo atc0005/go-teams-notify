@@ -503,6 +503,19 @@ func (e Element) Validate() error {
 		}
 	}
 
+	if e.Type == TypeElementContainer {
+		// Items collection is required for Container element type.
+		// https://adaptivecards.io/explorer/Container.html
+		if len(e.Items) == 0 {
+			return fmt.Errorf(
+				"required Items collection is empty for %s: %w",
+				e.Type,
+				ErrMissingValue,
+			)
+		}
+	}
+
+	// Used by ColumnSet type, but not required.
 	for _, column := range e.Columns {
 		if err := column.Validate(); err != nil {
 			return err
