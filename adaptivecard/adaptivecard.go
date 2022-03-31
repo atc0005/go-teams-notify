@@ -218,6 +218,10 @@ type Message struct {
 	Type string `json:"type"`
 
 	// Attachments is a collection of one or more Adaptive Cards.
+	//
+	// NOTE: Including multiple attachment *without* AttachmentLayout set to
+	// "carousel" hides cards after the first. Not sure if this is a bug, or
+	// if it's intentional.
 	Attachments Attachments `json:"attachments"`
 
 	// AttachmentLayout controls the layout for Adaptive Cards in the

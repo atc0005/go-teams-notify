@@ -163,6 +163,10 @@ func (a *Attachments) Add(attachment Attachment) *Attachments {
 
 // Attach receives and adds one or more Card values to the Attachments
 // collection for a Microsoft Teams message.
+//
+// NOTE: Including multiple cards in the attachments collection *without*
+// attachmentLayout set to "carousel" hides cards after the first. Not sure if
+// this is a bug, or if it's intentional.
 func (m *Message) Attach(cards ...*Card) {
 	for _, card := range cards {
 		attachment := Attachment{
@@ -176,6 +180,12 @@ func (m *Message) Attach(cards ...*Card) {
 
 		m.Attachments = append(m.Attachments, attachment)
 	}
+}
+
+// Carousel sets the Message Attachment layout to Carousel display mode.
+func (m *Message) Carousel() *Message {
+	m.AttachmentLayout = AttachmentLayoutCarousel
+	return m
 }
 
 // PrettyPrint returns a formatted JSON payload of the Message if the
