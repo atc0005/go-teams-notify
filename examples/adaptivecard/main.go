@@ -123,12 +123,13 @@ func main() {
 
 	// Create simple message, then add a user mention to it.
 	customMsg := adaptivecard.NewSimpleMessage("NewSimpleMessage.")
-	if err := customMsg.Mention(
+	err = customMsg.Mention(
 		"Adam Chalkley",
 		"atc0005@auburn.edu",
 		"with a user mention added as a second step.",
 		false,
-	); err != nil {
+	)
+	if err != nil {
 		fmt.Printf(
 			"failed to add user mention: %v",
 			err,
@@ -156,12 +157,13 @@ func main() {
 
 	// Create empty message, add a user mention to it.
 	bareMsg := adaptivecard.NewMessage()
-	if err := bareMsg.Mention(
+	err = bareMsg.Mention(
 		"Adam Chalkley",
 		"atc0005@auburn.edu",
 		"Testing Message.Mention() method on card with no prior Elements.",
 		false,
-	); err != nil {
+	)
+	if err != nil {
 		fmt.Printf(
 			"failed to add user mention: %v",
 			err,
