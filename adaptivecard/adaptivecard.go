@@ -358,6 +358,13 @@ type Element struct {
 	// https://adaptivecards.io/explorer/TextRun.html
 	Text string `json:"text,omitempty"`
 
+	// URL is required for the Image element type. URL is the URL to an Image
+	// in an ImageSet element type.
+	//
+	// https://adaptivecards.io/explorer/Image.html
+	// https://adaptivecards.io/explorer/ImageSet.html
+	URL string `json:"uri,omitempty"`
+
 	// Size controls the size of text within a TextBlock element.
 	Size string `json:"size,omitempty"`
 

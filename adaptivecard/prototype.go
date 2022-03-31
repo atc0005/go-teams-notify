@@ -435,6 +435,22 @@ func (e Element) Validate() error {
 		)
 	}
 
+	// The Text field is required by TextBlock and TextRun elements, but an
+	// empty string appears to be permitted. Because of this, we do not have
+	// to assert that a value is present for the field.
+
+	if e.Type == TypeElementImage {
+		// URL is required for Image element type.
+		// https://adaptivecards.io/explorer/Image.html
+		if e.URL == "" {
+			return fmt.Errorf(
+				"required URL is empty for %s: %w",
+				e.Type,
+				ErrMissingValue,
+			)
+		}
+	}
+
 	if e.Size != "" {
 		supportedSizeValues := supportedSizeValues()
 		if !goteamsnotify.InList(e.Size, supportedSizeValues, false) {
