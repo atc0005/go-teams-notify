@@ -540,9 +540,21 @@ func (e Element) Validate() error {
 		}
 	}
 
-	for _, fact := range e.Facts {
-		if err := fact.Validate(); err != nil {
-			return err
+	if e.Type == TypeElementFactSet {
+		// Facts collection is required for FactSet element type.
+		// https://adaptivecards.io/explorer/FactSet.html
+		if len(e.Facts) == 0 {
+			return fmt.Errorf(
+				"required Facts collection is empty for %s: %w",
+				e.Type,
+				ErrMissingValue,
+			)
+		}
+
+		for _, fact := range e.Facts {
+			if err := fact.Validate(); err != nil {
+				return err
+			}
 		}
 	}
 

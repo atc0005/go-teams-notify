@@ -396,8 +396,10 @@ type Element struct {
 	// TODO: Should this be a pointer?
 	Actions []Action `json:"actions,omitempty"`
 
-	// Facts is a collection of Fact values that are part of a FactSet element
-	// type. Each Fact value is a key/value pair displayed in tabular form.
+	// Facts is required for the FactSet element type. Actions is a collection
+	// of Fact values that are part of a FactSet element type. Each Fact value
+	// is a key/value pair displayed in tabular form.
+	//
 	// TODO: Should this be a pointer?
 	Facts []Fact `json:"facts,omitempty"`
 
