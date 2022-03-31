@@ -301,16 +301,7 @@ type Card struct {
 	// building-blocks known as elements. Elements can be composed to create
 	// many types of cards. These elements are shown in the primary card
 	// region.
-	//
-	// NOTE: If we make this an interface type then the fields of the Element
-	// won't be exposed to client code. Perhaps it's better to create
-	// constructors for each supported Element type so that required fields
-	// are populated and unneeded fields are skipped?
-	//
-	// TODO: Should this be a slice of pointers instead? If we do this AND add
-	// the pointer for this Card to the parent field in the Element then the
-	// Element will be able to detect its position in the collection.
-	Body []Element `json:"body"`
+	Body []*Element `json:"body"`
 
 	// Actions is a collection of actions to show in the card's action bar.
 	// TODO: Should this be a pointer?

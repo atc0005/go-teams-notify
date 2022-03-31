@@ -85,8 +85,8 @@ func NewSimpleMessage(text string) *Message {
 		Type:    TypeAdaptiveCard,
 		Schema:  AdaptiveCardSchema,
 		Version: fmt.Sprintf(AdaptiveCardVersionTmpl, AdaptiveCardMaxVersion),
-		Body: []Element{
-			textBlock,
+		Body: []*Element{
+			&textBlock,
 		},
 	}
 
@@ -108,8 +108,8 @@ func NewTextBlockCard(text string) Card {
 		Type:    TypeAdaptiveCard,
 		Schema:  AdaptiveCardSchema,
 		Version: fmt.Sprintf(AdaptiveCardVersionTmpl, AdaptiveCardMaxVersion),
-		Body: []Element{
-			textBlock,
+		Body: []*Element{
+			&textBlock,
 		},
 	}
 
@@ -908,13 +908,13 @@ func (m *Message) Mention(displayName string, id string, msgText string, prepend
 		switch {
 		case prependElement:
 			m.Attachments[0].Content.Body = append(
-				[]Element{textBlock},
+				[]*Element{&textBlock},
 				m.Attachments[0].Content.Body...,
 			)
 		default:
 			m.Attachments[0].Content.Body = append(
 				m.Attachments[0].Content.Body,
-				textBlock,
+				&textBlock,
 			)
 		}
 
@@ -953,9 +953,9 @@ func (c *Card) Mention(displayName string, id string, msgText string, prependEle
 
 	switch {
 	case prependElement:
-		c.Body = append(c.Body, textBlock)
+		c.Body = append(c.Body, &textBlock)
 	default:
-		c.Body = append([]Element{textBlock}, c.Body...)
+		c.Body = append([]*Element{&textBlock}, c.Body...)
 	}
 
 	return nil
@@ -975,7 +975,7 @@ func (c *Card) AddMention(prependText bool, mentions ...Mention) error {
 	}
 
 	// Insert new TextBlock as the first element.
-	c.Body = append([]Element{textBlock}, c.Body...)
+	c.Body = append([]*Element{&textBlock}, c.Body...)
 
 	if err := AddMention(c, &textBlock, prependText, mentions...); err != nil {
 		return err
@@ -1144,8 +1144,16 @@ func NewMentionCard(displayName string, id string, msgText string) (Card, error)
 // NewMessageFromCard is a helper function for creating a new Message based
 // off of an existing Card value.
 //
-// TODO: Use pointer for Card?
+// TODO: Require Card pointer?
 func NewMessageFromCard(card Card) *Message {
 	// TODO: Placeholder only
 	return &Message{}
+}
+
+// NewContainer creates an empty Container with all required fields set.
+func NewContainer() *Element {
+	// TODO: Placeholder only
+	container := Element{}
+
+	return &container
 }
