@@ -822,7 +822,7 @@ func (m *Message) Mention(displayName string, id string, msgText string, prepend
 	default:
 
 		// Build mention.
-		mention, err := mention(displayName, id)
+		mention, err := NewMention(displayName, id)
 		if err != nil {
 			return fmt.Errorf(
 				"add new Mention to Message: %w",
@@ -875,7 +875,7 @@ func (c *Card) Mention(displayName string, id string, msgText string, prependEle
 		)
 	}
 
-	mention, err := mention(displayName, id)
+	mention, err := NewMention(displayName, id)
 	if err != nil {
 		return err
 	}
@@ -896,10 +896,10 @@ func (c *Card) Mention(displayName string, id string, msgText string, prependEle
 	return nil
 }
 
-// mention uses the given display name and ID to create a user Mention value
-// for inclusion in a Card. An error is returned if provided values are
+// NewMention uses the given display name and ID to create a user Mention
+// value for inclusion in a Card. An error is returned if provided values are
 // insufficient to create the user mention.
-func mention(displayName string, id string) (Mention, error) {
+func NewMention(displayName string, id string) (Mention, error) {
 	switch {
 	case displayName == "":
 		return Mention{}, fmt.Errorf(
@@ -1030,7 +1030,7 @@ func NewMentionCard(displayName string, id string, msgText string) (Card, error)
 	}
 
 	// Build mention.
-	mention, err := mention(displayName, id)
+	mention, err := NewMention(displayName, id)
 	if err != nil {
 		return Card{}, err
 	}

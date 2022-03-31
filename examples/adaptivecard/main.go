@@ -127,7 +127,7 @@ func main() {
 	customMsg.Mention(
 		"Adam Chalkley",
 		"atc0005@auburn.edu",
-		"with a user mentioned added as a second step.",
+		"with a user mention added as a second step.",
 		false,
 	)
 
