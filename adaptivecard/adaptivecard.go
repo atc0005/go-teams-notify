@@ -116,20 +116,20 @@ const (
 
 // Text weight for TextBlock or TextRun elements.
 const (
-	WeightBolder  string = "Bolder"
-	WeightLighter string = "Lighter"
-	WeightDefault string = "Default"
+	WeightBolder  string = "bolder"
+	WeightLighter string = "lighter"
+	WeightDefault string = "default"
 )
 
 // Supported colors for TextBlock elements.
 const (
-	ColorDefault   string = "Default"
-	ColorDark      string = "Dark"
-	ColorLight     string = "Light"
-	ColorAccent    string = "Accent"
-	ColorGood      string = "Good"
-	ColorWarning   string = "Warning"
-	ColorAttention string = "Attention"
+	ColorDefault   string = "default"
+	ColorDark      string = "dark"
+	ColorLight     string = "light"
+	ColorAccent    string = "accent"
+	ColorGood      string = "good"
+	ColorWarning   string = "warning"
+	ColorAttention string = "attention"
 )
 
 // Supported spacing values for FactSet, Container and other container element
