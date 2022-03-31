@@ -349,9 +349,10 @@ type Element struct {
 	// https://adaptivecards.io/explorer/AdaptiveCard.html
 	Type string `json:"type"`
 
-	// Text is used by supported element types to display text. A subset of
-	// markdown is supported for text used in TextBlock elements, but no
-	// formatting is permitted in text used in TextRun elements.
+	// Text is required by the TextBlock and TextRun element types. Text is
+	// used to display text. A subset of markdown is supported for text used
+	// in TextBlock elements, but no formatting is permitted in text used in
+	// TextRun elements.
 	//
 	// https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/text-features
 	// https://adaptivecards.io/explorer/TextBlock.html
