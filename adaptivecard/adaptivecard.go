@@ -52,7 +52,8 @@ const (
 	// schema elements, except Action.Submit, are fully supported. The
 	// supported actions are Action.OpenURL, Action.ShowCard,
 	// Action.ToggleVisibility, and Action.Execute."
-	AdaptiveCardMaxVersion  float64 = 1.4
+	// AdaptiveCardMaxVersion  float64 = 1.4
+	AdaptiveCardMaxVersion  float64 = 1.3
 	AdaptiveCardMinVersion  float64 = 1.0
 	AdaptiveCardVersionTmpl string  = "%0.1f"
 )
