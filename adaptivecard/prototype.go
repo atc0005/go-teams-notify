@@ -1179,3 +1179,22 @@ func (e Element) HasMentionText(m Mention) bool {
 		return false
 	}
 }
+
+// NewActionOpenURL creates a new Action.OpenURL value using the provided URL
+// and title. An error is returned if invalid values are supplied.
+func NewActionOpenURL(url string, title string) (Action, error) {
+	// Accept the user-specified values as-is, use Validate() method to do the
+	// heavy lifting.
+	action := Action{
+		Type:  TypeActionOpenURL,
+		Title: title,
+		URL:   url,
+	}
+
+	err := action.Validate()
+	if err != nil {
+		return Action{}, err
+	}
+
+	return action, nil
+}
