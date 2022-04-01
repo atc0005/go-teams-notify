@@ -158,13 +158,18 @@ const (
 
 // Supported Actions
 const (
+
+	// TypeActionExecute is an action that gathers input fields, merges with
+	// optional data field, and sends an event to the client. Clients process
+	// the event by sending an Invoke activity of type adaptiveCard/action to
+	// the target Bot. The inputs that are gathered are those on the current
+	// card, and in the case of a show card those on any parent cards. See
+	// Universal Action Model documentation for more details:
+	// https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model
+	//
 	// TypeActionExecute was introduced in Adaptive Cards schema version 1.4.
 	// TypeActionExecute actions may not render with earlier versions of the
-	// Teams client. To ensure maximum compatibility in Teams, consider
-	// defining your TypeActionExecute actions with a TypeActionSubmit action
-	// in the fallback property.
-	//
-	// https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model
+	// Teams client.
 	TypeActionExecute string = "Action.Execute"
 
 	// ActionExecuteMinCardVersionRequired is the minimum version of the
@@ -176,10 +181,32 @@ const (
 	// TypeActionSubmit is not supported in Incoming Webhooks.
 	TypeActionSubmit string = "Action.Submit"
 
-	// TODO: Fill in doc details for these action types.
-	TypeActionOpenURL          string = "Action.OpenUrl"
-	TypeActionShowCard         string = "Action.ShowCard"
+	// TypeActionOpenURL (when invoked) shows the given url either by
+	// launching it in an external web browser or showing within an embedded
+	// web browser.
+	TypeActionOpenURL string = "Action.OpenUrl"
+
+	// TypeActionShowCard defines an AdaptiveCard which is shown to the user
+	// when the button or link is clicked.
+	TypeActionShowCard string = "Action.ShowCard"
+
+	// TypeActionToggleVisibility toggles the visibility of associated card
+	// elements.
 	TypeActionToggleVisibility string = "Action.ToggleVisibility"
+)
+
+// Supported Fallback options.
+const (
+	TypeFallbackActionExecute          string = TypeActionExecute
+	TypeFallbackActionOpenURL          string = TypeActionOpenURL
+	TypeFallbackActionShowCard         string = TypeActionShowCard
+	TypeFallbackActionSubmit           string = TypeActionSubmit
+	TypeFallbackActionToggleVisibility string = TypeActionToggleVisibility
+
+	// TypeFallbackOptionDrop causes this element to be dropped immediately
+	// when unknown elements are encountered. The unknown element doesn't
+	// bubble up any higher.
+	TypeFallbackOptionDrop string = "drop"
 )
 
 // Valid types for an Adaptive Card element. Not all types are supported by
@@ -494,6 +521,10 @@ type Action struct {
 	// action types.
 	URL string `json:"url,omitempty"`
 
+	// Fallback describes what to do when an unknown element is encountered or
+	// the requirements of this or any children can't be met.
+	Fallback string `json:"fallback,omitempty"`
+
 	// Card property is used by Action.ShowCard type.
 	//
 	// NOTE: Based on a review of JSON content, it looks like `ActionCard` is
@@ -531,6 +562,12 @@ type ISelectAction struct {
 	// URL is required for the Action.OpenUrl type, optional for other action
 	// types.
 	URL string `json:"url,omitempty"`
+
+	// Fallback describes what to do when an unknown element is encountered or
+	// the requirements of this or any children can't be met.
+	//
+	// TODO: Confirm that this is a valid field.
+	Fallback string `json:"fallback,omitempty"`
 }
 
 // MSTeams represents a container for properties specific to Microsoft Teams

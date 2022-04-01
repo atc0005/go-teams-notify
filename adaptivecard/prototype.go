@@ -289,7 +289,7 @@ func (m Message) Validate() error {
 // type values.
 //
 
-// Validate asserts that required fields have valid values.
+// Validate asserts that fields have valid values.
 func (a Attachment) Validate() error {
 	if a.ContentType != AttachmentContentType {
 		return fmt.Errorf(
@@ -303,7 +303,7 @@ func (a Attachment) Validate() error {
 	return nil
 }
 
-// Validate asserts that required fields have valid values.
+// Validate asserts that fields have valid values.
 func (c Card) Validate() error {
 	if c.Type != TypeAdaptiveCard {
 		return fmt.Errorf(
@@ -395,7 +395,7 @@ func (c Card) Validate() error {
 	return nil
 }
 
-// Validate asserts that required fields have valid values.
+// Validate asserts that fields have valid values.
 func (tc TopLevelCard) Validate() error {
 	// Validate embedded Card first as those validation requirements apply
 	// here also.
@@ -463,7 +463,7 @@ func (e *Element) WithSeparator() *Element {
 	return e
 }
 
-// Validate asserts that required fields have valid values.
+// Validate asserts that fields have valid values.
 func (e Element) Validate() error {
 	supportedElementTypes := supportedElementTypes()
 	if !goteamsnotify.InList(e.Type, supportedElementTypes, false) {
@@ -602,7 +602,7 @@ func (e Element) Validate() error {
 	return nil
 }
 
-// Validate asserts that required fields have valid values.
+// Validate asserts that fields have valid values.
 func (c Column) Validate() error {
 	if c.Type != TypeColumn {
 		return fmt.Errorf(
@@ -668,7 +668,7 @@ func (c Column) Validate() error {
 	return nil
 }
 
-// Validate asserts that required fields have valid values.
+// Validate asserts that fields have valid values.
 func (f Fact) Validate() error {
 	if f.Title == "" {
 		return fmt.Errorf(
@@ -687,7 +687,7 @@ func (f Fact) Validate() error {
 	return nil
 }
 
-// Validate asserts that required fields have valid values.
+// Validate asserts that fields have valid values.
 func (m MSTeams) Validate() error {
 	// If an optional width value is set, assert that it is a valid value.
 	if m.Width != "" {
@@ -712,9 +712,11 @@ func (m MSTeams) Validate() error {
 	return nil
 }
 
-// Validate asserts that required fields have valid values.
+// Validate asserts that fields have valid values.
 func (i ISelectAction) Validate() error {
-	supportedValues := supportedISelectActionValues()
+	// Some supportedISelectActionValues are restricted to later Adaptive Card
+	// schema versions.
+	supportedValues := supportedISelectActionValues(AdaptiveCardMaxVersion)
 	if !goteamsnotify.InList(i.Type, supportedValues, false) {
 		return fmt.Errorf(
 			"invalid %s %q for ISelectAction; expected one of %v: %w",
@@ -723,6 +725,19 @@ func (i ISelectAction) Validate() error {
 			supportedValues,
 			ErrInvalidType,
 		)
+	}
+
+	if i.Fallback != "" {
+		supportedValues := supportedISelectActionFallbackValues(AdaptiveCardMaxVersion)
+		if !goteamsnotify.InList(i.Fallback, supportedValues, false) {
+			return fmt.Errorf(
+				"invalid %s %q for ISelectAction; expected one of %v: %w",
+				"Fallback",
+				i.Fallback,
+				supportedValues,
+				ErrInvalidFieldValue,
+			)
+		}
 	}
 
 	if i.Type == TypeActionOpenURL {
@@ -737,7 +752,7 @@ func (i ISelectAction) Validate() error {
 	return nil
 }
 
-// Validate asserts that required fields have valid values.
+// Validate asserts that fields have valid values.
 func (a Action) Validate() error {
 
 	// Some Actions are restricted to later Adaptive Card schema versions.
@@ -761,6 +776,19 @@ func (a Action) Validate() error {
 		}
 	}
 
+	if a.Fallback != "" {
+		supportedValues := supportedActionFallbackValues(AdaptiveCardMaxVersion)
+		if !goteamsnotify.InList(a.Fallback, supportedValues, false) {
+			return fmt.Errorf(
+				"invalid %s %q for Action; expected one of %v: %w",
+				"Fallback",
+				a.Fallback,
+				supportedValues,
+				ErrInvalidFieldValue,
+			)
+		}
+	}
+
 	// Optional, but only supported by the Action.ShowCard type.
 	if a.Type != TypeActionShowCard && a.Card != nil {
 		return fmt.Errorf(
@@ -773,7 +801,7 @@ func (a Action) Validate() error {
 	return nil
 }
 
-// Validate asserts that required fields have valid values.
+// Validate asserts that fields have valid values.
 //
 // Element.Validate() asserts that required Mention.Text content is found for
 // each recorded user mention the Card..
@@ -797,7 +825,7 @@ func (m Mention) Validate() error {
 	return nil
 }
 
-// Validate asserts that required fields have valid values.
+// Validate asserts that fields have valid values.
 func (m Mentioned) Validate() error {
 	if m.ID == "" {
 		return fmt.Errorf(

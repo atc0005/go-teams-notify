@@ -105,10 +105,14 @@ func supportedActionValues(version float64) []string {
 	// https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model
 	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
 	supportedValues := []string{
-		// TypeActionSubmit,
 		TypeActionOpenURL,
 		TypeActionShowCard,
 		TypeActionToggleVisibility,
+
+		// Action.Submit is not supported for Adaptive Cards in Incoming
+		// Webhooks.
+		//
+		// TypeActionSubmit,
 	}
 
 	// Version 1.4 is when Action.Execute was introduced.
@@ -129,23 +133,48 @@ func supportedActionValues(version float64) []string {
 	return supportedValues
 }
 
-// supportedISelectActionValues returns a list of valid ISelectAction types,
-// which is a subset of the supported Action types. This list is intended to
-// be used for validation and display purposes.
+// supportedISelectActionValues accepts a value indicating the maximum
+// Adaptive Card schema version supported and returns a list of valid
+// ISelectAction types. This list is intended to be used for validation and
+// display purposes.
 //
 // NOTE: See also the supportedActionValues() function. See ref links for
 // unsupported Action types.
-func supportedISelectActionValues() []string {
+func supportedISelectActionValues(version float64) []string {
 	// https://adaptivecards.io/explorer/Column.html
 	// https://adaptivecards.io/explorer/TableCell.html
 	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
-	return []string{
-		TypeActionExecute,
-		// TypeActionSubmit,
+	supportedValues := []string{
 		TypeActionOpenURL,
-		// TypeActionShowCard,
 		TypeActionToggleVisibility,
+
+		// Action.Submit is not supported for Adaptive Cards in Incoming
+		// Webhooks.
+		//
+		// TypeActionSubmit,
+
+		// Action.ShowCard is not a supported Action for selectAction fields
+		// (ISelectAction).
+		//
+		// TypeActionShowCard,
 	}
+
+	// Version 1.4 is when Action.Execute was introduced.
+	//
+	// Per this doc:
+	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
+	//
+	// the "Action.Execute" action is supported:
+	//
+	// "For Adaptive Cards in Incoming Webhooks, all native Adaptive Card
+	// schema elements, except Action.Submit, are fully supported. The
+	// supported actions are Action.OpenURL, Action.ShowCard,
+	// Action.ToggleVisibility, and Action.Execute."
+	if version >= ActionExecuteMinCardVersionRequired {
+		supportedValues = append(supportedValues, TypeActionExecute)
+	}
+
+	return supportedValues
 }
 
 // supportedAttachmentLayoutValues returns a list of valid AttachmentLayout
@@ -168,4 +197,32 @@ func supportedMSTeamsWidthValues() []string {
 	return []string{
 		MSTeamsWidthFull,
 	}
+}
+
+// supportedActionFallbackValues accepts a value indicating the maximum
+// Adaptive Card schema version supported and returns a list of valid Action
+// Fallback types. This list is intended to be used for validation and display
+// purposes.
+func supportedActionFallbackValues(version float64) []string {
+	// https://adaptivecards.io/explorer/Action.OpenUrl.html
+	// https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model
+	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
+	supportedValues := supportedActionValues(version)
+	supportedValues = append(supportedValues, TypeFallbackOptionDrop)
+
+	return supportedValues
+}
+
+// supportedISelectActionFallbackValues accepts a value indicating the maximum
+// Adaptive Card schema version supported and returns a list of valid
+// ISelectAction Fallback types. This list is intended to be used for
+// validation and display purposes.
+func supportedISelectActionFallbackValues(version float64) []string {
+	// https://adaptivecards.io/explorer/Action.OpenUrl.html
+	// https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model
+	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
+	supportedValues := supportedISelectActionValues(version)
+	supportedValues = append(supportedValues, TypeFallbackOptionDrop)
+
+	return supportedValues
 }
