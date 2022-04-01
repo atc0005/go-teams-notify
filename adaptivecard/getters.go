@@ -122,7 +122,7 @@ func supportedActionValues(version float64) []string {
 	// schema elements, except Action.Submit, are fully supported. The
 	// supported actions are Action.OpenURL, Action.ShowCard,
 	// Action.ToggleVisibility, and Action.Execute."
-	if version >= ActionExecuteMinVersionRequired {
+	if version >= ActionExecuteMinCardVersionRequired {
 		supportedValues = append(supportedValues, TypeActionExecute)
 	}
 
