@@ -706,10 +706,10 @@ func NewSectionImage() *SectionImage {
 	return &SectionImage{}
 }
 
-// NewPotentialAction creates a new PotentialAction
-// using the provided potential action type and name. The name values defines
-// the text that will be displayed on screen for the action. An error is
-// returned if invalid values are supplied.
+// NewPotentialAction creates a new PotentialAction using the provided
+// potential action type and name. The name value defines the text that will
+// be displayed on screen for the action. An error is returned if invalid
+// values are supplied.
 func NewPotentialAction(potentialActionType string, name string) (*PotentialAction, error) {
 	pa := PotentialAction{
 		Type: potentialActionType,

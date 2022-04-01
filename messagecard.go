@@ -829,7 +829,7 @@ func NewMessageCardSectionImage() MessageCardSectionImage {
 }
 
 // NewMessageCardPotentialAction creates a new MessageCardPotentialAction
-// using the provided potential action type and name. The name values defines
+// using the provided potential action type and name. The name value defines
 // the text that will be displayed on screen for the action. An error is
 // returned if invalid values are supplied.
 //
