@@ -44,7 +44,7 @@ const (
 	// Version 1.4 is when Action.Execute was introduced.
 	//
 	// Per this doc:
-	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
+	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference#support-for-adaptive-cards
 	//
 	// the "Action.Execute" action is supported:
 	//
@@ -52,6 +52,11 @@ const (
 	// schema elements, except Action.Submit, are fully supported. The
 	// supported actions are Action.OpenURL, Action.ShowCard,
 	// Action.ToggleVisibility, and Action.Execute."
+	//
+	// Per this doc, Teams MAY support the Action.Execute action:
+	//
+	// https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model#schema
+	//
 	// AdaptiveCardMaxVersion  float64 = 1.4
 	AdaptiveCardMaxVersion  float64 = 1.3
 	AdaptiveCardMinVersion  float64 = 1.0
@@ -168,6 +173,7 @@ const (
 
 	// TypeActionSubmit is used in Adaptive Cards schema version 1.3 and
 	// earlier or as a fallback for TypeActionExecute in schema version 1.4.
+	// TypeActionSubmit is not supported in Incoming Webhooks.
 	TypeActionSubmit string = "Action.Submit"
 
 	// TODO: Fill in doc details for these action types.
@@ -466,13 +472,16 @@ type Action struct {
 
 	// Type is required; specific values are supported.
 	//
-	// For Adaptive Cards in Incoming Webhooks, all native Adaptive Card
-	// schema elements, except Action.Submit, are fully supported.
+	// Action.Submit is not supported for Incoming Webhooks.
+	//
+	// Action.Execute was added in Adaptive Card schema version 1.4. which
+	// Teams MAY not fully support.
 	//
 	// The supported actions are Action.OpenURL, Action.ShowCard,
-	// Action.ToggleVisibility, and Action.Execute.
+	// Action.ToggleVisibility, and Action.Execute (see above).
 	//
-	// See also https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
+	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference#support-for-adaptive-cards
+	// https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model#schema
 	Type string `json:"type"`
 
 	// ID is a unique identifier associated with this Action.
