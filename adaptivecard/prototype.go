@@ -961,10 +961,10 @@ func (c *Card) Mention(displayName string, id string, msgText string, prependEle
 	return nil
 }
 
-// AddMention adds one or more provided user mentions to the specified Card
+// AddMention adds one or more provided user mentions to the associated Card
 // along with a single TextBlock element as the first element in the Card
-// body. The Text field for the specified TextBlock element is updated with
-// the Mention Text. If specified, the Mention Text is prepended, otherwise
+// body. The Text field for the new TextBlock element is updated with the
+// Mention Text. If specified, the Mention Text is prepended, otherwise
 // appended to the new TextBlock element.
 //
 // An error is returned if specified Mention values fail validation.
@@ -979,6 +979,30 @@ func (c *Card) AddMention(prependText bool, mentions ...Mention) error {
 
 	if err := AddMention(c, &textBlock, prependText, mentions...); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// AddElement adds one or more provided Elements to the Body of the associated
+// Card. If specified, the Element values are prepended to the Card Body (as a
+// contiguous set retaining current order), otherwise appended to the Card
+// Body.
+//
+// An error is returned if specified Element values fail validation.
+func (c *Card) AddElement(prepend bool, elements ...*Element) error {
+	// Validate first before adding to Card Body.
+	for _, element := range elements {
+		if err := element.Validate(); err != nil {
+			return err
+		}
+	}
+
+	switch prepend {
+	case true:
+		c.Body = append(elements, c.Body...)
+	case false:
+		c.Body = append(c.Body, elements...)
 	}
 
 	return nil
