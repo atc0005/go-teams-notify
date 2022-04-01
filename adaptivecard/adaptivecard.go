@@ -345,6 +345,9 @@ type Element struct {
 	// https://adaptivecards.io/explorer/AdaptiveCard.html
 	Type string `json:"type"`
 
+	// ID is a unique identifier associated with this Element.
+	ID string `json:"id,omitempty"`
+
 	// Text is required by the TextBlock and TextRun element types. Text is
 	// used to display text. A subset of markdown is supported for text used
 	// in TextBlock elements, but no formatting is permitted in text used in
@@ -421,6 +424,9 @@ type Column struct {
 	// Type is required; must be set to "Column".
 	Type string `json:"type"`
 
+	// ID is a unique identifier associated with this Column.
+	ID string `json:"id,omitempty"`
+
 	// Width represents the width of a column in the column group. Valid
 	// values consist of fixed strings OR a number representing the relative
 	// width.
@@ -469,6 +475,9 @@ type Action struct {
 	// See also https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
 	Type string `json:"type"`
 
+	// ID is a unique identifier associated with this Action.
+	ID string `json:"id,omitempty"`
+
 	// Title is a label for the button or link that represents this action.
 	Title string `json:"title,omitempty"`
 
@@ -503,6 +512,9 @@ type ISelectAction struct {
 	//
 	// See also https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
 	Type string `json:"type"`
+
+	// ID is a unique identifier associated with this ISelectAction.
+	ID string `json:"id,omitempty"`
 
 	// Title is a label for the button or link that represents this action.
 	Title string `json:"title,omitempty"`
