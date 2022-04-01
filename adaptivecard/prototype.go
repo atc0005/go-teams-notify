@@ -398,7 +398,7 @@ func (tc TopLevelCard) Validate() error {
 		// schema version. Because the max value constant is subject to fall
 		// out of sync (at least briefly), this is a risky assertion to make.
 		//
-		// if versionNum < AdaptiveCardMinVersion || versionNum > AdaptiveCardMinVersion {
+		// if versionNum < AdaptiveCardMinVersion || versionNum > AdaptiveCardMaxVersion {
 		// 	return fmt.Errorf(
 		// 		"unsupported version %q;"+
 		// 			" expected value between %0.1f and %0.1f: %w",
