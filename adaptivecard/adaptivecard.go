@@ -162,6 +162,10 @@ const (
 	// https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model
 	TypeActionExecute string = "Action.Execute"
 
+	// ActionExecuteVersionRequired is the minimum version of the Adaptive
+	// Card schema required to support Action.Execute.
+	ActionExecuteMinVersionRequired float64 = 1.4
+
 	// TypeActionSubmit is used in Adaptive Cards schema version 1.3 and
 	// earlier or as a fallback for TypeActionExecute in schema version 1.4.
 	TypeActionSubmit string = "Action.Submit"
