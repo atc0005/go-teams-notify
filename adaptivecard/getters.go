@@ -94,22 +94,39 @@ func supportedSpacingValues() []string {
 	}
 }
 
-// supportedActionValues returns a list of valid Action types. This list is
-// intended to be used for validation and display purposes.
+// supportedActionValues accepts a value indicating the maximum Adaptive Card
+// schema version supported and returns a list of valid Action types. This
+// list is intended to be used for validation and display purposes.
 //
 // NOTE: See also the supportedISelectActionValues() function. See ref links
 // for unsupported Action types.
-func supportedActionValues() []string {
+func supportedActionValues(version float64) []string {
 	// https://adaptivecards.io/explorer/AdaptiveCard.html
 	// https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model
 	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
-	return []string{
-		TypeActionExecute,
+	supportedValues := []string{
 		// TypeActionSubmit,
 		TypeActionOpenURL,
 		TypeActionShowCard,
 		TypeActionToggleVisibility,
 	}
+
+	// Version 1.4 is when Action.Execute was introduced.
+	//
+	// Per this doc:
+	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference
+	//
+	// the "Action.Execute" action is supported:
+	//
+	// "For Adaptive Cards in Incoming Webhooks, all native Adaptive Card
+	// schema elements, except Action.Submit, are fully supported. The
+	// supported actions are Action.OpenURL, Action.ShowCard,
+	// Action.ToggleVisibility, and Action.Execute."
+	if version >= 1.4 {
+		supportedValues = append(supportedValues, TypeActionExecute)
+	}
+
+	return supportedValues
 }
 
 // supportedISelectActionValues returns a list of valid ISelectAction types,

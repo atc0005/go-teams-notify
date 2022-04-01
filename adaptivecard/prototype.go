@@ -698,7 +698,9 @@ func (i ISelectAction) Validate() error {
 
 // Validate asserts that required fields have valid values.
 func (a Action) Validate() error {
-	supportedValues := supportedActionValues()
+
+	// Some Actions are restricted to later Adaptive Card schema versions.
+	supportedValues := supportedActionValues(AdaptiveCardMaxVersion)
 	if !goteamsnotify.InList(a.Type, supportedValues, false) {
 		return fmt.Errorf(
 			"invalid %s %q for Action; expected one of %v: %w",
