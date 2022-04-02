@@ -116,6 +116,15 @@ func NewTextBlockCard(text string) Card {
 	return textCard
 }
 
+// NewCard creates and returns an empty Card.
+func NewCard() Card {
+	return Card{
+		Type:    TypeAdaptiveCard,
+		Schema:  AdaptiveCardSchema,
+		Version: fmt.Sprintf(AdaptiveCardVersionTmpl, AdaptiveCardMaxVersion),
+	}
+}
+
 // AddText appends given text to the message for delivery.
 //
 // TODO: What is needed to permit this to work?
@@ -941,13 +950,13 @@ func (c *Card) Mention(displayName string, id string, msgText string, prependEle
 }
 
 // AddMention adds one or more provided user mentions to the associated Card
-// along with a single TextBlock element as the first element in the Card
-// body. The Text field for the new TextBlock element is updated with the
-// Mention Text. If specified, the Mention Text is prepended, otherwise
-// appended to the new TextBlock element.
+// along with a new TextBlock element as the first element in the Card body.
+// The Text field for the new TextBlock element is updated with the Mention
+// Text. This effectively creates a dedicated TextBlock that acts as a
+// "lead-in" or "announcement block" for other elements in the Card.
 //
 // An error is returned if specified Mention values fail validation.
-func (c *Card) AddMention(prependText bool, mentions ...Mention) error {
+func (c *Card) AddMention(mentions ...Mention) error {
 	textBlock := Element{
 		Type: TypeElementTextBlock,
 		Wrap: true,
@@ -956,7 +965,9 @@ func (c *Card) AddMention(prependText bool, mentions ...Mention) error {
 	// Insert new TextBlock as the first element.
 	c.Body = append([]*Element{&textBlock}, c.Body...)
 
-	if err := AddMention(c, &textBlock, prependText, mentions...); err != nil {
+	// Whether the mention text is prepended or appended doesn't matter since
+	// the TextBlock element we are adding is empty.
+	if err := AddMention(c, &textBlock, true, mentions...); err != nil {
 		return err
 	}
 
