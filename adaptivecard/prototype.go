@@ -1277,3 +1277,27 @@ func NewActionOpenURL(url string, title string) (Action, error) {
 
 	return action, nil
 }
+
+func (c *Container) AddElement(element *Element) error {
+	return fmt.Errorf("not implemented yet")
+}
+
+func (c *Card) AddContainer(container *Container) error {
+	// TODO: Would likely need to convert the Container to an Element so that
+	// it can be added to the Card Body. If we pass in a pointer, how do we
+	// convert such that the Container pointer would still be usable after we
+	// perform the conversion? Perhaps require that the Container *not* be a
+	// pointer?
+	//
+	// Could we add a method that exposes the pointer to the container later?
+	// No, there could be several containers ...
+	//
+	// Perhaps provide an "GetElement(id string) *Element" method that accepts
+	// an Element ID and returns the Element pointer?
+
+	//
+	// TODO: Do we really need a separate Container type?
+	//
+
+	return fmt.Errorf("not implemented yet")
+}
