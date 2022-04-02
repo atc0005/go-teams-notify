@@ -448,6 +448,14 @@ type Element struct {
 	// parent *Card `json:"-"`
 }
 
+// Container is an Element type that allows grouping items together.
+type Container Element
+
+// FactSet is an Element type that groups and displays a series of facts (i.e.
+// name/value pairs) in a tabular form.
+//
+type FactSet Element
+
 // Column is a container used by a ColumnSet element type. Each container
 // may contain one or more elements.
 //

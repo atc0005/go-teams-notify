@@ -74,7 +74,7 @@ review other field types to determine which of those should be pointers
 TODO: Create multiple helper functions to create useful intermediate values
 from common values.
 For example:
-https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-howto-add-media-attachments?view=azure-bot-service-4.0&tabs=csharp#send-an-adaptive-card
+<https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-howto-add-media-attachments?view=azure-bot-service-4.0&tabs=csharp#send-an-adaptive-card>
 here a JSON file is read and added as the Content (Card) content for a Message
 attachment.
 

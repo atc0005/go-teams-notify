@@ -563,6 +563,12 @@ func (e Element) Validate() error {
 				ErrMissingValue,
 			)
 		}
+
+		for _, item := range e.Items {
+			if err := item.Validate(); err != nil {
+				return err
+			}
+		}
 	}
 
 	// Used by ColumnSet type, but not required.
@@ -998,6 +1004,40 @@ func (c *Card) AddElement(prepend bool, elements ...*Element) error {
 	return nil
 }
 
+// AddFactSet adds one or more provided FactSet elements to the Body of the
+// associated Card. If specified, the FactSet values are prepended to the Card
+// Body (as a contiguous set retaining current order), otherwise appended to
+// the Card Body.
+//
+// An error is returned if specified FactSet values fail validation.
+//
+// TODO: Is this needed? Should we even have a separate FactSet type that is
+// so difficult to work with?
+func (c *Card) AddFactSet(prepend bool, factsets ...FactSet) error {
+	// Convert to base Element type
+	factsetElements := make([]*Element, 0, len(factsets))
+	for _, factset := range factsets {
+		element := Element(factset)
+		factsetElements = append(factsetElements, &element)
+	}
+
+	// Validate first before adding to Card Body.
+	for _, element := range factsetElements {
+		if err := element.Validate(); err != nil {
+			return err
+		}
+	}
+
+	switch prepend {
+	case true:
+		c.Body = append(factsetElements, c.Body...)
+	case false:
+		c.Body = append(c.Body, factsetElements...)
+	}
+
+	return nil
+}
+
 // NewMention uses the given display name and ID to create a user Mention
 // value for inclusion in a Card. An error is returned if provided values are
 // insufficient to create the user mention.
@@ -1151,8 +1191,8 @@ func NewMessageFromCard(card Card) *Message {
 }
 
 // NewContainer creates an empty Container.
-func NewContainer() *Element {
-	container := Element{
+func NewContainer() *Container {
+	container := Container{
 		Type: TypeElementContainer,
 	}
 
@@ -1160,8 +1200,8 @@ func NewContainer() *Element {
 }
 
 // NewFactSet creates an empty FactSet.
-func NewFactSet() *Element {
-	factSet := Element{
+func NewFactSet() *FactSet {
+	factSet := FactSet{
 		Type: TypeElementFactSet,
 	}
 
@@ -1171,12 +1211,12 @@ func NewFactSet() *Element {
 // AddFact adds one or many Fact values to a FactSet. An error is returned if
 // the Fact fails validation or if AddFact is called on an unsupported Element
 // type.
-func (e *Element) AddFact(facts ...Fact) error {
+func (fs *FactSet) AddFact(facts ...Fact) error {
 	// Fail early if called on the wrong Element type.
-	if e.Type != TypeElementFactSet {
+	if fs.Type != TypeElementFactSet {
 		return fmt.Errorf(
 			"unsupported element type %s; expected %s: %w",
-			e.Type,
+			fs.Type,
 			TypeElementFactSet,
 			ErrInvalidType,
 		)
@@ -1189,7 +1229,7 @@ func (e *Element) AddFact(facts ...Fact) error {
 		}
 	}
 
-	e.Facts = append(e.Facts, facts...)
+	fs.Facts = append(fs.Facts, facts...)
 
 	return nil
 }
