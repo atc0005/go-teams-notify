@@ -1242,21 +1242,33 @@ func NewMessageFromCard(card Card) *Message {
 }
 
 // NewContainer creates an empty Container.
-func NewContainer() *Container {
+func NewContainer() Container {
 	container := Container{
 		Type: TypeElementContainer,
 	}
 
-	return &container
+	return container
+}
+
+// NewTextBlock creates a new TextBlock element using the optional user
+// specified Text.
+func NewTextBlock(text string) Element {
+	textBlock := Element{
+		Type: TypeElementTextBlock,
+		Wrap: true,
+		Text: text,
+	}
+
+	return textBlock
 }
 
 // NewFactSet creates an empty FactSet.
-func NewFactSet() *FactSet {
+func NewFactSet() FactSet {
 	factSet := FactSet{
 		Type: TypeElementFactSet,
 	}
 
-	return &factSet
+	return factSet
 }
 
 // AddFact adds one or many Fact values to a FactSet. An error is returned if
@@ -1329,26 +1341,40 @@ func NewActionOpenURL(url string, title string) (Action, error) {
 	return action, nil
 }
 
-func (c *Container) AddElement(element *Element) error {
-	return fmt.Errorf("not implemented yet")
+// AddElement adds the given Element to the collection of Element values in
+// the container. If specified, the Element is inserted at the beginning of
+// the collection, otherwise appended to the end.
+func (c *Container) AddElement(prepend bool, element Element) error {
+	if err := element.Validate(); err != nil {
+		return err
+	}
+
+	switch prepend {
+	case true:
+		c.Items = append([]Element{element}, c.Items...)
+	case false:
+		c.Items = append(c.Items, element)
+	}
+
+	return nil
 }
 
-func (c *Card) AddContainer(container *Container) error {
-	// TODO: Would likely need to convert the Container to an Element so that
-	// it can be added to the Card Body. If we pass in a pointer, how do we
-	// convert such that the Container pointer would still be usable after we
-	// perform the conversion? Perhaps require that the Container *not* be a
-	// pointer?
-	//
-	// Could we add a method that exposes the pointer to the container later?
-	// No, there could be several containers ...
-	//
-	// Perhaps provide an "GetElement(id string) *Element" method that accepts
-	// an Element ID and returns the Element pointer?
+// AddContainer adds the given Container Element to the collection of Element
+// values for the Card. If specified, the Container Element is inserted at the
+// beginning of the collection, otherwise appended to the end.
+func (c *Card) AddContainer(prepend bool, container Container) error {
+	element := Element(container)
 
-	//
-	// TODO: Do we really need a separate Container type?
-	//
+	if err := element.Validate(); err != nil {
+		return err
+	}
 
-	return fmt.Errorf("not implemented yet")
+	switch prepend {
+	case true:
+		c.Body = append([]Element{element}, c.Body...)
+	case false:
+		c.Body = append(c.Body, element)
+	}
+
+	return nil
 }
