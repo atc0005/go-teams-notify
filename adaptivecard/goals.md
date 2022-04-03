@@ -31,7 +31,9 @@ See this doc for info on sections:
 1. Create new Message
 1. Create new Card
 1. Create new Container [initial Container]
-1. Create new TextBlock element
+1. Create new TextBlock element, set `style` to `heading` [cfg.MessageTitle]
+1. Set TextBlock.Text to user-specified Title text
+1. Create new TextBlock element [cfg.MessageText]
 1. Set TextBlock.Text to user-specified text
 1. Add TextBlock to Container
 1. Add Container to Card Body
@@ -68,8 +70,25 @@ See this doc for info on sections:
 
 ## Unordered thoughts / Next Steps
 
-indicate that MSTeams type is optional by using pointer type?
-review other field types to determine which of those should be pointers
+It does not appear that an Adaptive Card supports Titles as a MessageCard
+does. Instead, examples that I've seen rely on creating an initial TextBlock
+element that serves as a Title:
+
+  "body": [
+    {
+      "type": "Container",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "Publish Adaptive Card schema",
+          "weight": "bolder",
+          "size": "medium"
+        },
+
+The formatting serves as making the text appear as a Title.
+
+- indicate that MSTeams type is optional by using pointer type?
+- review other field types to determine which of those should be pointers
 
 TODO: Create multiple helper functions to create useful intermediate values
 from common values.
