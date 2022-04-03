@@ -194,38 +194,20 @@ func supportedAttachmentLayoutValues() []string {
 // display purposes.
 func supportedStyleValues(elementType string) []string {
 	switch elementType {
-	case TypeElementActionSet:
-		return []string{}
 	case TypeElementColumnSet:
 		return supportedContainerStyleValues()
 	case TypeElementContainer:
 		return supportedContainerStyleValues()
-	case TypeElementFactSet:
-		return []string{}
 	case TypeElementImage:
 		return supportedImageStyleValues()
-	case TypeElementImageSet:
-		return []string{}
 	case TypeElementInputChoiceSet:
 		return supportedChoiceInputStyleValues()
-	case TypeElementInputDate:
-		return []string{}
-	case TypeElementInputNumber:
-		return []string{}
 	case TypeElementInputText:
 		return supportedTextInputStyleValues()
-	case TypeElementInputTime:
-		return []string{}
-	case TypeElementInputToggle:
-		return []string{}
-	case TypeElementMedia:
-		return []string{}
-	case TypeElementRichTextBlock:
-		return []string{}
 	case TypeElementTextBlock:
 		return supportedTextBlockStyleValues()
-	case TypeElementTextRun:
-		return []string{}
+
+	// Unsupported element types are indicated by an explicit empty list.
 	default:
 		return []string{}
 	}
