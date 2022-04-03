@@ -73,47 +73,65 @@ func NewSimpleMessage(text string) *Message {
 		Type: TypeMessage,
 	}
 
-	textBlock := Element{
-		Type: TypeElementTextBlock,
-		Wrap: true,
-		Text: text,
-	}
+	textCard := NewTextBlockCard(text, "")
 
-	// TODO: Refactor further, make it easy to generate specific types of
-	// simple cards.
-	textCard := Card{
-		Type:    TypeAdaptiveCard,
-		Schema:  AdaptiveCardSchema,
-		Version: fmt.Sprintf(AdaptiveCardVersionTmpl, AdaptiveCardMaxVersion),
-		Body: []*Element{
-			&textBlock,
-		},
-	}
-
-	msg.Attach(&textCard)
+	msg.Attach(textCard)
 
 	return &msg
 }
 
 // NewTextBlockCard creates and returns a new Card composed of a single
 // TextBlock composed of the given text.
-func NewTextBlockCard(text string) Card {
+// func NewTextBlockCard(text string) Card {
+// 	textBlock := Element{
+// 		Type: TypeElementTextBlock,
+// 		Wrap: true,
+// 		Text: text,
+// 	}
+//
+// 	textCard := Card{
+// 		Type:    TypeAdaptiveCard,
+// 		Schema:  AdaptiveCardSchema,
+// 		Version: fmt.Sprintf(AdaptiveCardVersionTmpl, AdaptiveCardMaxVersion),
+// 		Body: []*Element{
+// 			&textBlock,
+// 		},
+// 	}
+//
+// 	return textCard
+// }
+
+// NewTextBlockCard uses the specified text and optional title to create and
+// returns a new Card. composed of a single TextBlock composed of the given
+// text.
+func NewTextBlockCard(text string, title string) Card {
 	textBlock := Element{
 		Type: TypeElementTextBlock,
 		Wrap: true,
 		Text: text,
 	}
 
-	textCard := Card{
+	card := Card{
 		Type:    TypeAdaptiveCard,
 		Schema:  AdaptiveCardSchema,
 		Version: fmt.Sprintf(AdaptiveCardVersionTmpl, AdaptiveCardMaxVersion),
-		Body: []*Element{
-			&textBlock,
+		Body: []Element{
+			textBlock,
 		},
 	}
 
-	return textCard
+	if title != "" {
+		titleTextBlock := Element{
+			Type:  TypeElementTextBlock,
+			Wrap:  true,
+			Text:  title,
+			Style: TextBlockStyleHeading,
+		}
+
+		card.Body = append([]Element{titleTextBlock}, card.Body...)
+	}
+
+	return card
 }
 
 // NewCard creates and returns an empty Card.
@@ -176,7 +194,7 @@ func (a *Attachments) Add(attachment Attachment) *Attachments {
 // NOTE: Including multiple cards in the attachments collection *without*
 // attachmentLayout set to "carousel" hides cards after the first. Not sure if
 // this is a bug, or if it's intentional.
-func (m *Message) Attach(cards ...*Card) {
+func (m *Message) Attach(cards ...Card) {
 	for _, card := range cards {
 		attachment := Attachment{
 			ContentType: AttachmentContentType,
@@ -184,7 +202,7 @@ func (m *Message) Attach(cards ...*Card) {
 			// Explicitly convert Card to TopLevelCard in order to assert that
 			// TopLevelCard specific requirements are checked during
 			// validation.
-			Content: TopLevelCard{*card},
+			Content: TopLevelCard{card},
 		}
 
 		m.Attachments = append(m.Attachments, attachment)
@@ -369,7 +387,7 @@ func (c Card) Validate() error {
 	//
 	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format#mention-support-within-adaptive-cards
 	if len(c.MSTeams.Entities) > 0 {
-		hasMentionText := func(elements []*Element, m Mention) bool {
+		hasMentionText := func(elements []Element, m Mention) bool {
 			for _, element := range elements {
 				if element.HasMentionText(m) {
 					return true
@@ -903,7 +921,7 @@ func (m *Message) Mention(displayName string, id string, msgText string, prepend
 			return err
 		}
 
-		m.Attach(&mentionCard)
+		m.Attach(mentionCard)
 
 	// We have at least one Card already, use it.
 	default:
@@ -930,13 +948,13 @@ func (m *Message) Mention(displayName string, id string, msgText string, prepend
 		switch {
 		case prependElement:
 			m.Attachments[0].Content.Body = append(
-				[]*Element{&textBlock},
+				[]Element{textBlock},
 				m.Attachments[0].Content.Body...,
 			)
 		default:
 			m.Attachments[0].Content.Body = append(
 				m.Attachments[0].Content.Body,
-				&textBlock,
+				textBlock,
 			)
 		}
 
@@ -975,9 +993,9 @@ func (c *Card) Mention(displayName string, id string, msgText string, prependEle
 
 	switch {
 	case prependElement:
-		c.Body = append(c.Body, &textBlock)
+		c.Body = append(c.Body, textBlock)
 	default:
-		c.Body = append([]*Element{&textBlock}, c.Body...)
+		c.Body = append([]Element{textBlock}, c.Body...)
 	}
 
 	return nil
@@ -997,7 +1015,7 @@ func (c *Card) AddMention(mentions ...Mention) error {
 	}
 
 	// Insert new TextBlock as the first element.
-	c.Body = append([]*Element{&textBlock}, c.Body...)
+	c.Body = append([]Element{textBlock}, c.Body...)
 
 	// Whether the mention text is prepended or appended doesn't matter since
 	// the TextBlock element we are adding is empty.
@@ -1014,7 +1032,7 @@ func (c *Card) AddMention(mentions ...Mention) error {
 // Body.
 //
 // An error is returned if specified Element values fail validation.
-func (c *Card) AddElement(prepend bool, elements ...*Element) error {
+func (c *Card) AddElement(prepend bool, elements ...Element) error {
 	// Validate first before adding to Card Body.
 	for _, element := range elements {
 		if err := element.Validate(); err != nil {
@@ -1043,10 +1061,10 @@ func (c *Card) AddElement(prepend bool, elements ...*Element) error {
 // so difficult to work with?
 func (c *Card) AddFactSet(prepend bool, factsets ...FactSet) error {
 	// Convert to base Element type
-	factsetElements := make([]*Element, 0, len(factsets))
+	factsetElements := make([]Element, 0, len(factsets))
 	for _, factset := range factsets {
 		element := Element(factset)
-		factsetElements = append(factsetElements, &element)
+		factsetElements = append(factsetElements, element)
 	}
 
 	// Validate first before adding to Card Body.
@@ -1169,7 +1187,7 @@ func NewMentionMessage(displayName string, id string, msgText string) (*Message,
 		return nil, err
 	}
 
-	msg.Attach(&mentionCard)
+	msg.Attach(mentionCard)
 
 	return &msg, nil
 }
@@ -1192,7 +1210,7 @@ func NewMentionCard(displayName string, id string, msgText string) (Card, error)
 	}
 
 	// Create basic card.
-	textCard := NewTextBlockCard(msgText)
+	textCard := NewTextBlockCard(msgText, "")
 
 	// Update the text block so that it contains the mention text string
 	// (required) and user-specified message text string. Use the mention
@@ -1214,8 +1232,13 @@ func NewMentionCard(displayName string, id string, msgText string) (Card, error)
 //
 // TODO: Require Card pointer?
 func NewMessageFromCard(card Card) *Message {
-	// TODO: Placeholder only
-	return &Message{}
+	msg := Message{
+		Type: TypeMessage,
+	}
+
+	msg.Attach(card)
+
+	return &msg
 }
 
 // NewContainer creates an empty Container.

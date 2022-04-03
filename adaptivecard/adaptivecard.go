@@ -386,7 +386,7 @@ type Card struct {
 	// building-blocks known as elements. Elements can be composed to create
 	// many types of cards. These elements are shown in the primary card
 	// region.
-	Body []*Element `json:"body"`
+	Body []Element `json:"body"`
 
 	// Actions is a collection of actions to show in the card's action bar.
 	// TODO: Should this be a pointer?
@@ -467,11 +467,11 @@ type Element struct {
 
 	// Items is required for the Container element type. Items is a collection
 	// of card elements to render inside the Container.
-	Items []*Element `json:"items,omitempty"`
+	Items []Element `json:"items,omitempty"`
 
 	// Columns is a collection of Columns used to divide a region. This field
 	// is used by a ColumnSet element type.
-	Columns []*Column `json:"columns,omitempty"`
+	Columns []Column `json:"columns,omitempty"`
 
 	// Actions is required for the ActionSet element type. Actions is a
 	// collection of Actions to show for an ActionSet element type.
