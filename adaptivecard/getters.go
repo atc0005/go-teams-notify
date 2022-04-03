@@ -189,6 +189,106 @@ func supportedAttachmentLayoutValues() []string {
 	}
 }
 
+// supportedStyleValues returns a list of valid Style field values for the
+// specified element type. This list is intended to be used for validation and
+// display purposes.
+func supportedStyleValues(elementType string) []string {
+	switch elementType {
+	case TypeElementActionSet:
+		return []string{}
+	case TypeElementColumnSet:
+		return supportedContainerStyleValues()
+	case TypeElementContainer:
+		return supportedContainerStyleValues()
+	case TypeElementFactSet:
+		return []string{}
+	case TypeElementImage:
+		return supportedImageStyleValues()
+	case TypeElementImageSet:
+		return []string{}
+	case TypeElementInputChoiceSet:
+		return supportedChoiceInputStyleValues()
+	case TypeElementInputDate:
+		return []string{}
+	case TypeElementInputNumber:
+		return []string{}
+	case TypeElementInputText:
+		return supportedTextInputStyleValues()
+	case TypeElementInputTime:
+		return []string{}
+	case TypeElementInputToggle:
+		return []string{}
+	case TypeElementMedia:
+		return []string{}
+	case TypeElementRichTextBlock:
+		return []string{}
+	case TypeElementTextBlock:
+		return supportedTextBlockStyleValues()
+	case TypeElementTextRun:
+		return []string{}
+	default:
+		return []string{}
+	}
+}
+
+// supportedImageStyleValues returns a list of valid Style field values for
+// the Image element type. This list is intended to be used for validation and
+// display purposes.
+func supportedImageStyleValues() []string {
+	return []string{
+		ImageStyleDefault,
+		ImageStylePerson,
+	}
+}
+
+// supportedChoiceInputStyleValues returns a list of valid Style field values
+// for ChoiceInput related element types (e.g., Input.ChoiceSet) This list is
+// intended to be used for validation and display purposes.
+func supportedChoiceInputStyleValues() []string {
+	return []string{
+		ChoiceInputStyleCompact,
+		ChoiceInputStyleExpanded,
+		ChoiceInputStyleFiltered,
+	}
+}
+
+// supportedTextInputStyleValues returns a list of valid Style field values
+// for TextInput related element types (e.g., Input.Text) This list is
+// intended to be used for validation and display purposes.
+func supportedTextInputStyleValues() []string {
+	return []string{
+		TextInputStyleText,
+		TextInputStyleTel,
+		TextInputStyleURL,
+		TextInputStyleEmail,
+		TextInputStylePassword,
+	}
+}
+
+// supportedTextBlockStyleValues returns a list of valid Style field values
+// for the TextBlock element type. This list is intended to be used for
+// validation and display purposes.
+func supportedTextBlockStyleValues() []string {
+	return []string{
+		TextBlockStyleDefault,
+		TextBlockStyleHeading,
+	}
+}
+
+// supportedContainerStyleValues returns a list of valid Style field values
+// for Container types (e.g., Column, ColumnSet, Container). This list is
+// intended to be used for validation and display purposes.
+func supportedContainerStyleValues() []string {
+	return []string{
+		ContainerStyleDefault,
+		ContainerStyleEmphasis,
+		ContainerStyleGood,
+		ContainerStyleAttention,
+		ContainerStyleWarning,
+		ContainerStyleAccept,
+	}
+}
+
 // supportedMSTeamsWidthValues returns a list of valid Width field values for
 // MSTeams type. This list is intended to be used for validation and display
 // purposes.

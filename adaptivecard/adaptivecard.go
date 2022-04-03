@@ -89,7 +89,21 @@ const (
 	AttachmentLayoutCarousel string = "carousel"
 )
 
+// TextBlock specific contants.
+// https://adaptivecards.io/explorer/TextBlock.html
+const (
+	// TextBlockStyleDefault indicates that the TextBlock uses the default
+	// style which provides no special styling or behavior.
+	TextBlockStyleDefault string = "default"
+
+	// TextBlockStyleHeading indicates that the TextBlock is a heading. This
+	// will apply the heading styling defaults and mark the text block as a
+	// heading for accessibility.
+	TextBlockStyleHeading string = "heading"
+)
+
 // Column specific constants.
+// https://adaptivecards.io/explorer/Column.html
 const (
 	// TypeColumn is the type for an Adaptive Card Column.
 	TypeColumn string = "Column"
@@ -111,7 +125,7 @@ const (
 	ColumnWidthPixelWidthExample string = "50px"
 )
 
-// Text size for text within a TextBlock element.
+// Text size for TextBlock or TextRun elements.
 const (
 	SizeSmall      string = "small"
 	SizeDefault    string = "default"
@@ -127,7 +141,7 @@ const (
 	WeightDefault string = "default"
 )
 
-// Supported colors for TextBlock elements.
+// Supported colors for TextBlock or TextRun elements.
 const (
 	ColorDefault   string = "default"
 	ColorDark      string = "dark"
@@ -136,6 +150,39 @@ const (
 	ColorGood      string = "good"
 	ColorWarning   string = "warning"
 	ColorAttention string = "attention"
+)
+
+// Image specific constants.
+// https://adaptivecards.io/explorer/Image.html
+const (
+	ImageStyleDefault string = ""
+	ImageStylePerson  string = ""
+)
+
+// ChoiceInput specific contants.
+const (
+	ChoiceInputStyleCompact  string = "compact"
+	ChoiceInputStyleExpanded string = "expanded"
+	ChoiceInputStyleFiltered string = "filtered" // Introduced in version 1.5
+)
+
+// TextInput specific contants.
+const (
+	TextInputStyleText     string = "text"
+	TextInputStyleTel      string = "tel"
+	TextInputStyleURL      string = "url"
+	TextInputStyleEmail    string = "email"
+	TextInputStylePassword string = "password" // Introduced in version 1.5
+)
+
+// Container specific constants.
+const (
+	ContainerStyleDefault   string = "default"
+	ContainerStyleEmphasis  string = "emphasis"
+	ContainerStyleGood      string = "good"
+	ContainerStyleAttention string = "attention"
+	ContainerStyleWarning   string = "warning"
+	ContainerStyleAccept    string = "accent"
 )
 
 // Supported spacing values for FactSet, Container and other container element
@@ -411,6 +458,12 @@ type Element struct {
 	// Spacing controls the amount of spacing between this element and the
 	// preceding element.
 	Spacing string `json:"spacing,omitempty"`
+
+	// The style of the element for accessibility purposes. Valid values
+	// differ based on the element type. For example, a TextBlock element
+	// supports the "heading" style, whereas the Column element supports the
+	// "attention" style (TextBlock does not).
+	Style string `json:"style,omitempty"`
 
 	// Items is required for the Container element type. Items is a collection
 	// of card elements to render inside the Container.

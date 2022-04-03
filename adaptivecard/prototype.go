@@ -553,6 +553,34 @@ func (e Element) Validate() error {
 		}
 	}
 
+	if e.Style != "" {
+		// Valid Style field values differ based on type. For example, a
+		// Container element supports Container styles whereas a TextBlock
+		// supports a different and more limited set of style values. We use a
+		// helper function to retrieve valid style values for evaluation.
+		supportedStyleValues := supportedStyleValues(e.Type)
+
+		switch {
+		case len(supportedStyleValues) == 0:
+			return fmt.Errorf(
+				"invalid %s %q for element; %s values not supported for element: %w",
+				"Style",
+				e.Style,
+				"Style",
+				ErrInvalidFieldValue,
+			)
+
+		case !goteamsnotify.InList(e.Style, supportedStyleValues, false):
+			return fmt.Errorf(
+				"invalid %s %q for element; expected one of %v: %w",
+				"Style",
+				e.Style,
+				supportedStyleValues,
+				ErrInvalidFieldValue,
+			)
+		}
+	}
+
 	if e.Type == TypeElementContainer {
 		// Items collection is required for Container element type.
 		// https://adaptivecards.io/explorer/Container.html
