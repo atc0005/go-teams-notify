@@ -5,7 +5,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for
 // full license information.
 
-package goteamsnotify
+package messagecard
 
 import (
 	"bytes"
@@ -73,17 +73,12 @@ const (
 // This function is intended for processing text intended for a MessageCard.
 // Using this helper function for text intended for an Adaptive Card is
 // unsupported and unlikely to produce the desired results.
-//
-// Deprecated: use messagecard.TryToFormatAsCodeBlock instead.
 func TryToFormatAsCodeBlock(input string) string {
 	result, err := FormatAsCodeBlock(input)
 	if err != nil {
-		logger.Printf("TryToFormatAsCodeBlock: error occurred when calling FormatAsCodeBlock: %v\n", err)
-		logger.Println("TryToFormatAsCodeBlock: returning original string")
 		return input
 	}
 
-	logger.Println("TryToFormatAsCodeBlock: no errors occurred when calling FormatAsCodeBlock")
 	return result
 }
 
@@ -95,17 +90,12 @@ func TryToFormatAsCodeBlock(input string) string {
 // This function is intended for processing text intended for a MessageCard.
 // Using this helper function for text intended for an Adaptive Card is
 // unsupported and unlikely to produce the desired results.
-//
-// Deprecated: use messagecard.TryToFormatAsCodeSnippet instead.
 func TryToFormatAsCodeSnippet(input string) string {
 	result, err := FormatAsCodeSnippet(input)
 	if err != nil {
-		logger.Printf("TryToFormatAsCodeSnippet: error occurred when calling FormatAsCodeBlock: %v\n", err)
-		logger.Println("TryToFormatAsCodeSnippet: returning original string")
 		return input
 	}
 
-	logger.Println("TryToFormatAsCodeSnippet: no errors occurred when calling FormatAsCodeSnippet")
 	return result
 }
 
@@ -116,8 +106,6 @@ func TryToFormatAsCodeSnippet(input string) string {
 // This function is intended for processing text intended for a MessageCard.
 // Using this helper function for text intended for an Adaptive Card is
 // unsupported and unlikely to produce the desired results.
-//
-// Deprecated: use messagecard.FormatAsCodeBlock instead.
 func FormatAsCodeBlock(input string) (string, error) {
 	if input == "" {
 		return "", errors.New("received empty string, refusing to format")
@@ -139,8 +127,6 @@ func FormatAsCodeBlock(input string) (string, error) {
 // This function is intended for processing text intended for a MessageCard.
 // Using this helper function for text intended for an Adaptive Card is
 // unsupported and unlikely to produce the desired results.
-//
-// Deprecated: use messagecard.FormatAsCodeSnippet instead.
 func FormatAsCodeSnippet(input string) (string, error) {
 	if input == "" {
 		return "", errors.New("received empty string, refusing to format")
@@ -175,9 +161,6 @@ func formatAsCode(input string, prefix string, suffix string) (string, error) {
 	// If the input string is already valid JSON, don't double-encode and
 	// escape the content
 	case json.Valid([]byte(input)):
-		logger.Printf("formatAsCode: input string already valid JSON; input: %+v", input)
-		logger.Printf("formatAsCode: Calling json.RawMessage([]byte(input)); input: %+v", input)
-
 		// FIXME: Is json.RawMessage() really needed if the input string is
 		// *already* JSON? https://golang.org/pkg/encoding/json/#RawMessage
 		// seems to imply a different use case.
@@ -189,33 +172,23 @@ func formatAsCode(input string, prefix string, suffix string) (string, error) {
 		// byteSlice = []byte(input)
 
 	default:
-		logger.Printf("formatAsCode: input string not valid JSON; input: %+v", input)
-		logger.Printf("formatAsCode: Calling json.Marshal(input); input: %+v", input)
 		byteSlice, err = json.Marshal(input)
 		if err != nil {
 			return "", err
 		}
 	}
 
-	logger.Println("formatAsCode: byteSlice as string:", string(byteSlice))
-
 	var prettyJSON bytes.Buffer
 
-	logger.Println("formatAsCode: calling json.Indent")
 	err = json.Indent(&prettyJSON, byteSlice, "", "\t")
 	if err != nil {
 		return "", err
 	}
 	formattedJSON := prettyJSON.String()
 
-	logger.Println("formatAsCode: Formatted JSON:", formattedJSON)
-
 	// handle both cases: where the formatted JSON string was not wrapped with
 	// double-quotes and when it was
 	codeContentForSubmission := prefix + strings.Trim(formattedJSON, "\"") + suffix
-
-	logger.Printf("formatAsCode: formatted JSON as-is:\n%s\n\n", formattedJSON)
-	logger.Printf("formatAsCode: formatted JSON wrapped with code prefix/suffix: \n%s\n\n", codeContentForSubmission)
 
 	// err should be nil if everything worked as expected
 	return codeContentForSubmission, err
@@ -227,19 +200,13 @@ func formatAsCode(input string, prefix string, suffix string) (string, error) {
 // This function is intended for processing text intended for a MessageCard.
 // Using this helper function for text intended for an Adaptive Card is
 // unsupported and unlikely to produce the desired results.
-//
-// Deprecated: use messagecard.ConvertEOLToBreak instead.
 func ConvertEOLToBreak(s string) string {
-	logger.Printf("ConvertEOLToBreak: Received %#v", s)
-
 	s = strings.ReplaceAll(s, windowsEOLActual, breakStatement)
 	s = strings.ReplaceAll(s, windowsEOLEscaped, breakStatement)
 	s = strings.ReplaceAll(s, macEOLActual, breakStatement)
 	s = strings.ReplaceAll(s, macEOLEscaped, breakStatement)
 	s = strings.ReplaceAll(s, unixEOLActual, breakStatement)
 	s = strings.ReplaceAll(s, unixEOLEscaped, breakStatement)
-
-	logger.Printf("ConvertEOLToBreak: Returning %#v", s)
 
 	return s
 }
