@@ -17,6 +17,14 @@ import (
 	"strings"
 )
 
+/////////////////////////////////////////////////////////////////////////
+// NOTE: The contents of this file are deprecated. See the Deprecated
+// indicators in this file for intended replacements.
+//
+// Please submit a bug report if you find exported code in this file which
+// does *not* already have a replacement elsewhere in this library.
+/////////////////////////////////////////////////////////////////////////
+
 const (
 	// PotentialActionOpenURIType is the type that must be used for OpenUri
 	// potential action.

@@ -14,6 +14,14 @@ import (
 	"strings"
 )
 
+/////////////////////////////////////////////////////////////////////////
+// NOTE: The contents of this file are deprecated. See the Deprecated
+// indicators in this file for intended replacements.
+//
+// Please submit a bug report if you find exported code in this file which
+// does *not* already have a replacement elsewhere in this library.
+/////////////////////////////////////////////////////////////////////////
+
 // Newline patterns stripped out of text content sent to Microsoft Teams (by
 // request) and replacement break value used to provide equivalent formatting
 // for MessageCard payloads in Microsoft Teams.
