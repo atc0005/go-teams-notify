@@ -102,7 +102,7 @@ func NewSimpleMessage(text string) *Message {
 // }
 
 // NewTextBlockCard uses the specified text and optional title to create and
-// returns a new Card. composed of a single TextBlock composed of the given
+// return a new Card composed of a single TextBlock composed of the given
 // text.
 func NewTextBlockCard(text string, title string) Card {
 	textBlock := Element{
@@ -1014,14 +1014,15 @@ func (c *Card) AddMention(mentions ...Mention) error {
 		Wrap: true,
 	}
 
-	// Insert new TextBlock as the first element.
-	c.Body = append([]Element{textBlock}, c.Body...)
-
 	// Whether the mention text is prepended or appended doesn't matter since
 	// the TextBlock element we are adding is empty.
 	if err := AddMention(c, &textBlock, true, mentions...); err != nil {
 		return err
 	}
+
+	// Insert new TextBlock with modified Mention.Text included as the first
+	// element.
+	c.Body = append([]Element{textBlock}, c.Body...)
 
 	return nil
 }
