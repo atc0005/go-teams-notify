@@ -192,7 +192,10 @@ func formatAsCode(input string, prefix string, suffix string) (string, error) {
 }
 
 // ConvertEOLToBreak converts \r\n (windows), \r (mac) and \n (unix) into <br>
-// HTML/Markdown break statements.
+// statements. This is most useful for text intended for inclusion in
+// MessageCard payloads. When text processed by this function is included in
+// Adaptive Card payloads, the <br> statements are left as-is (which is often
+// not the intended outcome).
 func ConvertEOLToBreak(s string) string {
 	logger.Printf("ConvertEOLToBreak: Received %#v", s)
 
