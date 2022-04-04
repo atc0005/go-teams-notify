@@ -15,7 +15,8 @@ import (
 )
 
 // Newline patterns stripped out of text content sent to Microsoft Teams (by
-// request) and replacement break value used to provide equivalent formatting.
+// request) and replacement break value used to provide equivalent formatting
+// for MessageCard payloads in Microsoft Teams.
 const (
 
 	// CR LF \r\n (windows)
@@ -43,24 +44,24 @@ const (
 
 	// msTeamsCodeBlockSubmissionPrefix is the prefix appended to text input
 	// to indicate that the text should be displayed as a codeblock by
-	// Microsoft Teams.
+	// Microsoft Teams for MessageCard payloads.
 	msTeamsCodeBlockSubmissionPrefix string = "\n```\n"
 	// msTeamsCodeBlockSubmissionPrefix string = "```"
 
 	// msTeamsCodeBlockSubmissionSuffix is the suffix appended to text input
 	// to indicate that the text should be displayed as a codeblock by
-	// Microsoft Teams.
+	// Microsoft Teams for MessageCard payloads.
 	msTeamsCodeBlockSubmissionSuffix string = "```\n"
 	// msTeamsCodeBlockSubmissionSuffix string = "```"
 
 	// msTeamsCodeSnippetSubmissionPrefix is the prefix appended to text input
 	// to indicate that the text should be displayed as a code formatted
-	// string of text by Microsoft Teams.
+	// string of text by Microsoft Teams for MessageCard payloads.
 	msTeamsCodeSnippetSubmissionPrefix string = "`"
 
 	// msTeamsCodeSnippetSubmissionSuffix is the suffix appended to text input
 	// to indicate that the text should be displayed as a code formatted
-	// string of text by Microsoft Teams.
+	// string of text by Microsoft Teams for MessageCard payloads.
 	msTeamsCodeSnippetSubmissionSuffix string = "`"
 )
 
@@ -68,6 +69,10 @@ const (
 // error is encountered in the FormatAsCodeBlock function, this function will
 // return the original string, otherwise if no errors occur the newly formatted
 // string will be returned.
+//
+// This function is intended for processing text intended for a MessageCard.
+// Using this helper function for text intended for an Adaptive Card is
+// unsupported and unlikely to produce the desired results.
 func TryToFormatAsCodeBlock(input string) string {
 	result, err := FormatAsCodeBlock(input)
 	if err != nil {
@@ -80,10 +85,14 @@ func TryToFormatAsCodeBlock(input string) string {
 	return result
 }
 
-// TryToFormatAsCodeSnippet acts as a wrapper for FormatAsCodeSnippet. If
-// an error is encountered in the FormatAsCodeSnippet function, this function will
-// return the original string, otherwise if no errors occur the newly formatted
-// string will be returned.
+// TryToFormatAsCodeSnippet acts as a wrapper for FormatAsCodeSnippet. If an
+// error is encountered in the FormatAsCodeSnippet function, this function
+// will return the original string, otherwise if no errors occur the newly
+// formatted string will be returned.
+//
+// This function is intended for processing text intended for a MessageCard.
+// Using this helper function for text intended for an Adaptive Card is
+// unsupported and unlikely to produce the desired results.
 func TryToFormatAsCodeSnippet(input string) string {
 	result, err := FormatAsCodeSnippet(input)
 	if err != nil {
@@ -98,7 +107,11 @@ func TryToFormatAsCodeSnippet(input string) string {
 
 // FormatAsCodeBlock accepts an arbitrary string, quoted or not, and calls a
 // helper function which attempts to format as a valid Markdown code block for
-// submission to Microsoft Teams
+// submission to Microsoft Teams.
+//
+// This function is intended for processing text intended for a MessageCard.
+// Using this helper function for text intended for an Adaptive Card is
+// unsupported and unlikely to produce the desired results.
 func FormatAsCodeBlock(input string) (string, error) {
 	if input == "" {
 		return "", errors.New("received empty string, refusing to format")
@@ -115,7 +128,11 @@ func FormatAsCodeBlock(input string) (string, error) {
 
 // FormatAsCodeSnippet accepts an arbitrary string, quoted or not, and calls a
 // helper function which attempts to format as a single-line valid Markdown
-// code snippet for submission to Microsoft Teams
+// code snippet for submission to Microsoft Teams.
+//
+// This function is intended for processing text intended for a MessageCard.
+// Using this helper function for text intended for an Adaptive Card is
+// unsupported and unlikely to produce the desired results.
 func FormatAsCodeSnippet(input string) (string, error) {
 	if input == "" {
 		return "", errors.New("received empty string, refusing to format")
@@ -132,7 +149,12 @@ func FormatAsCodeSnippet(input string) (string, error) {
 
 // formatAsCode is a helper function which accepts an arbitrary string, quoted
 // or not, a desired prefix and a suffix for the string and attempts to format
-// as a valid Markdown formatted code sample for submission to Microsoft Teams
+// as a valid Markdown formatted code sample for submission to Microsoft
+// Teams. This helper function is intended for processing text intended for a
+// MessageCard.
+//
+// Using this helper function for text intended for an Adaptive Card is
+// unsupported and unlikely to produce the desired results.
 func formatAsCode(input string, prefix string, suffix string) (string, error) {
 	var err error
 	var byteSlice []byte
@@ -192,10 +214,11 @@ func formatAsCode(input string, prefix string, suffix string) (string, error) {
 }
 
 // ConvertEOLToBreak converts \r\n (windows), \r (mac) and \n (unix) into <br>
-// statements. This is most useful for text intended for inclusion in
-// MessageCard payloads. When text processed by this function is included in
-// Adaptive Card payloads, the <br> statements are left as-is (which is often
-// not the intended outcome).
+// statements.
+//
+// This function is intended for processing text intended for a MessageCard.
+// Using this helper function for text intended for an Adaptive Card is
+// unsupported and unlikely to produce the desired results.
 func ConvertEOLToBreak(s string) string {
 	logger.Printf("ConvertEOLToBreak: Received %#v", s)
 
