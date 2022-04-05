@@ -485,10 +485,10 @@ func (tc TopLevelCard) Validate() error {
 // of the element.
 //
 // TODO: Are there any element types which do not support this?
-func (e *Element) WithSeparator() *Element {
-	e.Separator = true
-	return e
-}
+// func (e *Element) WithSeparator() *Element {
+// 	e.Separator = true
+// 	return e
+// }
 
 // Validate asserts that fields have valid values.
 func (e Element) Validate() error {
@@ -1255,6 +1255,15 @@ func NewContainer() Container {
 
 	return container
 }
+
+// WithSeparator indicates that a separating line should be drawn at the top
+// of the element.
+//
+// TODO: Are there any element types which do not support this?
+// func (c *Container) WithSeparator() *Container {
+// 	c.Separator = true
+// 	return c
+// }
 
 // NewTextBlock creates a new TextBlock element using the optional user
 // specified Text.
