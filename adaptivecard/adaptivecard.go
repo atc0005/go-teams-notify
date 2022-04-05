@@ -182,7 +182,7 @@ const (
 	ContainerStyleGood      string = "good"
 	ContainerStyleAttention string = "attention"
 	ContainerStyleWarning   string = "warning"
-	ContainerStyleAccept    string = "accent"
+	ContainerStyleAccent    string = "accent"
 )
 
 // Supported spacing values for FactSet, Container and other container element

@@ -267,7 +267,7 @@ func supportedContainerStyleValues() []string {
 		ContainerStyleGood,
 		ContainerStyleAttention,
 		ContainerStyleWarning,
-		ContainerStyleAccept,
+		ContainerStyleAccent,
 	}
 }
 
