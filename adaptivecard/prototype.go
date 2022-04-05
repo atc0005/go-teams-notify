@@ -126,6 +126,7 @@ func NewTextBlockCard(text string, title string) Card {
 			Wrap:  true,
 			Text:  title,
 			Style: TextBlockStyleHeading,
+			Size:  SizeLarge,
 		}
 
 		card.Body = append([]Element{titleTextBlock}, card.Body...)
