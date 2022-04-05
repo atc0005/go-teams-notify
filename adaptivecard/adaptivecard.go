@@ -637,15 +637,6 @@ type MSTeams struct {
 	// TODO: Research supported values, add as MSTeamsWidthXYZ constants.
 	Width string `json:"width,omitempty"`
 
-	// Wrap indicates whether text is ...
-	//
-	// TODO: Research specific purpose of this field and how interacts with a
-	// value set on a specific element of an Adaptive Card.
-	//
-	// TODO: Confirm that this is a valid field.
-	// https://github.com/MicrosoftDocs/msteams-docs/issues/5003
-	Wrap bool `json:"wrap,omitempty"`
-
 	// AllowExpand controls whether images can be displayed in stage view
 	// selectively.
 	//
