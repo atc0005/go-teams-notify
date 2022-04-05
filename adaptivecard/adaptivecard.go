@@ -294,6 +294,9 @@ var (
 
 	// ErrMissingValue indicates that an expected value was missing.
 	ErrMissingValue = errors.New("missing expected value")
+
+	// ErrValueNotFound indicates that a requested value was not found.
+	ErrValueNotFound = errors.New("requested value not found")
 )
 
 // Message represents a Microsoft Teams message containing one or more

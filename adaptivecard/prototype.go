@@ -1056,6 +1056,37 @@ func (c *Card) AddElement(prepend bool, elements ...Element) error {
 	return nil
 }
 
+// GetElement searches all Element values attached to the Card for the
+// specified ID (case sensitive). If found, a pointer to the Element is
+// returned, otherwise an error is returned.
+func (c *Card) GetElement(id string) (*Element, error) {
+	if id == "" {
+		return nil, fmt.Errorf(
+			"empty ID value specified: %w",
+			ErrMissingValue,
+		)
+	}
+
+	for _, element := range c.Body {
+		if element.ID == id {
+			return &element, nil
+		}
+
+		// If the Element is a Container, we need to evaluate its collection
+		// of Elements.
+		for _, item := range element.Items {
+			if item.ID == id {
+				return &element, nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf(
+		"unable to retrieve element id: %w",
+		ErrValueNotFound,
+	)
+}
+
 // AddFactSet adds one or more provided FactSet elements to the Body of the
 // associated Card. If specified, the FactSet values are prepended to the Card
 // Body (as a contiguous set retaining current order), otherwise appended to
