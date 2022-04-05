@@ -61,8 +61,9 @@ func NewMessage() *Message {
 }
 
 // NewSimpleMessage creates a new simple Message using given text. If given an
-// empty string a minimal Message is returned.
-func NewSimpleMessage(text string) *Message {
+// empty string a minimal Message is returned. If specified, text wrapping is
+// enabled.
+func NewSimpleMessage(text string, wrap bool) *Message {
 	if text == "" {
 		return &Message{
 			Type: TypeMessage,
@@ -73,7 +74,7 @@ func NewSimpleMessage(text string) *Message {
 		Type: TypeMessage,
 	}
 
-	textCard := NewTextBlockCard(text, "")
+	textCard := NewTextBlockCard(text, "", wrap)
 
 	msg.Attach(textCard)
 
@@ -103,11 +104,11 @@ func NewSimpleMessage(text string) *Message {
 
 // NewTextBlockCard uses the specified text and optional title to create and
 // return a new Card composed of a single TextBlock composed of the given
-// text.
-func NewTextBlockCard(text string, title string) Card {
+// text. If specified, the TextBlock has text wrapping enabled.
+func NewTextBlockCard(text string, title string, wrap bool) Card {
 	textBlock := Element{
 		Type: TypeElementTextBlock,
-		Wrap: true,
+		Wrap: wrap,
 		Text: text,
 	}
 
@@ -123,7 +124,7 @@ func NewTextBlockCard(text string, title string) Card {
 	if title != "" {
 		titleTextBlock := Element{
 			Type:  TypeElementTextBlock,
-			Wrap:  true,
+			Wrap:  wrap,
 			Text:  title,
 			Style: TextBlockStyleHeading,
 			Size:  SizeLarge,
@@ -311,11 +312,6 @@ func (m Message) Validate() error {
 
 	return nil
 }
-
-//
-// TODO: Create Validate() methods for all custom types that require specific
-// type values.
-//
 
 // Validate asserts that fields have valid values.
 func (a Attachment) Validate() error {
@@ -938,6 +934,10 @@ func (m *Message) Mention(prependElement bool, displayName string, id string, ms
 
 		textBlock := Element{
 			Type: TypeElementTextBlock,
+
+			// TODO: Any issues caused by enabling wrapping? The goal is to
+			// prevent the Mention.Text content from pushing user specified
+			// text off of the Card, out of sight.
 			Wrap: true,
 
 			// The text block contains the mention text string (required) and
@@ -988,6 +988,10 @@ func (c *Card) Mention(displayName string, id string, msgText string, prependEle
 
 	textBlock := Element{
 		Type: TypeElementTextBlock,
+
+		// TODO: Any issues caused by enabling wrapping? The goal is to
+		// prevent the Mention.Text content from pushing user specified text
+		// off of the Card, out of sight.
 		Wrap: true,
 		Text: mention.Text + " " + msgText,
 	}
@@ -1013,6 +1017,10 @@ func (c *Card) Mention(displayName string, id string, msgText string, prependEle
 func (c *Card) AddMention(prepend bool, mentions ...Mention) error {
 	textBlock := Element{
 		Type: TypeElementTextBlock,
+
+		// TODO: Any issues caused by enabling wrapping? The goal is to
+		// prevent the Mention.Text from extending off of the Card, out of
+		// sight.
 		Wrap: true,
 	}
 
@@ -1252,7 +1260,7 @@ func NewMentionCard(displayName string, id string, msgText string) (Card, error)
 	}
 
 	// Create basic card.
-	textCard := NewTextBlockCard(msgText, "")
+	textCard := NewTextBlockCard(msgText, "", true)
 
 	// Update the text block so that it contains the mention text string
 	// (required) and user-specified message text string. Use the mention
@@ -1302,11 +1310,11 @@ func NewContainer() Container {
 // }
 
 // NewTextBlock creates a new TextBlock element using the optional user
-// specified Text.
-func NewTextBlock(text string) Element {
+// specified Text. If specified, text wrapping is enabled.
+func NewTextBlock(text string, wrap bool) Element {
 	textBlock := Element{
 		Type: TypeElementTextBlock,
-		Wrap: true,
+		Wrap: wrap,
 		Text: text,
 	}
 

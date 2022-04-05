@@ -18,7 +18,7 @@ func TestNewTextBlockCardWithoutTitle(t *testing.T) {
 	expectedText := "Tacos"
 
 	// Create basic card.
-	textCard := adaptivecard.NewTextBlockCard(expectedText, "")
+	textCard := adaptivecard.NewTextBlockCard(expectedText, "", true)
 
 	switch {
 	// Assert that no more than one element is present.
@@ -37,14 +37,22 @@ func TestNewTextBlockCardWithoutTitle(t *testing.T) {
 			textCard.Body[0].Type,
 		)
 
+	// Assert expected text
 	case textCard.Body[0].Text != expectedText:
 		t.Fatalf(
 			"want %q for Text field in element; got %q",
 			expectedText,
 			textCard.Body[0].Text,
 		)
-	}
 
+	// Assert wrapping is enabled.
+	case !textCard.Body[0].Wrap:
+		t.Fatalf(
+			"want %v for Wrap field; got %v",
+			true,
+			textCard.Body[0].Wrap,
+		)
+	}
 }
 
 func TestNewTextBlockCardWithTitle(t *testing.T) {
@@ -53,7 +61,7 @@ func TestNewTextBlockCardWithTitle(t *testing.T) {
 	expectedText := "Tacos"
 
 	// Create basic card with title
-	textCard := adaptivecard.NewTextBlockCard(expectedText, expectedTitle)
+	textCard := adaptivecard.NewTextBlockCard(expectedText, expectedTitle, true)
 
 	// Assert that no more or less than two elements (one for title, one for
 	// "body") are present.
@@ -103,4 +111,15 @@ func TestNewTextBlockCardWithTitle(t *testing.T) {
 		)
 	}
 
+	// Assert that wrapping is enabled for all TextBlock elements.
+	for i, textBlock := range textCard.Body {
+		if !textBlock.Wrap {
+			t.Fatalf(
+				"want %v for Wrap field in element %d; got %v",
+				true,
+				i,
+				textBlock.Wrap,
+			)
+		}
+	}
 }
