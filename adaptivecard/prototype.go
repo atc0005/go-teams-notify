@@ -1085,6 +1085,11 @@ func (c *Card) AddFactSet(prepend bool, factsets ...FactSet) error {
 	return nil
 }
 
+// SetFullWidth enables full width display for the Card.
+func (c *Card) SetFullWidth() {
+	c.MSTeams.Width = MSTeamsWidthFull
+}
+
 // NewMention uses the given display name and ID to create a user Mention
 // value for inclusion in a Card. An error is returned if provided values are
 // insufficient to create the user mention.
