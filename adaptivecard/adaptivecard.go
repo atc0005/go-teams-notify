@@ -632,19 +632,7 @@ type MSTeams struct {
 	// Width controls the width of Adaptive Cards within a Microsoft Teams
 	// messages.
 	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format#full-width-adaptive-card
-	//
-	// TODO: assert specific values
-	// TODO: Research supported values, add as MSTeamsWidthXYZ constants.
 	Width string `json:"width,omitempty"`
-
-	// Wrap indicates whether text is ...
-	//
-	// TODO: Research specific purpose of this field and how interacts with a
-	// value set on a specific element of an Adaptive Card.
-	//
-	// TODO: Confirm that this is a valid field.
-	// https://github.com/MicrosoftDocs/msteams-docs/issues/5003
-	Wrap bool `json:"wrap,omitempty"`
 
 	// AllowExpand controls whether images can be displayed in stage view
 	// selectively.
