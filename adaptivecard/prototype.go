@@ -122,12 +122,14 @@ func NewTextBlockCard(text string, title string, wrap bool) Card {
 	}
 
 	if title != "" {
+		// Emulate visual effects of MessageCard.Title field.
 		titleTextBlock := Element{
-			Type:  TypeElementTextBlock,
-			Wrap:  wrap,
-			Text:  title,
-			Style: TextBlockStyleHeading,
-			Size:  SizeLarge,
+			Type:   TypeElementTextBlock,
+			Wrap:   wrap,
+			Text:   title,
+			Style:  TextBlockStyleHeading,
+			Size:   SizeLarge,
+			Weight: WeightBolder,
 		}
 
 		card.Body = append([]Element{titleTextBlock}, card.Body...)
