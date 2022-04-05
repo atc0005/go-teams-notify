@@ -493,12 +493,6 @@ type Element struct {
 	// Separator, when true, indicates that a separating line shown should
 	// drawn at the top of the element.
 	Separator bool `json:"separator,omitempty"`
-
-	// parent is an optional reference to the enclosing Card for the element.
-	// Not all elements are enclosed in a Card.
-	//
-	// TODO: How is this used?
-	// parent *Card `json:"-"`
 }
 
 // Container is an Element type that allows grouping items together.
@@ -661,12 +655,6 @@ type MSTeams struct {
 	// Entities is a collection of user mentions.
 	// TODO: Should this be a slice of pointers?
 	Entities []Mention `json:"entities,omitempty"`
-
-	// parent is an optional reference to the enclosing Card for the MSTeams
-	// value.
-	//
-	// TODO: What is responsible for setting this?
-	// parent *Card `json:"-"`
 }
 
 // Mention represents a mention in the message for a specific user.
@@ -686,11 +674,6 @@ type Mention struct {
 
 	// Mentioned represents a user that is mentioned.
 	Mentioned Mentioned `json:"mentioned"`
-
-	// parent is an optional reference to the enclosing MSTeams value.
-	//
-	// TODO: What is responsible for setting this?
-	// parent *MSTeams `json:"-"`
 }
 
 // Mentioned represents the user id and name of a user that is mentioned.
