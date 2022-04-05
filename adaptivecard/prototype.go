@@ -912,7 +912,7 @@ func (m Mentioned) Validate() error {
 // the Mention and TextBlock element. If specified, the new TextBlock element
 // is added as the first element of the Card, otherwise it is added last. An
 // error is returned if insufficient values are provided.
-func (m *Message) Mention(displayName string, id string, msgText string, prependElement bool) error {
+func (m *Message) Mention(prependElement bool, displayName string, id string, msgText string) error {
 	switch {
 	// If no existing cards, add a new one.
 	case len(m.Attachments) == 0:
@@ -1002,13 +1002,14 @@ func (c *Card) Mention(displayName string, id string, msgText string, prependEle
 }
 
 // AddMention adds one or more provided user mentions to the associated Card
-// along with a new TextBlock element as the first element in the Card body.
-// The Text field for the new TextBlock element is updated with the Mention
-// Text. This effectively creates a dedicated TextBlock that acts as a
-// "lead-in" or "announcement block" for other elements in the Card.
+// along with a new TextBlock element. The Text field for the new TextBlock
+// element is updated with the Mention Text. This effectively creates a
+// dedicated TextBlock that acts as a "lead-in" or "announcement block" for
+// other elements in the Card. If specified, the new TextBlock element is
+// inserted as the first element in the Card body, otherwise it is appended.
 //
 // An error is returned if specified Mention values fail validation.
-func (c *Card) AddMention(mentions ...Mention) error {
+func (c *Card) AddMention(prepend bool, mentions ...Mention) error {
 	textBlock := Element{
 		Type: TypeElementTextBlock,
 		Wrap: true,
@@ -1020,9 +1021,12 @@ func (c *Card) AddMention(mentions ...Mention) error {
 		return err
 	}
 
-	// Insert new TextBlock with modified Mention.Text included as the first
-	// element.
-	c.Body = append([]Element{textBlock}, c.Body...)
+	switch prepend {
+	case true:
+		c.Body = append([]Element{textBlock}, c.Body...)
+	case false:
+		c.Body = append(c.Body, textBlock)
+	}
 
 	return nil
 }
