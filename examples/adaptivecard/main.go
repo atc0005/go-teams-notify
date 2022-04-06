@@ -55,7 +55,7 @@ func main() {
 	}
 
 	// Test handling of incomplete message
-	stubMsg := adaptivecard.NewSimpleMessage("")
+	stubMsg := adaptivecard.NewSimpleMessage("", true)
 	if err := stubMsg.Validate(); err != nil {
 		fmt.Printf("test message fails validation: %v\n", err)
 		// os.Exit(1)
@@ -70,7 +70,7 @@ func main() {
 	}
 
 	// Create, print & send simple message.
-	simpleMsg := adaptivecard.NewSimpleMessage("Hello from NewSimpleMessage!")
+	simpleMsg := adaptivecard.NewSimpleMessage("Hello from NewSimpleMessage!", true)
 	if err := simpleMsg.Prepare(); err != nil {
 		fmt.Printf(
 			"failed to prepare message: %v",
@@ -122,7 +122,7 @@ func main() {
 	}
 
 	// Create simple message, then add a user mention to it.
-	customMsg := adaptivecard.NewSimpleMessage("NewSimpleMessage.")
+	customMsg := adaptivecard.NewSimpleMessage("NewSimpleMessage.", true)
 	err = customMsg.Mention(
 		false,
 		"Adam Chalkley",
