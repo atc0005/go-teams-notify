@@ -1028,7 +1028,8 @@ func (c *Card) AddMention(prepend bool, mentions ...Mention) error {
 
 	// Whether the mention text is prepended or appended doesn't matter since
 	// the TextBlock element we are adding is empty.
-	if err := AddMention(c, &textBlock, true, mentions...); err != nil {
+	err := AddMention(c, &textBlock, true, defaultMentionTextSeparator, mentions...)
+	if err != nil {
 		return err
 	}
 
@@ -1172,9 +1173,13 @@ func NewMention(displayName string, id string) (Mention, error) {
 // AddMention adds one or more provided user mentions to the specified Card.
 // The Text field for the specified TextBlock element is updated with the
 // Mention Text. If specified, the Mention Text is prepended, otherwise
-// appended. An error is returned if specified Mention values fail validation,
-// or one of Card or Element pointers are null.
-func AddMention(card *Card, textBlock *Element, prependText bool, mentions ...Mention) error {
+// appended. If specified, a custom separator is used between the Mention Text
+// and the TextBlock Text field, otherwise a default separator of a single
+// space is used.
+//
+// An error is returned if specified Mention values fail validation, or one of
+// Card or Element pointers are null.
+func AddMention(card *Card, textBlock *Element, prependText bool, separator string, mentions ...Mention) error {
 	if card == nil {
 		return fmt.Errorf(
 			"specified pointer to Card is nil: %w",
@@ -1205,13 +1210,18 @@ func AddMention(card *Card, textBlock *Element, prependText bool, mentions ...Me
 		}
 	}
 
+	defaultMentionSeparator := " "
+	if separator == "" {
+		separator = defaultMentionSeparator
+	}
+
 	// Update TextBlock element text with required user mention text string.
 	for _, mention := range mentions {
 		switch prependText {
 		case true:
-			textBlock.Text = mention.Text + " " + textBlock.Text
+			textBlock.Text = mention.Text + separator + textBlock.Text
 		case false:
-			textBlock.Text = textBlock.Text + " " + mention.Text
+			textBlock.Text = textBlock.Text + separator + mention.Text
 		}
 
 		card.MSTeams.Entities = append(card.MSTeams.Entities, mention)

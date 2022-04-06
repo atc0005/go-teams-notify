@@ -71,6 +71,10 @@ const (
 	// MentionTextFormatTemplate is the expected format of the Mention.Text
 	// field value.
 	MentionTextFormatTemplate string = "<at>%s</at>"
+
+	// defaultMentionTextSeparator is the default separator used between the
+	// contents of the Mention.Text field and a TextBlock.Text field.
+	defaultMentionTextSeparator string = " "
 )
 
 // Attachment constants.
