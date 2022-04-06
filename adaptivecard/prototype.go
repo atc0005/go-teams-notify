@@ -1000,24 +1000,28 @@ func (c *Card) Mention(displayName string, id string, msgText string, prependEle
 
 // AddMention adds one or more provided user mentions to the associated Card
 // along with a new TextBlock element. The Text field for the new TextBlock
-// element is updated with the Mention Text. This effectively creates a
-// dedicated TextBlock that acts as a "lead-in" or "announcement block" for
-// other elements in the Card. If specified, the new TextBlock element is
-// inserted as the first element in the Card body, otherwise it is appended.
+// element is updated with the Mention Text.
+//
+// If specified, the new TextBlock element is inserted as the first element in
+// the Card body. This effectively creates a dedicated TextBlock that acts as
+// a "lead-in" or "announcement block" for other elements in the Card. If
+// false, the newly created TextBlock is appended to the Card, effectively
+// creating a "CC" list commonly found at the end of an email message.
 //
 // An error is returned if specified Mention values fail validation.
 func (c *Card) AddMention(prepend bool, mentions ...Mention) error {
 	textBlock := Element{
 		Type: TypeElementTextBlock,
 
-		// TODO: Any issues caused by enabling wrapping? The goal is to
-		// prevent the Mention.Text from extending off of the Card, out of
-		// sight.
+		// The goal is to prevent the Mention.Text from extending off of the
+		// Card, out of sight.
 		Wrap: true,
 	}
 
 	// Whether the mention text is prepended or appended doesn't matter since
-	// the TextBlock element we are adding is empty.
+	// the TextBlock element we are adding is empty. Likewise, the separator
+	// chosen doesn't really matter either as there isn't any existing text
+	// that we need to separate from the mention text.
 	err := AddMention(c, &textBlock, true, defaultMentionTextSeparator, mentions...)
 	if err != nil {
 		return err
@@ -1164,8 +1168,12 @@ func NewMention(displayName string, id string) (Mention, error) {
 // The Text field for the specified TextBlock element is updated with the
 // Mention Text. If specified, the Mention Text is prepended, otherwise
 // appended. If specified, a custom separator is used between the Mention Text
-// and the TextBlock Text field, otherwise a default separator of a single
-// space is used.
+// and the TextBlock Text field, otherwise the default separator is used.
+//
+// NOTE: This function "registers" the specified Mention values with the Card
+// and updates the specified textBlock element, however the caller is
+// responsible for ensuring that the specified textBlock element is added to
+// the Card.
 //
 // An error is returned if specified Mention values fail validation, or one of
 // Card or Element pointers are null.
@@ -1200,26 +1208,30 @@ func AddMention(card *Card, textBlock *Element, prependText bool, separator stri
 		}
 	}
 
-	defaultMentionSeparator := " "
 	if separator == "" {
-		separator = defaultMentionSeparator
+		separator = defaultMentionTextSeparator
 	}
 
-	// Update TextBlock element text with required user mention text string.
-	for _, mention := range mentions {
-		switch prependText {
-		case true:
-			textBlock.Text = mention.Text + separator + textBlock.Text
-		case false:
-			textBlock.Text = textBlock.Text + separator + mention.Text
-		}
+	mentionsText := make([]string, 0, len(mentions))
 
+	// Record user mentions in the Card and collect all required user mention
+	// text values.
+	for _, mention := range mentions {
+		mentionsText = append(mentionsText, mention.Text)
 		card.MSTeams.Entities = append(card.MSTeams.Entities, mention)
 	}
 
+	// Update TextBlock element text with required user mention text string.
+	switch prependText {
+	case true:
+		textBlock.Text = strings.Join(mentionsText, " ") + separator + textBlock.Text
+	case false:
+		textBlock.Text = textBlock.Text + separator + strings.Join(mentionsText, " ")
+	}
+
 	// The original text may have been sufficiently short to not be truncated,
-	// but once we add the user mention text it likely would, so explicitly
-	// indicate that we wish to disable wrapping.
+	// but once we add the user mention text it is more likely that truncation
+	// could occur. Indicate that the text should be wrapped to avoid this.
 	textBlock.Wrap = true
 
 	return nil
