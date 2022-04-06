@@ -396,7 +396,7 @@ type Card struct {
 	Body []Element `json:"body"`
 
 	// Actions is a collection of actions to show in the card's action bar.
-	// TODO: Should this be a pointer?
+	// The action bar is displayed at the bottom of a Card.
 	Actions []Action `json:"actions,omitempty"`
 
 	// MSTeams is a container for properties specific to Microsoft Teams

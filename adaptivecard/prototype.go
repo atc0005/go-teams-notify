@@ -102,9 +102,8 @@ func NewSimpleMessage(text string, wrap bool) *Message {
 // 	return textCard
 // }
 
-// NewTextBlockCard uses the specified text and optional title to create and
-// return a new Card composed of a single TextBlock composed of the given
-// text. If specified, the TextBlock has text wrapping enabled.
+// NewTextBlockCard creates a new Card using the specified text and optional
+// title. If specified, the TextBlock has text wrapping enabled.
 func NewTextBlockCard(text string, title string, wrap bool) Card {
 	textBlock := Element{
 		Type: TypeElementTextBlock,
@@ -122,16 +121,7 @@ func NewTextBlockCard(text string, title string, wrap bool) Card {
 	}
 
 	if title != "" {
-		// Emulate visual effects of MessageCard.Title field.
-		titleTextBlock := Element{
-			Type:   TypeElementTextBlock,
-			Wrap:   wrap,
-			Text:   title,
-			Style:  TextBlockStyleHeading,
-			Size:   SizeLarge,
-			Weight: WeightBolder,
-		}
-
+		titleTextBlock := NewTitleTextBlock(title, wrap)
 		card.Body = append([]Element{titleTextBlock}, card.Body...)
 	}
 
@@ -1331,6 +1321,21 @@ func NewTextBlock(text string, wrap bool) Element {
 	}
 
 	return textBlock
+}
+
+// NewTitleTextBlock uses the specified text to create a new TextBlock
+// formatted as a "header" or "title" element. If specified, the TextBlock has
+// text wrapping enabled. The effect is meant to emulate the visual effects of
+// setting a MessageCard.Title field.
+func NewTitleTextBlock(title string, wrap bool) Element {
+	return Element{
+		Type:   TypeElementTextBlock,
+		Wrap:   wrap,
+		Text:   title,
+		Style:  TextBlockStyleHeading,
+		Size:   SizeLarge,
+		Weight: WeightBolder,
+	}
 }
 
 // NewFactSet creates an empty FactSet.
