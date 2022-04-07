@@ -81,27 +81,6 @@ func NewSimpleMessage(text string, wrap bool) *Message {
 	return &msg
 }
 
-// NewTextBlockCard creates and returns a new Card composed of a single
-// TextBlock composed of the given text.
-// func NewTextBlockCard(text string) Card {
-// 	textBlock := Element{
-// 		Type: TypeElementTextBlock,
-// 		Wrap: true,
-// 		Text: text,
-// 	}
-//
-// 	textCard := Card{
-// 		Type:    TypeAdaptiveCard,
-// 		Schema:  AdaptiveCardSchema,
-// 		Version: fmt.Sprintf(AdaptiveCardVersionTmpl, AdaptiveCardMaxVersion),
-// 		Body: []*Element{
-// 			&textBlock,
-// 		},
-// 	}
-//
-// 	return textCard
-// }
-
 // NewTextBlockCard creates a new Card using the specified text and optional
 // title. If specified, the TextBlock has text wrapping enabled.
 func NewTextBlockCard(text string, title string, wrap bool) Card {
@@ -1061,6 +1040,28 @@ func (c *Card) AddElement(prepend bool, elements ...Element) error {
 	return nil
 }
 
+// AddAction adds one or more provided Actions to the associated Card. If
+// specified, the Action values are prepended to the Card (as a collection
+// retaining current order), otherwise appended.
+//
+// An error is returned if specified Action values fail validation.
+func (c *Card) AddAction(prepend bool, actions ...Action) error {
+	for _, action := range actions {
+		if err := action.Validate(); err != nil {
+			return err
+		}
+	}
+
+	switch prepend {
+	case true:
+		c.Actions = append(actions, c.Actions...)
+	case false:
+		c.Actions = append(c.Actions, actions...)
+	}
+
+	return nil
+}
+
 // GetElement searches all Element values attached to the Card for the
 // specified ID (case sensitive). If found, a pointer to the Element is
 // returned, otherwise an error is returned.
@@ -1314,6 +1315,18 @@ func NewContainer() Container {
 	return container
 }
 
+// NewActionSet creates an empty ActionSet.
+//
+// TODO: Should we create a type alias for ActionSet, or keep it as a "base"
+// Element type?
+func NewActionSet() Element {
+	actionSet := Element{
+		Type: TypeElementActionSet,
+	}
+
+	return actionSet
+}
+
 // WithSeparator indicates that a separating line should be drawn at the top
 // of the element.
 //
@@ -1442,6 +1455,33 @@ func (c *Container) AddElement(prepend bool, element Element) error {
 		c.Items = append([]Element{element}, c.Items...)
 	case false:
 		c.Items = append(c.Items, element)
+	}
+
+	return nil
+}
+
+// AddAction adds one or more provided Action values to the associated
+// Container as a new ActionSet. If specified, the newly created ActionSet is
+// inserted as the first Element in the Container, otherwise appended.
+//
+// An error is returned if specified Action values fail validation.
+func (c *Container) AddAction(prepend bool, actions ...Action) error {
+	for _, action := range actions {
+		if err := action.Validate(); err != nil {
+			return err
+		}
+	}
+
+	actionSet := Element{
+		Type:    TypeElementActionSet,
+		Actions: actions,
+	}
+
+	switch prepend {
+	case true:
+		c.Items = append([]Element{actionSet}, c.Items...)
+	case false:
+		c.Items = append(c.Items, actionSet)
 	}
 
 	return nil
