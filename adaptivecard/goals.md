@@ -123,3 +123,10 @@ Minimal changes:
 
 - recommend search `<br>`, replace `\n`
 - recommend search `\`\`, replace with nothing
+
+## Cleanup efforts
+
+- add equivalent adaptivecard examples to match what is provided in
+  messagecard examples collection (e.g., custom user agent is still missing)
+- pick back up updating README examples listing to reflect examples parity (at
+  last in the direction of adaptivecard)
