@@ -116,3 +116,10 @@ When adding an existing Mention to a Card, should use the same behavior UNLESS
 provided a pointer to an Element. Perhaps this could be a separate standalone
 function that accepts pointers to Card (for msteams object access), Element
 (Text field). Pointer to Message shouldn't be needed.
+
+## send2teams release
+
+Minimal changes:
+
+- recommend search `<br>`, replace `\n`
+- recommend search `\`\`, replace with nothing
