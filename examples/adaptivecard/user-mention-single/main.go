@@ -7,8 +7,8 @@
 
 /*
 
-This is an example of a simple client application which uses this library to
-generate a user mention within a specific Microsoft Teams channel.
+This is an example of a client application which uses this library to generate
+a user mention within a specific Microsoft Teams channel.
 
 Of note:
 
@@ -16,8 +16,11 @@ Of note:
 - package-level logging is disabled by default
 - validation of known webhook URL prefixes is *enabled*
 - message is in Adaptive Card format
-- text is unformatted (formatting is allowed, just not shown in this example)
+- text is unformatted
 - a specific user mention is added to the message
+
+See https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/text-features
+for the list of supported Adaptive Card text formatting options.
 
 */
 
@@ -33,15 +36,16 @@ import (
 
 func main() {
 
-	// init the client
+	// Initialize a new Microsoft Teams client.
 	mstClient := goteamsnotify.NewTeamsClient()
 
+	// Set webhook url.
 	webhookUrl := "https://outlook.office.com/webhook/YOUR_WEBHOOK_URL_OF_TEAMS_CHANNEL"
 
-	// setup empty message
+	// Setup empty message.
 	msg := adaptivecard.NewMessage()
 
-	// add user mention
+	// Add user mention and specified text.
 	if err := msg.Mention(true, "John Doe", "jdoe@example.com", "Hello there!"); err != nil {
 		fmt.Printf(
 			"failed to add user mention: %v",
@@ -50,7 +54,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// send message
+	// Send the message with default timeout/retry settings.
 	if err := mstClient.Send(webhookUrl, msg); err != nil {
 		fmt.Printf(
 			"failed to send message: %v",

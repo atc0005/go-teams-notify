@@ -26,11 +26,11 @@ func NewMessage() *Message {
 	}
 }
 
-// NewSimpleMessage creates a new simple Message using given text. If given an
-// empty string a minimal Message is returned. If specified, text wrapping is
-// enabled.
-func NewSimpleMessage(text string, wrap bool) *Message {
-	if text == "" {
+// NewSimpleMessage creates a new simple Message using the specified text and
+// optional title. If given empty strings a minimal Message is returned. If
+// specified, text wrapping is enabled.
+func NewSimpleMessage(text string, title string, wrap bool) *Message {
+	if text == "" && title == "" {
 		return &Message{
 			Type: TypeMessage,
 		}
@@ -40,7 +40,7 @@ func NewSimpleMessage(text string, wrap bool) *Message {
 		Type: TypeMessage,
 	}
 
-	textCard := NewTextBlockCard(text, "", wrap)
+	textCard := NewTextBlockCard(text, title, wrap)
 
 	msg.Attach(textCard)
 
@@ -1223,9 +1223,9 @@ func NewMentionMessage(displayName string, id string, msgText string) (*Message,
 	return &msg, nil
 }
 
-// NewMentionCard creates a new Card with user Mention using the given message
-// text, displayName and ID. An error is returned if provided values are
-// insufficient to create the user mention.
+// NewMentionCard creates a new Card with user Mention using the given
+// displayName, ID and message text. An error is returned if provided values
+// are insufficient to create the user mention.
 func NewMentionCard(displayName string, id string, msgText string) (Card, error) {
 	if msgText == "" {
 		return Card{}, fmt.Errorf(

@@ -7,18 +7,29 @@
 
 /*
 
-TODO: Fix this example
+This is an example of a client application which uses this library to process
+(pretend) user display names and IDs and generate multiple user mentions
+within a specific Microsoft Teams channel.
 
-This is an example of a simple client application which uses this library to
-generate a user mention within a specific Microsoft Teams channel.
+This example is a somewhat rambling exploration of available options for
+generating user mentions. While functional, this example file does not
+necessarily reflect optimal approaches for generating user mentions.
+
+See the other Adaptive Card user mention examples for more targeted use cases
+or the https://github.com/atc0005/send2teams project for a real-world CLI app
+that uses this library to generate (optional) user mentions.
 
 Of note:
 
 - default timeout
 - package-level logging is disabled by default
 - validation of known webhook URL prefixes is *enabled*
-- simple message submitted to Microsoft Teams consisting of plain text message
-  (formatting is allowed, just not shown here) with a specific user mention
+- message is in Adaptive Card format
+- text is formatted
+- multiple user mentions are added to the message
+
+See https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/text-features
+for the list of supported Adaptive Card text formatting options.
 
 */
 
@@ -34,11 +45,14 @@ import (
 
 func main() {
 
-	// init the client
+	// Initialize a new Microsoft Teams client.
 	mstClient := goteamsnotify.NewTeamsClient()
 
+	// Set webhook url.
 	webhookUrl := "https://outlook.office.com/webhook/YOUR_WEBHOOK_URL_OF_TEAMS_CHANNEL"
 
+	// Allow specifying webhook URL via environment variable, fall-back to
+	// hard-coded value in this example file.
 	expectedEnvVar := "WEBHOOK_URL"
 	envWebhookURL := os.Getenv(expectedEnvVar)
 	switch {
@@ -55,7 +69,7 @@ func main() {
 	}
 
 	// Test handling of incomplete message
-	stubMsg := adaptivecard.NewSimpleMessage("", true)
+	stubMsg := adaptivecard.NewSimpleMessage("", "", true)
 	if err := stubMsg.Validate(); err != nil {
 		fmt.Printf("test message fails validation: %v\n", err)
 		// os.Exit(1)
@@ -70,7 +84,7 @@ func main() {
 	}
 
 	// Create, print & send simple message.
-	simpleMsg := adaptivecard.NewSimpleMessage("Hello from NewSimpleMessage!", true)
+	simpleMsg := adaptivecard.NewSimpleMessage("Hello from NewSimpleMessage!", "", true)
 	if err := simpleMsg.Prepare(); err != nil {
 		fmt.Printf(
 			"failed to prepare message: %v",
@@ -91,8 +105,8 @@ func main() {
 
 	// Create, print & send user mention message.
 	mentionMsg, err := adaptivecard.NewMentionMessage(
-		"Adam Chalkley",
-		"atc0005@auburn.edu",
+		"John Doe",
+		"jdoe@example.com",
 		"New user mention message.",
 	)
 	if err != nil {
@@ -122,11 +136,11 @@ func main() {
 	}
 
 	// Create simple message, then add a user mention to it.
-	customMsg := adaptivecard.NewSimpleMessage("NewSimpleMessage.", true)
+	customMsg := adaptivecard.NewSimpleMessage("NewSimpleMessage.", "", true)
 	err = customMsg.Mention(
 		false,
-		"Adam Chalkley",
-		"atc0005@auburn.edu",
+		"John Doe",
+		"jdoe@example.com",
 		"with a user mention added as a second step.",
 	)
 	if err != nil {
@@ -159,8 +173,8 @@ func main() {
 	bareMsg := adaptivecard.NewMessage()
 	err = bareMsg.Mention(
 		false,
-		"Adam Chalkley",
-		"atc0005@auburn.edu",
+		"John Doe",
+		"jdoe@example.com",
 		"Testing Message.Mention() method on card with no prior Elements.",
 	)
 	if err != nil {

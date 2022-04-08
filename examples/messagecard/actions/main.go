@@ -13,6 +13,7 @@ used, this action triggers opening a URI in a separate browser or application.
 
 Of note:
 
+- message is in MessageCard format
 - default timeout
 - package-level logging is disabled by default
 - validation of known webhook URL prefixes is *enabled*
@@ -29,34 +30,32 @@ package main
 
 import (
 	"log"
+	"os"
 
 	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
 	"github.com/atc0005/go-teams-notify/v2/messagecard"
 )
 
 func main() {
-	_ = sendTheMessage()
-}
 
-func sendTheMessage() error {
-	// init the client
+	// Initialize a new Microsoft Teams client.
 	mstClient := goteamsnotify.NewTeamsClient()
 
-	// setup webhook url
+	// Set webhook url.
 	webhookUrl := "https://outlook.office.com/webhook/YOUR_WEBHOOK_URL_OF_TEAMS_CHANNEL"
 
-	// destination for OpenUri action
+	// Destination for OpenUri action.
 	targetURL := "https://github.com/atc0005/go-teams-notify"
 	targetURLDesc := "Project Homepage"
 
-	// setup message card
+	// Setup message card.
 	msgCard := messagecard.NewMessageCard()
 	msgCard.Title = "Hello world"
 	msgCard.Text = "Here are some examples of formatted stuff like " +
 		"<br> * this list itself  <br> * **bold** <br> * *italic* <br> * ***bolditalic***"
 	msgCard.ThemeColor = "#DF813D"
 
-	// setup Action for message card
+	// Setup Action for message card.
 	pa, err := messagecard.NewPotentialAction(
 		messagecard.PotentialActionOpenURIType,
 		targetURLDesc,
@@ -74,11 +73,14 @@ func sendTheMessage() error {
 			},
 		}
 
-	// add the Action to the message card
+	// Add the Action to the message card.
 	if err := msgCard.AddPotentialAction(pa); err != nil {
 		log.Fatal("error encountered when adding action to message card:", err)
 	}
 
-	// send
-	return mstClient.Send(webhookUrl, msgCard)
+	// Send the message with default timeout/retry settings.
+	if err := mstClient.Send(webhookUrl, msgCard); err != nil {
+		log.Printf("failed to send message: %v", err)
+		os.Exit(1)
+	}
 }
