@@ -15,8 +15,9 @@ Of note:
 - default timeout
 - package-level logging is disabled by default
 - validation of known webhook URL prefixes is *enabled*
-- simple message submitted to Microsoft Teams consisting of plain text message
-  (formatting is allowed, just not shown here) with a specific user mention
+- message is in Adaptive Card format
+- text is unformatted (formatting is allowed, just not shown in this example)
+- a specific user mention is added to the message
 
 */
 
@@ -27,7 +28,7 @@ import (
 	"os"
 
 	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
-	"github.com/atc0005/go-teams-notify/v2/botapi"
+	"github.com/atc0005/go-teams-notify/v2/adaptivecard"
 )
 
 func main() {
@@ -37,15 +38,16 @@ func main() {
 
 	webhookUrl := "https://outlook.office.com/webhook/YOUR_WEBHOOK_URL_OF_TEAMS_CHANNEL"
 
-	// setup message
-	msg := botapi.NewMessage().AddText("Hello there!")
+	// setup empty message
+	msg := adaptivecard.NewMessage()
 
 	// add user mention
-	if err := msg.Mention("John Doe", "jdoe@example.com", true); err != nil {
+	if err := msg.Mention(true, "John Doe", "jdoe@example.com", "Hello there!"); err != nil {
 		fmt.Printf(
 			"failed to add user mention: %v",
 			err,
 		)
+		os.Exit(1)
 	}
 
 	// send message
