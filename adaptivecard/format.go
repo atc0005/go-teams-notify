@@ -32,13 +32,11 @@ const (
 	breakStatement = "<br>"
 )
 
-// equivalent formatting for MessageCard payloads in Microsoft Teams.
-
 // ConvertEOL converts \r\n (windows), \r (mac) and \n (unix) into \n\n.
 //
-// This function is intended for processing text intended for use in an
-// Adaptive Card TextBlock element. The goal is to provide comparable spacing
-// in rendered text display.
+// This function is intended for processing text for use in an Adaptive Card
+// TextBlock element. The goal is to provide spacing in rendered text display
+// comparable to native display.
 //
 // NOTE: There are known discrepancies in the way that Microsoft Teams renders
 // text in desktop, web and mobile, so even with using this helper function
@@ -60,16 +58,16 @@ func ConvertEOL(s string) string {
 // spacing in Adaptive Card TextBlock elements.
 //
 // This function is intended for processing text for use in an Adaptive Card
-// TextBlock element. The goal is to provide comparable spacing in rendered
-// text display. The primary use case of this function is to process text that
-// was previously formatted in preparation for use in a MessageCard; the
+// TextBlock element. The goal is to provide spacing in rendered text display
+// comparable to native display.
+//
+// The primary use case of this function is to process text that was
+// previously formatted in preparation for use in a MessageCard; the
 // MessageCard format supports <br> statements for text spacing/formatting
 // where the Adaptive Card format does not.
 //
 // https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format#newlines-for-adaptive-cards
 // https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/text-features
 func ConvertBreakToEOL(s string) string {
-	s = strings.ReplaceAll(s, breakStatement, unixEOLActual+unixEOLActual)
-
-	return s
+	return strings.ReplaceAll(s, breakStatement, unixEOLActual+unixEOLActual)
 }

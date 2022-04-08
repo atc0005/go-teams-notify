@@ -19,40 +19,6 @@ import (
 	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
 )
 
-/*
-
-Mocking package API
-
-
-msg := botapi.NewMessage().AddText("Hello there!")
-
-This would require (likely in reverse order):
-
-- creating the Message
-- setting the Type field
-- creating an Attachment
-- setting ContentType
-- creating a Card
-- setting Type
-- setting Schema
-- setting Version
-- creating an Element (of a specific type?)
-- appending Element to the Body slice of Card
-- attaching Card to the Attachment slice
-- appending Attachment to the Attachments slice of the Message
-
-AddText() could operate on the *Message, appending to the Text field of the
-first Element identified.
-
-*/
-
-/*
-
-msg := adaptivecard.NewMessage().AddText("Hello there!")
-
-
-*/
-
 // NewMessage creates a new Message with required fields predefined.
 func NewMessage() *Message {
 	return &Message{
