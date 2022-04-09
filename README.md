@@ -1,5 +1,5 @@
 <!-- omit in toc -->
-# go-teams-notify
+# goteamsnotify
 
 A package to send messages to a Microsoft Teams channel.
 

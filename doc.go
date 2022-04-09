@@ -29,7 +29,7 @@ FEATURES
 
 • Support for Actions, allowing users to take quick actions within Microsoft Teams
 
-• Support for user mentions (limited)
+• Support for user mentions
 
 • Configurable validation
 
