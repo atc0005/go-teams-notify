@@ -206,15 +206,21 @@ is not available in the legacy `MessageCard` card format.
 
 This example illustrates setting a custom user agent.
 
-File: [custom-user-agent](./examples/messagecard/custom-user-agent/main.go)
+- `Adaptive Card`
+  - File: [custom-user-agent](./examples/adaptivecard/custom-user-agent/main.go)
+- `MessageCard`
+  - File: [custom-user-agent](./examples/messagecard/custom-user-agent/main.go)
 
 #### Add an Action
 
-This example illustrates adding an [`OpenUri Action`][msgcard-ref-actions] to
-a message card. When used, this action triggers opening a URI in a separate
-browser or application.
+This example illustrates adding an [`OpenUri`][msgcard-ref-actions]
+(`MessageCard`) or [`OpenUrl`][adaptivecard-ref-actions] Action. When used,
+this action triggers opening a URL in a separate browser or application.
 
-File: [actions](./examples/actions/main.go)
+- `Adaptive Card`
+  - File: [actions](./examples/adaptivecard/actions/main.go)
+- `MessageCard`
+  - File: [actions](./examples/messagecard/actions/main.go)
 
 #### Disable webhook URL prefix validation
 
@@ -222,14 +228,20 @@ This example disables the validation webhook URLs, including the validation of
 known prefixes so that custom/private webhook URL endpoints can be used (e.g.,
 testing purposes).
 
-File: [disable-validation](./examples/disable-validation/main.go)
+- `Adaptive Card`
+  - File: [disable-validation](./examples/adaptivecard/disable-validation/main.go)
+- `MessageCard`
+  - File: [disable-validation](./examples/messagecard/disable-validation/main.go)
 
 #### Enable custom patterns' validation
 
 This example demonstrates how to enable custom validation patterns for webhook
 URLs.
 
-File: [custom-validation](./examples/custom-validation/main.go)
+- `Adaptive Card`
+  - File: [custom-validation](./examples/adaptivecard/custom-validation/main.go)
+- `MessageCard`
+  - File: [custom-validation](./examples/messagecard/custom-validation/main.go)
 
 ## Used by
 
