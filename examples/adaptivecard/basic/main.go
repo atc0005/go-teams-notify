@@ -49,7 +49,14 @@ func main() {
 		"\n * this list itself  \n * **bold** \n * *italic* \n * ***bolditalic***"
 
 	// Create message using provided formatted title and text.
-	msg := adaptivecard.NewSimpleMessage(msgText, msgTitle, true)
+	msg, err := adaptivecard.NewSimpleMessage(msgText, msgTitle, true)
+	if err != nil {
+		fmt.Printf(
+			"failed to create message: %v",
+			err,
+		)
+		os.Exit(1)
+	}
 
 	// Send the message with default timeout/retry settings.
 	if err := mstClient.Send(webhookUrl, msg); err != nil {

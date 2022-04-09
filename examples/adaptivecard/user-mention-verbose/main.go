@@ -68,23 +68,16 @@ func main() {
 		fmt.Printf("Using hardcoded value %q as fallback\n\n", webhookUrl)
 	}
 
-	// Test handling of incomplete message
-	stubMsg := adaptivecard.NewSimpleMessage("", "", true)
-	if err := stubMsg.Validate(); err != nil {
-		fmt.Printf("test message fails validation: %v\n", err)
-		// os.Exit(1)
-	} else {
-		if err := mstClient.Send(webhookUrl, stubMsg); err != nil {
-			fmt.Printf(
-				"failed to send message: %v",
-				err,
-			)
-			os.Exit(1)
-		}
+	// Create, print & send simple message.
+	simpleMsg, err := adaptivecard.NewSimpleMessage("Hello from NewSimpleMessage!", "", true)
+	if err != nil {
+		fmt.Printf(
+			"failed to create message: %v",
+			err,
+		)
+		os.Exit(1)
 	}
 
-	// Create, print & send simple message.
-	simpleMsg := adaptivecard.NewSimpleMessage("Hello from NewSimpleMessage!", "", true)
 	if err := simpleMsg.Prepare(); err != nil {
 		fmt.Printf(
 			"failed to prepare message: %v",
@@ -136,14 +129,21 @@ func main() {
 	}
 
 	// Create simple message, then add a user mention to it.
-	customMsg := adaptivecard.NewSimpleMessage("NewSimpleMessage.", "", true)
-	err = customMsg.Mention(
+	customMsg, err := adaptivecard.NewSimpleMessage("NewSimpleMessage.", "", true)
+	if err != nil {
+		fmt.Printf(
+			"failed to create message: %v",
+			err,
+		)
+		os.Exit(1)
+	}
+
+	if err := customMsg.Mention(
 		false,
 		"John Doe",
 		"jdoe@example.com",
 		"with a user mention added as a second step.",
-	)
-	if err != nil {
+	); err != nil {
 		fmt.Printf(
 			"failed to add user mention: %v",
 			err,

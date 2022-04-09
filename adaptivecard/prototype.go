@@ -28,13 +28,14 @@ func NewMessage() *Message {
 }
 
 // NewSimpleMessage creates a new simple Message using the specified text and
-// optional title. If given empty strings a minimal Message is returned. If
-// specified, text wrapping is enabled.
-func NewSimpleMessage(text string, title string, wrap bool) *Message {
-	if text == "" && title == "" {
-		return &Message{
-			Type: TypeMessage,
-		}
+// optional title. If specified, text wrapping is enabled. An error is
+// returned if an empty text string is specified.
+func NewSimpleMessage(text string, title string, wrap bool) (*Message, error) {
+	if text == "" {
+		return nil, fmt.Errorf(
+			"required field text is empty: %w",
+			ErrMissingValue,
+		)
 	}
 
 	msg := Message{
@@ -43,9 +44,14 @@ func NewSimpleMessage(text string, title string, wrap bool) *Message {
 
 	textCard := NewTextBlockCard(text, title, wrap)
 
-	msg.Attach(textCard)
+	if err := msg.Attach(textCard); err != nil {
+		return nil, fmt.Errorf(
+			"failed to create simple message: %w",
+			err,
+		)
+	}
 
-	return &msg
+	return &msg, nil
 }
 
 // NewTextBlockCard creates a new Card using the specified text and optional
@@ -83,58 +89,20 @@ func NewCard() Card {
 	}
 }
 
-// AddText appends given text to the message for delivery.
-//
-// TODO: What is needed to permit this to work?
-// func (m *Message) AddText(text string) *Message {
-// 	if text == "" {
-// 		return m
-// 	}
-//
-// 	if len(m.Attachments) == 0 {
-// 		// create new:
-// 		// attachment
-// 		// card
-// 		// element
-// 	}
-//
-// 	// PLACEHOLDER
-// 	return m
-//
-// }
-
-// Add appends an Attachment to the Attachments collection for a Microsoft
-// Teams message.
-//
-// TODO: Is this useful for anything? We can just append directly to the
-// Attachments field.
-//
-// C# snippet:
-//
-// Display a carousel of all the rich card types.
-// reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
-// reply.Attachments.Add(Cards.CreateAdaptiveCardAttachment());
-// reply.Attachments.Add(Cards.GetAnimationCard().ToAttachment());
-// reply.Attachments.Add(Cards.GetAudioCard().ToAttachment());
-// reply.Attachments.Add(Cards.GetHeroCard().ToAttachment());
-// reply.Attachments.Add(Cards.GetOAuthCard().ToAttachment());
-// reply.Attachments.Add(Cards.GetReceiptCard().ToAttachment());
-// reply.Attachments.Add(Cards.GetSigninCard().ToAttachment());
-// reply.Attachments.Add(Cards.GetThumbnailCard().ToAttachment());
-// reply.Attachments.Add(Cards.GetVideoCard().ToAttachment());
-func (a *Attachments) Add(attachment Attachment) *Attachments {
-	*a = append(*a, attachment)
-
-	return a
-}
-
 // Attach receives and adds one or more Card values to the Attachments
 // collection for a Microsoft Teams message.
 //
 // NOTE: Including multiple cards in the attachments collection *without*
 // attachmentLayout set to "carousel" hides cards after the first. Not sure if
 // this is a bug, or if it's intentional.
-func (m *Message) Attach(cards ...Card) {
+func (m *Message) Attach(cards ...Card) error {
+	if len(cards) == 0 {
+		return fmt.Errorf(
+			"received empty collection of cards: %w",
+			ErrMissingValue,
+		)
+	}
+
 	for _, card := range cards {
 		attachment := Attachment{
 			ContentType: AttachmentContentType,
@@ -147,6 +115,8 @@ func (m *Message) Attach(cards ...Card) {
 
 		m.Attachments = append(m.Attachments, attachment)
 	}
+
+	return nil
 }
 
 // Carousel sets the Message Attachment layout to Carousel display mode.
@@ -848,6 +818,8 @@ func (m Mentioned) Validate() error {
 // is added as the first element of the Card, otherwise it is added last. An
 // error is returned if insufficient values are provided.
 func (m *Message) Mention(prependElement bool, displayName string, id string, msgText string) error {
+	// NOTE: Rely on called functions to validate given arguments.
+
 	switch {
 	// If no existing cards, add a new one.
 	case len(m.Attachments) == 0:
@@ -919,6 +891,7 @@ func (c *Card) Mention(displayName string, id string, msgText string, prependEle
 		)
 	}
 
+	// Rely on this called function to validate the other arguments.
 	mention, err := NewMention(displayName, id)
 	if err != nil {
 		return err
@@ -968,6 +941,9 @@ func (c *Card) AddMention(prepend bool, mentions ...Mention) error {
 	// the TextBlock element we are adding is empty. Likewise, the separator
 	// chosen doesn't really matter either as there isn't any existing text
 	// that we need to separate from the mention text.
+	//
+	// NOTE: WE rely on this function to apply validation of user mention
+	// values instead of duplicating that logic here.
 	err := AddMention(c, &textBlock, true, defaultMentionTextSeparator, mentions...)
 	if err != nil {
 		return err
@@ -990,6 +966,13 @@ func (c *Card) AddMention(prepend bool, mentions ...Mention) error {
 //
 // An error is returned if specified Element values fail validation.
 func (c *Card) AddElement(prepend bool, elements ...Element) error {
+	if len(elements) == 0 {
+		return fmt.Errorf(
+			"received empty collection of elements: %w",
+			ErrMissingValue,
+		)
+	}
+
 	// Validate first before adding to Card Body.
 	for _, element := range elements {
 		if err := element.Validate(); err != nil {
@@ -1011,8 +994,26 @@ func (c *Card) AddElement(prepend bool, elements ...Element) error {
 // specified, the Action values are prepended to the Card (as a collection
 // retaining current order), otherwise appended.
 //
+// NOTE: The max display limit for a Card's actions array has been observed to
+// be a fixed value for web/desktop app and a matching value as an initial
+// display limit for mobile app with the option to expand remaining actions in
+// a list.
+//
+// This value is recorded in this package as "TeamsActionsDisplayLimit".
+//
+// Consider adding Action values to one or more ActionSet elements as needed
+// and include within the Card.Body directly or within a Container to
+// workaround this limit.
+//
 // An error is returned if specified Action values fail validation.
 func (c *Card) AddAction(prepend bool, actions ...Action) error {
+	if len(actions) == 0 {
+		return fmt.Errorf(
+			"received empty collection of actions: %w",
+			ErrMissingValue,
+		)
+	}
+
 	for _, action := range actions {
 		if err := action.Validate(); err != nil {
 			return err
@@ -1070,6 +1071,13 @@ func (c *Card) GetElement(id string) (*Element, error) {
 // TODO: Is this needed? Should we even have a separate FactSet type that is
 // so difficult to work with?
 func (c *Card) AddFactSet(prepend bool, factsets ...FactSet) error {
+	if len(factsets) == 0 {
+		return fmt.Errorf(
+			"received empty collection of factsets: %w",
+			ErrMissingValue,
+		)
+	}
+
 	// Convert to base Element type
 	factsetElements := make([]Element, 0, len(factsets))
 	for _, factset := range factsets {
@@ -1169,6 +1177,13 @@ func AddMention(card *Card, textBlock *Element, prependText bool, separator stri
 		)
 	}
 
+	if len(mentions) == 0 {
+		return fmt.Errorf(
+			"received empty collection of mentions: %w",
+			ErrMissingValue,
+		)
+	}
+
 	// Validate all user mentions before modifying Card or Element.
 	for _, mention := range mentions {
 		if err := mention.Validate(); err != nil {
@@ -1214,6 +1229,7 @@ func NewMentionMessage(displayName string, id string, msgText string) (*Message,
 		Type: TypeMessage,
 	}
 
+	// Rely on function to apply validation instead of duplicating it here.
 	mentionCard, err := NewMentionCard(displayName, id, msgText)
 	if err != nil {
 		return nil, err
@@ -1350,6 +1366,13 @@ func (fs *FactSet) AddFact(facts ...Fact) error {
 			fs.Type,
 			TypeElementFactSet,
 			ErrInvalidType,
+		)
+	}
+
+	if len(facts) == 0 {
+		return fmt.Errorf(
+			"received empty collection of facts: %w",
+			ErrMissingValue,
 		)
 	}
 
