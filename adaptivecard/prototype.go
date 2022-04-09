@@ -1409,6 +1409,47 @@ func NewActionOpenURL(url string, title string) (Action, error) {
 	return action, nil
 }
 
+// NewActionSetsFromActions creates a new ActionSet for every
+// TeamsActionsDisplayLimit count of Actions given. An error is returned if
+// the specified Actions do not pass validation.
+func NewActionSetsFromActions(actions ...Action) ([]Element, error) {
+	if len(actions) == 0 {
+		return nil, fmt.Errorf(
+			"received empty collection of actions to create ActionSet: %w",
+			ErrMissingValue,
+		)
+	}
+
+	for _, action := range actions {
+		if err := action.Validate(); err != nil {
+			return nil, err
+		}
+	}
+
+	// Create a new ActionSet for every TeamsActionsDisplayLimit count of
+	// Actions given.
+	actionSetsNeeded := int(math.Ceil(float64(len(actions)) / float64(TeamsActionsDisplayLimit)))
+	actionSets := make([]Element, 0, actionSetsNeeded)
+
+	stride := TeamsActionsDisplayLimit
+	for i := 0; i < len(actions); i += stride {
+		// Ensure that we don't stride past the end of the actions slice.
+		if stride > len(actions)-i {
+			stride = len(actions) - i
+		}
+
+		actionSetItems := actions[i : i+stride]
+		actionSet := Element{
+			Type:    TypeElementActionSet,
+			Actions: actionSetItems,
+		}
+
+		actionSets = append(actionSets, actionSet)
+	}
+
+	return actionSets, nil
+}
+
 // AddElement adds the given Element to the collection of Element values in
 // the container. If specified, the Element is inserted at the beginning of
 // the collection, otherwise appended to the end.
@@ -1437,31 +1478,10 @@ func (c *Container) AddElement(prepend bool, element Element) error {
 //
 // An error is returned if specified Action values fail validation.
 func (c *Container) AddAction(prepend bool, actions ...Action) error {
-	for _, action := range actions {
-		if err := action.Validate(); err != nil {
-			return err
-		}
-	}
-
-	// Create a new ActionSet for every TeamsActionsDisplayLimit count of
-	// Actions given.
-	actionSetsNeeded := int(math.Ceil(float64(len(actions)) / float64(TeamsActionsDisplayLimit)))
-	actionSets := make([]Element, 0, actionSetsNeeded)
-
-	stride := TeamsActionsDisplayLimit
-	for i := 0; i < len(actions); i += stride {
-		// Ensure that we don't stride past the end of the actions slice.
-		if stride > len(actions)-i {
-			stride = len(actions) - i
-		}
-
-		actionSetItems := actions[i : i+stride]
-		actionSet := Element{
-			Type:    TypeElementActionSet,
-			Actions: actionSetItems,
-		}
-
-		actionSets = append(actionSets, actionSet)
+	// Rely on function to apply validation instead of duplicating it here.
+	actionSets, err := NewActionSetsFromActions(actions...)
+	if err != nil {
+		return err
 	}
 
 	switch prepend {
