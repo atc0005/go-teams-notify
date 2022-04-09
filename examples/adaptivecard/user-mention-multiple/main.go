@@ -59,7 +59,11 @@ func main() {
 	// Create Card using provided formatted title and text. We'll attach user
 	// mentions to this Card and then later generate a valid Message for
 	// delivery using the Card as input.
-	card := adaptivecard.NewTextBlockCard(msgText, msgTitle, true)
+	card, err := adaptivecard.NewTextBlockCard(msgText, msgTitle, true)
+	if err != nil {
+		fmt.Printf("failed to create card: %v", err)
+		os.Exit(1)
+	}
 
 	// We pretend that the user has submitted these values via command line
 	// flags or some other input source and we have stored them in a struct

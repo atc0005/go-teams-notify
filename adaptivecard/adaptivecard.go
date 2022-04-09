@@ -740,7 +740,13 @@ func NewSimpleMessage(text string, title string, wrap bool) (*Message, error) {
 		Type: TypeMessage,
 	}
 
-	textCard := NewTextBlockCard(text, title, wrap)
+	textCard, err := NewTextBlockCard(text, title, wrap)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"failed to create TextBlock card: %w",
+			err,
+		)
+	}
 
 	if err := msg.Attach(textCard); err != nil {
 		return nil, fmt.Errorf(
@@ -754,7 +760,14 @@ func NewSimpleMessage(text string, title string, wrap bool) (*Message, error) {
 
 // NewTextBlockCard creates a new Card using the specified text and optional
 // title. If specified, the TextBlock has text wrapping enabled.
-func NewTextBlockCard(text string, title string, wrap bool) Card {
+func NewTextBlockCard(text string, title string, wrap bool) (Card, error) {
+	if text == "" {
+		return Card{}, fmt.Errorf(
+			"required field text is empty: %w",
+			ErrMissingValue,
+		)
+	}
+
 	textBlock := Element{
 		Type: TypeElementTextBlock,
 		Wrap: wrap,
@@ -775,7 +788,7 @@ func NewTextBlockCard(text string, title string, wrap bool) Card {
 		card.Body = append([]Element{titleTextBlock}, card.Body...)
 	}
 
-	return card
+	return card, nil
 }
 
 // NewCard creates and returns an empty Card.
@@ -1956,7 +1969,10 @@ func NewMentionCard(displayName string, id string, msgText string) (Card, error)
 	}
 
 	// Create basic card.
-	textCard := NewTextBlockCard(msgText, "", true)
+	textCard, err := NewTextBlockCard(msgText, "", true)
+	if err != nil {
+		return Card{}, err
+	}
 
 	// Update the text block so that it contains the mention text string
 	// (required) and user-specified message text string. Use the mention
