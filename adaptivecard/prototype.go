@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
@@ -1427,8 +1428,12 @@ func (c *Container) AddElement(prepend bool, element Element) error {
 }
 
 // AddAction adds one or more provided Action values to the associated
-// Container as a new ActionSet. If specified, the newly created ActionSet is
-// inserted as the first Element in the Container, otherwise appended.
+// Container as one or more new ActionSets. The number of actions in each
+// newly created ActionSet is limited to the number specified by
+// TeamsActionsDisplayLimit.
+//
+// If specified, the newly created ActionSets are inserted before other
+// Elements in the Container, otherwise appended.
 //
 // An error is returned if specified Action values fail validation.
 func (c *Container) AddAction(prepend bool, actions ...Action) error {
@@ -1438,16 +1443,32 @@ func (c *Container) AddAction(prepend bool, actions ...Action) error {
 		}
 	}
 
-	actionSet := Element{
-		Type:    TypeElementActionSet,
-		Actions: actions,
+	// Create a new ActionSet for every TeamsActionsDisplayLimit count of
+	// Actions given.
+	actionSetsNeeded := int(math.Ceil(float64(len(actions)) / float64(TeamsActionsDisplayLimit)))
+	actionSets := make([]Element, 0, actionSetsNeeded)
+
+	stride := TeamsActionsDisplayLimit
+	for i := 0; i < len(actions); i += stride {
+		// Ensure that we don't stride past the end of the actions slice.
+		if stride > len(actions)-i {
+			stride = len(actions) - i
+		}
+
+		actionSetItems := actions[i : i+stride]
+		actionSet := Element{
+			Type:    TypeElementActionSet,
+			Actions: actionSetItems,
+		}
+
+		actionSets = append(actionSets, actionSet)
 	}
 
 	switch prepend {
 	case true:
-		c.Items = append([]Element{actionSet}, c.Items...)
+		c.Items = append(actionSets, c.Items...)
 	case false:
-		c.Items = append(c.Items, actionSet)
+		c.Items = append(c.Items, actionSets...)
 	}
 
 	return nil

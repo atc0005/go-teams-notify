@@ -210,6 +210,23 @@ const (
 // Supported Actions
 const (
 
+	// TeamsActionsDisplayLimit is the observed limit on the number of visible
+	// URL "buttons" in a Microsoft Teams message.
+	//
+	// Unlike the MessageCard format which has a clearly documented limit of 4
+	// actions, testing reveals that Desktop / Web displays 6 without the
+	// option to expand and see any additional defined actions. Mobile
+	// displays 6 with an ellipsis to expand into a list of other Actions.
+	//
+	// This results in a maximum limit of 6 actions in the Actions array for a
+	// Card.
+	//
+	// A workaround is to create multiple ActionSet elements and limit the
+	// number of Actions in each set ot 6.
+	//
+	// https://docs.microsoft.com/en-us/outlook/actionable-messages/message-card-reference#actions
+	TeamsActionsDisplayLimit int = 6
+
 	// TypeActionExecute is an action that gathers input fields, merges with
 	// optional data field, and sends an event to the client. Clients process
 	// the event by sending an Invoke activity of type adaptiveCard/action to
@@ -269,6 +286,7 @@ const (
 // NOTE: Based on current docs, version 1.4 is the latest supported at this
 // time.
 // https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference#support-for-adaptive-cards
+// https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model#schema
 const (
 	TypeElementActionSet      string = "ActionSet"
 	TypeElementColumnSet      string = "ColumnSet"
@@ -397,6 +415,15 @@ type Card struct {
 
 	// Actions is a collection of actions to show in the card's action bar.
 	// The action bar is displayed at the bottom of a Card.
+	//
+	// NOTE: The max display limit has been observed to be a fixed value for
+	// web/desktop app and a matching value as an initial display limit for
+	// mobile app with the option to expand remaining actions in a list.
+	//
+	// This value is recorded in this package as "TeamsActionsDisplayLimit".
+	//
+	// To work around this limit, create multiple ActionSets each limited to
+	// the value of TeamsActionsDisplayLimit.
 	Actions []Action `json:"actions,omitempty"`
 
 	// MSTeams is a container for properties specific to Microsoft Teams
