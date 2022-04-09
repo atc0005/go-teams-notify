@@ -36,7 +36,7 @@ for the list of supported Adaptive Card text formatting options.
 package main
 
 import (
-	"fmt"
+	"log"
 	"os"
 
 	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
@@ -57,21 +57,21 @@ func main() {
 	envWebhookURL := os.Getenv(expectedEnvVar)
 	switch {
 	case envWebhookURL != "":
-		fmt.Printf(
+		log.Printf(
 			"Using webhook URL %q from environment variable %q\n\n",
 			envWebhookURL,
 			expectedEnvVar,
 		)
 		webhookUrl = envWebhookURL
 	default:
-		fmt.Println(expectedEnvVar, "environment variable not set.")
-		fmt.Printf("Using hardcoded value %q as fallback\n\n", webhookUrl)
+		log.Println(expectedEnvVar, "environment variable not set.")
+		log.Printf("Using hardcoded value %q as fallback\n\n", webhookUrl)
 	}
 
 	// Create, print & send simple message.
 	simpleMsg, err := adaptivecard.NewSimpleMessage("Hello from NewSimpleMessage!", "", true)
 	if err != nil {
-		fmt.Printf(
+		log.Printf(
 			"failed to create message: %v",
 			err,
 		)
@@ -79,17 +79,17 @@ func main() {
 	}
 
 	if err := simpleMsg.Prepare(); err != nil {
-		fmt.Printf(
+		log.Printf(
 			"failed to prepare message: %v",
 			err,
 		)
 		os.Exit(1)
 	}
 
-	fmt.Println(simpleMsg.PrettyPrint())
+	log.Println(simpleMsg.PrettyPrint())
 
 	if err := mstClient.Send(webhookUrl, simpleMsg); err != nil {
-		fmt.Printf(
+		log.Printf(
 			"failed to send message: %v",
 			err,
 		)
@@ -103,7 +103,7 @@ func main() {
 		"New user mention message.",
 	)
 	if err != nil {
-		fmt.Printf(
+		log.Printf(
 			"failed to create mention message: %v",
 			err,
 		)
@@ -111,17 +111,17 @@ func main() {
 	}
 
 	if err := mentionMsg.Prepare(); err != nil {
-		fmt.Printf(
+		log.Printf(
 			"failed to prepare message: %v",
 			err,
 		)
 		os.Exit(1)
 	}
 
-	fmt.Println(mentionMsg.PrettyPrint())
+	log.Println(mentionMsg.PrettyPrint())
 
 	if err := mstClient.Send(webhookUrl, mentionMsg); err != nil {
-		fmt.Printf(
+		log.Printf(
 			"failed to send message: %v",
 			err,
 		)
@@ -131,7 +131,7 @@ func main() {
 	// Create simple message, then add a user mention to it.
 	customMsg, err := adaptivecard.NewSimpleMessage("NewSimpleMessage.", "", true)
 	if err != nil {
-		fmt.Printf(
+		log.Printf(
 			"failed to create message: %v",
 			err,
 		)
@@ -144,7 +144,7 @@ func main() {
 		"jdoe@example.com",
 		"with a user mention added as a second step.",
 	); err != nil {
-		fmt.Printf(
+		log.Printf(
 			"failed to add user mention: %v",
 			err,
 		)
@@ -152,17 +152,17 @@ func main() {
 	}
 
 	if err := customMsg.Prepare(); err != nil {
-		fmt.Printf(
+		log.Printf(
 			"failed to prepare message: %v",
 			err,
 		)
 		os.Exit(1)
 	}
 
-	fmt.Println(customMsg.PrettyPrint())
+	log.Println(customMsg.PrettyPrint())
 
 	if err := mstClient.Send(webhookUrl, customMsg); err != nil {
-		fmt.Printf(
+		log.Printf(
 			"failed to send message: %v",
 			err,
 		)
@@ -178,7 +178,7 @@ func main() {
 		"Testing Message.Mention() method on card with no prior Elements.",
 	)
 	if err != nil {
-		fmt.Printf(
+		log.Printf(
 			"failed to add user mention: %v",
 			err,
 		)
@@ -186,7 +186,7 @@ func main() {
 	}
 
 	if err := mstClient.Send(webhookUrl, bareMsg); err != nil {
-		fmt.Printf(
+		log.Printf(
 			"failed to send message: %v",
 			err,
 		)

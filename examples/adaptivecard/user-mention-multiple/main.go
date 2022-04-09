@@ -28,7 +28,6 @@ for the list of supported Adaptive Card text formatting options.
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -61,7 +60,7 @@ func main() {
 	// delivery using the Card as input.
 	card, err := adaptivecard.NewTextBlockCard(msgText, msgTitle, true)
 	if err != nil {
-		fmt.Printf("failed to create card: %v", err)
+		log.Printf("failed to create card: %v", err)
 		os.Exit(1)
 	}
 
@@ -105,7 +104,7 @@ func main() {
 
 	// Send the message with default timeout/retry settings.
 	if err := mstClient.Send(webhookUrl, msg); err != nil {
-		fmt.Printf("failed to send message: %v", err)
+		log.Printf("failed to send message: %v", err)
 		os.Exit(1)
 	}
 }

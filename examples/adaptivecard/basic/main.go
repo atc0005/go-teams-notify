@@ -26,7 +26,7 @@ for the list of supported Adaptive Card text formatting options.
 package main
 
 import (
-	"fmt"
+	"log"
 	"os"
 
 	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
@@ -51,7 +51,7 @@ func main() {
 	// Create message using provided formatted title and text.
 	msg, err := adaptivecard.NewSimpleMessage(msgText, msgTitle, true)
 	if err != nil {
-		fmt.Printf(
+		log.Printf(
 			"failed to create message: %v",
 			err,
 		)
@@ -60,7 +60,7 @@ func main() {
 
 	// Send the message with default timeout/retry settings.
 	if err := mstClient.Send(webhookUrl, msg); err != nil {
-		fmt.Printf(
+		log.Printf(
 			"failed to send message: %v",
 			err,
 		)

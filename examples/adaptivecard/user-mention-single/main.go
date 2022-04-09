@@ -27,7 +27,7 @@ for the list of supported Adaptive Card text formatting options.
 package main
 
 import (
-	"fmt"
+	"log"
 	"os"
 
 	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
@@ -47,7 +47,7 @@ func main() {
 
 	// Add user mention and specified text.
 	if err := msg.Mention(true, "John Doe", "jdoe@example.com", "Hello there!"); err != nil {
-		fmt.Printf(
+		log.Printf(
 			"failed to add user mention: %v",
 			err,
 		)
@@ -56,7 +56,7 @@ func main() {
 
 	// Send the message with default timeout/retry settings.
 	if err := mstClient.Send(webhookUrl, msg); err != nil {
-		fmt.Printf(
+		log.Printf(
 			"failed to send message: %v",
 			err,
 		)
