@@ -21,14 +21,6 @@ import (
 	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
 )
 
-// TODO: Achieve feature parity with messagecard package (e.g., same
-// equivalent functions, methods, constants).
-
-// TODO: Spin off separate GH issues for known missing features, mention them
-// here?
-
-// TODO: Add one or more examples of using this package.
-
 // General constants.
 const (
 	// TypeMessage is the type for an Adaptive Card Message.
@@ -360,8 +352,9 @@ type Message struct {
 // Attachments is a collection of Adaptive Cards for a Microsoft Teams
 // message.
 //
-// TODO: Creating a custom type in order to "hang" methods off of it.
-// TODO: May not need this if we expose bulk of functionality from Message type.
+// TODO: Creating a custom type in order to "hang" methods off of it. May not
+// need this if we expose bulk of functionality from Message type.
+//
 // TODO: Use slice of pointers?
 type Attachments []Attachment
 
@@ -663,8 +656,6 @@ type ISelectAction struct {
 
 	// Fallback describes what to do when an unknown element is encountered or
 	// the requirements of this or any children can't be met.
-	//
-	// TODO: Confirm that this is a valid field.
 	Fallback string `json:"fallback,omitempty"`
 }
 
@@ -698,9 +689,6 @@ type Mention struct {
 	//
 	// Brief testing indicates that this needs to wrap a name/value in <at>NAME
 	// HERE</at> tags.
-	//
-	// TODO: This will require specific validation logic which (likely) needs
-	// access to the enclosing Attachment.
 	Text string `json:"text"`
 
 	// Mentioned represents a user that is mentioned.
@@ -1096,15 +1084,6 @@ func (tc TopLevelCard) Validate() error {
 
 	return nil
 }
-
-// WithSeparator indicates that a separating line should be drawn at the top
-// of the element.
-//
-// TODO: Are there any element types which do not support this?
-// func (e *Element) WithSeparator() *Element {
-// 	e.Separator = true
-// 	return e
-// }
 
 // Validate asserts that fields have valid values.
 func (e Element) Validate() error {
@@ -2027,15 +2006,6 @@ func NewActionSet() Element {
 
 	return actionSet
 }
-
-// WithSeparator indicates that a separating line should be drawn at the top
-// of the element.
-//
-// TODO: Are there any element types which do not support this?
-// func (c *Container) WithSeparator() *Container {
-// 	c.Separator = true
-// 	return c
-// }
 
 // NewTextBlock creates a new TextBlock element using the optional user
 // specified Text. If specified, text wrapping is enabled.
