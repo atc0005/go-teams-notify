@@ -100,7 +100,11 @@ func main() {
 	}
 
 	// Create new Message using Card as input.
-	msg := adaptivecard.NewMessageFromCard(card)
+	msg, err := adaptivecard.NewMessageFromCard(card)
+	if err != nil {
+		log.Printf("failed to create message from card: %v", err)
+		os.Exit(1)
+	}
 
 	// Send the message with default timeout/retry settings.
 	if err := mstClient.Send(webhookUrl, msg); err != nil {

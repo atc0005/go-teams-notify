@@ -1539,7 +1539,9 @@ func (m *Message) Mention(prependElement bool, displayName string, id string, ms
 			return err
 		}
 
-		m.Attach(mentionCard)
+		if err := m.Attach(mentionCard); err != nil {
+			return err
+		}
 
 	// We have at least one Card already, use it.
 	default:
@@ -1946,7 +1948,9 @@ func NewMentionMessage(displayName string, id string, msgText string) (*Message,
 		return nil, err
 	}
 
-	msg.Attach(mentionCard)
+	if err := msg.Attach(mentionCard); err != nil {
+		return nil, err
+	}
 
 	return &msg, nil
 }
@@ -1991,16 +1995,16 @@ func NewMentionCard(displayName string, id string, msgText string) (Card, error)
 
 // NewMessageFromCard is a helper function for creating a new Message based
 // off of an existing Card value.
-//
-// TODO: Require Card pointer?
-func NewMessageFromCard(card Card) *Message {
+func NewMessageFromCard(card Card) (*Message, error) {
 	msg := Message{
 		Type: TypeMessage,
 	}
 
-	msg.Attach(card)
+	if err := msg.Attach(card); err != nil {
+		return nil, err
+	}
 
-	return &msg
+	return &msg, nil
 }
 
 // NewContainer creates an empty Container.
