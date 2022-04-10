@@ -108,7 +108,6 @@ type API interface {
 // interface in order to support future changes (and not violate backwards
 // compatibility).
 type MessageSender interface {
-	// validateInput(message MessageValidator, webhookURL string) error
 	HTTPClient() *http.Client
 	UserAgent() string
 	ValidateWebhook(webhookURL string) error
