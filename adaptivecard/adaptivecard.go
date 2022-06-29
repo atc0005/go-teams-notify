@@ -1069,171 +1069,174 @@ func (tc TopLevelCard) Validate() error {
 
 // Validate asserts that fields have valid values.
 func (e Element) Validate() error {
+	// NOTES
+	//
+	// The Text field is required by TextBlock and TextRun elements, but an
+	// empty string appears to be permitted. Because of this, we avoid
+	// asserting that a value is present for the field.
+
+	// Create validation helper that will perform the bulk of our validation
+	// tasks. While we call each validation step and only check the results at
+	// the end, this type is designed so that each subsequent validation step
+	// short-circuits after the first validation failure; only the first
+	// validation failure is reported.
+	v := validator{}
+
+	// FIXME: Placeholder until finished refactoring.
+	_ = v
+
 	supportedElementTypes := supportedElementTypes()
-	if !goteamsnotify.InList(e.Type, supportedElementTypes, false) {
+	supportedSizeValues := supportedSizeValues()
+	supportedWeightValues := supportedWeightValues()
+	supportedColorValues := supportedColorValues()
+	supportedSpacingValues := supportedSpacingValues()
+
+	// Valid Style field values differ based on type. For example, a Container
+	// element supports Container styles whereas a TextBlock supports a
+	// different and more limited set of style values. We use a helper
+	// function to retrieve valid style values for evaluation.
+	supportedStyleValues := supportedStyleValues(e.Type)
+
+	// v.MustBeInListIfFieldValNotEmpty(
+	// 	e.Type,
+	// 	""
+	// )
+
+	//
+	// General requirements for all Element types.
+	//
+
+	v.MustBeInListIfFieldValNotEmpty(
+		e.Type,
+		"Type",
+		"element",
+		supportedElementTypes,
+		ErrInvalidType,
+	)
+
+	switch {
+
+	// Field is not empty and field value is not in the supported list of values.
+	// case e.Size != "" && !goteamsnotify.InList(e.Size, supportedSizeValues, false):
+	case fieldNotEmptyAndNotInList(e.Size, supportedSizeValues):
 		return fmt.Errorf(
 			"invalid %s %q for element; expected one of %v: %w",
-			"Type",
-			e.Type,
-			supportedElementTypes,
-			ErrInvalidType,
+			"Size",
+			e.Size,
+			supportedSizeValues,
+			ErrInvalidFieldValue,
+		)
+
+	// case e.Weight != "" && goteamsnotify.InList(e.Weight, supportedWeightValues, false):
+	case fieldNotEmptyAndNotInList(e.Weight, supportedWeightValues):
+		return fmt.Errorf(
+			"invalid %s %q for element; expected one of %v: %w",
+			"Weight",
+			e.Weight,
+			supportedWeightValues,
+			ErrInvalidFieldValue,
+		)
+
+	// case e.Color != "" && !goteamsnotify.InList(e.Color, supportedColorValues, false):
+	case fieldNotEmptyAndNotInList(e.Color, supportedColorValues):
+		return fmt.Errorf(
+			"invalid %s %q for element; expected one of %v: %w",
+			"Color",
+			e.Color,
+			supportedColorValues,
+			ErrInvalidFieldValue,
+		)
+
+	// case e.Spacing != "" && !goteamsnotify.InList(e.Spacing, supportedSpacingValues, false):
+	case fieldNotEmptyAndNotInList(e.Spacing, supportedSpacingValues):
+		return fmt.Errorf(
+			"invalid %s %q for element; expected one of %v: %w",
+			"Spacing",
+			e.Spacing,
+			supportedSpacingValues,
+			ErrInvalidFieldValue,
+		)
+
+	case e.Style != "" && len(supportedStyleValues) == 0:
+		return fmt.Errorf(
+			"invalid %s %q for element; %s values not supported for element: %w",
+			"Style",
+			e.Style,
+			"Style",
+			ErrInvalidFieldValue,
+		)
+
+	// case e.Style != "" && !goteamsnotify.InList(e.Style, supportedStyleValues, false):
+	case fieldNotEmptyAndNotInList(e.Style, supportedStyleValues):
+		return fmt.Errorf(
+			"invalid %s %q for element; expected one of %v: %w",
+			"Style",
+			e.Style,
+			supportedStyleValues,
+			ErrInvalidFieldValue,
 		)
 	}
 
-	// The Text field is required by TextBlock and TextRun elements, but an
-	// empty string appears to be permitted. Because of this, we do not have
-	// to assert that a value is present for the field.
-
-	if e.Type == TypeElementImage {
-		// URL is required for Image element type.
-		// https://adaptivecards.io/explorer/Image.html
-		if e.URL == "" {
-			return fmt.Errorf(
-				"required URL is empty for %s: %w",
-				e.Type,
-				ErrMissingValue,
-			)
+	// Requirements for specific Element types.
+	switch {
+	case e.Type == TypeElementColumnSet:
+		// Used by ColumnSet type, not required. If present, should be
+		// checked.
+		for _, column := range e.Columns {
+			v.MustSelfValidate(column)
 		}
-	}
 
-	if e.Size != "" {
-		supportedSizeValues := supportedSizeValues()
-		if !goteamsnotify.InList(e.Size, supportedSizeValues, false) {
-			return fmt.Errorf(
-				"invalid %s %q for element; expected one of %v: %w",
-				"Size",
-				e.Size,
-				supportedSizeValues,
-				ErrInvalidFieldValue,
-			)
+	// Actions collection is required for ActionSet element type.
+	// https://adaptivecards.io/explorer/ActionSet.html
+	case e.Type == TypeElementActionSet:
+		v.MustBeNotEmptyCollection(
+			"Actions",
+			e.Type,
+			e.Actions,
+		)
+
+		// This works:
+		for _, action := range e.Actions {
+			v.MustSelfValidate(action)
 		}
-	}
 
-	if e.Weight != "" {
-		supportedWeightValues := supportedWeightValues()
-		if !goteamsnotify.InList(e.Weight, supportedWeightValues, false) {
-			return fmt.Errorf(
-				"invalid %s %q for element; expected one of %v: %w",
-				"Weight",
-				e.Weight,
-				supportedWeightValues,
-				ErrInvalidFieldValue,
-			)
-		}
-	}
+		// This does not:
+		// https://stackoverflow.com/questions/12994679/slice-of-struct-slice-of-interface-it-implements
+		// v.MustSelfValidate(e.Actions...)
 
-	if e.Color != "" {
-		supportedColorValues := supportedColorValues()
-		if !goteamsnotify.InList(e.Color, supportedColorValues, false) {
-			return fmt.Errorf(
-				"invalid %s %q for element; expected one of %v: %w",
-				"Color",
-				e.Color,
-				supportedColorValues,
-				ErrInvalidFieldValue,
-			)
-		}
-	}
-
-	if e.Spacing != "" {
-		supportedSpacingValues := supportedSpacingValues()
-		if !goteamsnotify.InList(e.Spacing, supportedSpacingValues, false) {
-			return fmt.Errorf(
-				"invalid %s %q for element; expected one of %v: %w",
-				"Spacing",
-				e.Spacing,
-				supportedSpacingValues,
-				ErrInvalidFieldValue,
-			)
-		}
-	}
-
-	if e.Style != "" {
-		// Valid Style field values differ based on type. For example, a
-		// Container element supports Container styles whereas a TextBlock
-		// supports a different and more limited set of style values. We use a
-		// helper function to retrieve valid style values for evaluation.
-		supportedStyleValues := supportedStyleValues(e.Type)
-
-		switch {
-		case len(supportedStyleValues) == 0:
-			return fmt.Errorf(
-				"invalid %s %q for element; %s values not supported for element: %w",
-				"Style",
-				e.Style,
-				"Style",
-				ErrInvalidFieldValue,
-			)
-
-		case !goteamsnotify.InList(e.Style, supportedStyleValues, false):
-			return fmt.Errorf(
-				"invalid %s %q for element; expected one of %v: %w",
-				"Style",
-				e.Style,
-				supportedStyleValues,
-				ErrInvalidFieldValue,
-			)
-		}
-	}
-
-	if e.Type == TypeElementContainer {
-		// Items collection is required for Container element type.
-		// https://adaptivecards.io/explorer/Container.html
-		if len(e.Items) == 0 {
-			return fmt.Errorf(
-				"required Items collection is empty for %s: %w",
-				e.Type,
-				ErrMissingValue,
-			)
-		}
+	// Items collection is required for Container element type.
+	// https://adaptivecards.io/explorer/Container.html
+	case e.Type == TypeElementContainer:
+		v.MustBeNotEmptyCollection(
+			"Items",
+			e.Type,
+			e.Items,
+		)
 
 		for _, item := range e.Items {
-			if err := item.Validate(); err != nil {
-				return err
-			}
-		}
-	}
-
-	// Used by ColumnSet type, but not required.
-	for _, column := range e.Columns {
-		if err := column.Validate(); err != nil {
-			return err
-		}
-	}
-
-	if e.Type == TypeElementActionSet {
-		// Actions collection is required for ActionSet element type.
-		// https://adaptivecards.io/explorer/ActionSet.html
-		if len(e.Actions) == 0 {
-			return fmt.Errorf(
-				"required Actions collection is empty for %s: %w",
-				e.Type,
-				ErrMissingValue,
-			)
+			v.MustSelfValidate(item)
 		}
 
-		for _, action := range e.Actions {
-			if err := action.Validate(); err != nil {
-				return err
-			}
-		}
-	}
+	// URL is required for Image element type.
+	// https://adaptivecards.io/explorer/Image.html
+	case e.Type == TypeElementImage:
+		v.MustBeNotEmptyValue(
+			e.URL,
+			"URL",
+			e.Type,
+		)
 
-	if e.Type == TypeElementFactSet {
-		// Facts collection is required for FactSet element type.
-		// https://adaptivecards.io/explorer/FactSet.html
-		if len(e.Facts) == 0 {
-			return fmt.Errorf(
-				"required Facts collection is empty for %s: %w",
-				e.Type,
-				ErrMissingValue,
-			)
-		}
+	// Facts collection is required for FactSet element type.
+	// https://adaptivecards.io/explorer/FactSet.html
+	case e.Type == TypeElementFactSet:
+		v.MustBeNotEmptyCollection(
+			"Facts",
+			e.Type,
+			e.Facts,
+		)
 
 		for _, fact := range e.Facts {
-			if err := fact.Validate(); err != nil {
-				return err
-			}
+			v.MustSelfValidate(fact)
 		}
 	}
 
@@ -2217,3 +2220,26 @@ func cardBodyHasMention(body []Element, mentions []Mention) bool {
 	}
 	return true
 }
+
+// fieldNotEmptyAndNotInList is a validation helper function that
+// asserts that a given string field value is not empty and is not in a list
+// of supported/valid field values.
+func fieldNotEmptyAndNotInList(field string, list []string) bool {
+	return field != "" && !goteamsnotify.InList(field, list, false)
+}
+
+// func fieldNotSpecificValueAndListNotEmpty(field string, val string, list []interface{}) bool {
+// 	return field != val && len(list) > 0
+// }
+
+// validate requests that each item performs self validation and exits early
+// if a validation error occurs.
+// func validate(items ...validator) error {
+// 	for _, item := range items {
+// 		if err := item.Validate(); err != nil {
+// 			return err
+// 		}
+// 	}
+//
+// 	return nil
+// }
