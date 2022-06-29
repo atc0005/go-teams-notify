@@ -94,7 +94,7 @@ const (
 	AttachmentLayoutCarousel string = "carousel"
 )
 
-// TextBlock specific contants.
+// TextBlock specific constants.
 // https://adaptivecards.io/explorer/TextBlock.html
 const (
 	// TextBlockStyleDefault indicates that the TextBlock uses the default
@@ -164,14 +164,14 @@ const (
 	ImageStylePerson  string = ""
 )
 
-// ChoiceInput specific contants.
+// ChoiceInput specific constants.
 const (
 	ChoiceInputStyleCompact  string = "compact"
 	ChoiceInputStyleExpanded string = "expanded"
 	ChoiceInputStyleFiltered string = "filtered" // Introduced in version 1.5
 )
 
-// TextInput specific contants.
+// TextInput specific constants.
 const (
 	TextInputStyleText     string = "text"
 	TextInputStyleTel      string = "tel"
@@ -936,28 +936,62 @@ func (a Attachment) Validate() error {
 
 // Validate asserts that fields have valid values.
 func (c Card) Validate() error {
-	if c.Type != TypeAdaptiveCard {
+	// The Version field is required for top-level cards, optional for Cards
+	// nested within an Action.ShowCard.
+	switch {
+	case c.Type != TypeAdaptiveCard:
 		return fmt.Errorf(
 			"invalid card type %q; expected %q: %w",
 			c.Type,
 			TypeAdaptiveCard,
 			ErrInvalidType,
 		)
-	}
 
-	if c.Schema != "" {
-		if c.Schema != AdaptiveCardSchema {
-			return fmt.Errorf(
-				"invalid Schema value %q; expected %q: %w",
-				c.Schema,
-				AdaptiveCardSchema,
-				ErrInvalidFieldValue,
-			)
-		}
-	}
+	// While the schema value should be set it is not strictly required. If it
+	// is set, we assert that it is the correct value.
+	case c.Schema != "" && c.Schema != AdaptiveCardSchema:
+		return fmt.Errorf(
+			"invalid Schema value %q; expected %q: %w",
+			c.Schema,
+			AdaptiveCardSchema,
+			ErrInvalidFieldValue,
+		)
 
-	// The Version field is required for top-level cards, optional for
-	// Cards nested within an Action.ShowCard.
+	// Both are optional fields, unless MinHeight is set in which case
+	// VerticalContentAlignment is required.
+	case c.MinHeight != "" && c.VerticalContentAlignment == "":
+		return fmt.Errorf(
+			"field MinHeight is set, VerticalContentAlignment is not;"+
+				" field VerticalContentAlignment is only optional when MinHeight"+
+				" is not set: %w",
+			ErrMissingValue,
+		)
+
+	// If there are recorded user mentions, we need to assert that
+	// Mention.Text is contained (substring match) within an applicable
+	// field of a supported Element of the Card Body.
+	//
+	// At present, this includes the Text field of a TextBlock Element or
+	// the Title or Value fields of a Fact from a FactSet.
+	//
+	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format#mention-support-within-adaptive-cards
+
+	// User mentions recorded, but no elements in Card Body to potentially
+	// contain required text string.
+	case len(c.MSTeams.Entities) > 0 && len(c.Body) == 0:
+		return fmt.Errorf(
+			"user mention text not found in empty Card Body: %w",
+			ErrMissingValue,
+		)
+
+	// For every user mention, we require at least one match in an applicable
+	// Element in the Card Body.
+	case len(c.MSTeams.Entities) > 0 && !cardBodyHasMention(c.Body, c.MSTeams.Entities):
+		return fmt.Errorf(
+			"user mention text not found in elements of Card Body: %w",
+			ErrMissingValue,
+		)
+	}
 
 	for _, element := range c.Body {
 		if err := element.Validate(); err != nil {
@@ -968,58 +1002,6 @@ func (c Card) Validate() error {
 	for _, action := range c.Actions {
 		if err := action.Validate(); err != nil {
 			return err
-		}
-	}
-
-	// Both are optional fields, unless MinHeight is set in which case
-	// VerticalContentAlignment is required.
-	if c.MinHeight != "" && c.VerticalContentAlignment == "" {
-		return fmt.Errorf(
-			"field MinHeight is set, VerticalContentAlignment is not;"+
-				" field VerticalContentAlignment is only optional when MinHeight"+
-				" is not set: %w",
-			ErrMissingValue,
-		)
-	}
-
-	// If there are recorded user mentions, we need to assert that
-	// Mention.Text is contained (substring match) within an applicable
-	// field of a supported Element of the Card Body.
-	//
-	// At present, this includes the Text field of a TextBlock Element or
-	// the Title or Value fields of a Fact from a FactSet.
-	//
-	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format#mention-support-within-adaptive-cards
-	if len(c.MSTeams.Entities) > 0 {
-		hasMentionText := func(elements []Element, m Mention) bool {
-			for _, element := range elements {
-				if element.HasMentionText(m) {
-					return true
-				}
-			}
-			return false
-		}
-
-		// User mentions recorded, but no elements in Card Body to potentially
-		// contain required text string.
-		if len(c.Body) == 0 {
-			return fmt.Errorf(
-				"user mention text not found in empty Card Body: %w",
-				ErrMissingValue,
-			)
-		}
-
-		// For every user mention, we require at least one match in an
-		// applicable Element in the Card Body.
-		for _, mention := range c.MSTeams.Entities {
-			if !hasMentionText(c.Body, mention) {
-				// Card Body contains no applicable elements with required
-				// Mention text string.
-				return fmt.Errorf(
-					"user mention text not found in elements of Card Body: %w",
-					ErrMissingValue,
-				)
-			}
 		}
 	}
 
@@ -1269,46 +1251,46 @@ func (c Column) Validate() error {
 		)
 	}
 
-	if c.Width != nil {
-		switch v := c.Width.(type) {
-		// Assert fixed keyword values or valid pixel width.
-		case string:
-			v = strings.TrimSpace(v)
+	switch v := c.Width.(type) {
+	// Nothing to see here.
+	case nil:
 
-			switch v {
-			case ColumnWidthAuto:
-			case ColumnWidthStretch:
-			default:
-				matched, _ := regexp.MatchString(ColumnWidthPixelRegex, v)
-				if !matched {
-					return fmt.Errorf(
-						"invalid pixel width %q; expected value in format %s: %w",
-						v,
-						ColumnWidthPixelWidthExample,
-						ErrInvalidFieldValue,
-					)
-				}
-			}
+	// Assert specific fixed keyword values or valid pixel width; all other
+	// values are invalid.
+	case string:
+		v = strings.TrimSpace(v)
+		matched, _ := regexp.MatchString(ColumnWidthPixelRegex, v)
 
-		// Number representing relative width of the column.
-		case int:
-
-		// Unsupported value.
-		default:
+		switch {
+		case v == ColumnWidthAuto:
+		case v == ColumnWidthStretch:
+		case !matched:
 			return fmt.Errorf(
-				"invalid pixel width %q; "+
-					"expected one of keywords %q, int value (e.g., %d) "+
-					"or specific pixel width (e.g., %s): %w",
+				"invalid pixel width %q; expected value in format %s: %w",
 				v,
-				strings.Join([]string{
-					ColumnWidthAuto,
-					ColumnWidthStretch,
-				}, ","),
-				1,
 				ColumnWidthPixelWidthExample,
 				ErrInvalidFieldValue,
 			)
 		}
+
+	// Number representing relative width of the column.
+	case int:
+
+	// Unsupported value.
+	default:
+		return fmt.Errorf(
+			"invalid pixel width %q; "+
+				"expected one of keywords %q, int value (e.g., %d) "+
+				"or specific pixel width (e.g., %s): %w",
+			v,
+			strings.Join([]string{
+				ColumnWidthAuto,
+				ColumnWidthStretch,
+			}, ","),
+			1,
+			ColumnWidthPixelWidthExample,
+			ErrInvalidFieldValue,
+		)
 	}
 
 	for _, element := range c.Items {
@@ -1410,51 +1392,43 @@ func (i ISelectAction) Validate() error {
 
 // Validate asserts that fields have valid values.
 func (a Action) Validate() error {
+	actionValues := supportedActionValues(AdaptiveCardMaxVersion)
+	fallbackValues := supportedActionFallbackValues(AdaptiveCardMaxVersion)
 
+	switch {
 	// Some Actions are restricted to later Adaptive Card schema versions.
-	supportedValues := supportedActionValues(AdaptiveCardMaxVersion)
-	if !goteamsnotify.InList(a.Type, supportedValues, false) {
+	case !goteamsnotify.InList(a.Type, actionValues, false):
 		return fmt.Errorf(
 			"invalid %s %q for Action; expected one of %v: %w",
 			"Type",
 			a.Type,
-			supportedValues,
+			actionValues,
 			ErrInvalidType,
 		)
-	}
 
-	if a.Type == TypeActionOpenURL {
-		if a.URL == "" {
-			return fmt.Errorf(
-				"invalid URL for Action: %w",
-				ErrMissingValue,
-			)
-		}
-	}
+	case a.Type == TypeActionOpenURL && a.URL == "":
+		return fmt.Errorf("invalid URL for Action: %w", ErrMissingValue)
 
-	if a.Fallback != "" {
-		supportedValues := supportedActionFallbackValues(AdaptiveCardMaxVersion)
-		if !goteamsnotify.InList(a.Fallback, supportedValues, false) {
-			return fmt.Errorf(
-				"invalid %s %q for Action; expected one of %v: %w",
-				"Fallback",
-				a.Fallback,
-				supportedValues,
-				ErrInvalidFieldValue,
-			)
-		}
-	}
+	case a.Fallback != "" &&
+		!goteamsnotify.InList(a.Fallback, fallbackValues, false):
+		return fmt.Errorf(
+			"invalid %s %q for Action; expected one of %v: %w",
+			"Fallback",
+			a.Fallback,
+			fallbackValues,
+			ErrInvalidFieldValue,
+		)
 
 	// Optional, but only supported by the Action.ShowCard type.
-	if a.Type != TypeActionShowCard && a.Card != nil {
+	case a.Type != TypeActionShowCard && a.Card != nil:
 		return fmt.Errorf(
 			"error: specifying a Card is unsupported for Action type %q: %w",
 			a.Type,
 			ErrInvalidFieldValue,
 		)
+	default:
+		return nil
 	}
-
-	return nil
 }
 
 // Validate asserts that fields have valid values.
@@ -2223,4 +2197,23 @@ func (c *Card) AddContainer(prepend bool, container Container) error {
 	}
 
 	return nil
+}
+
+// cardBodyHasMention indicates whether an Adaptive Card body contains all
+// specified Mention values. For every user mention, we require at least one
+// match in an applicable Element in the Card Body.
+func cardBodyHasMention(body []Element, mentions []Mention) bool {
+	// If the card body is empty, it cannot contain the required Mention values.
+	if body == nil {
+		return false
+	}
+
+	for _, mention := range mentions {
+		for _, element := range body {
+			if !element.HasMentionText(mention) {
+				return false
+			}
+		}
+	}
+	return true
 }
