@@ -1114,6 +1114,15 @@ func (e Element) Validate() error {
 		ErrInvalidType,
 	)
 
+	/*
+		TODO: Start back converting these to standalone
+		v.MustBeInListIfFieldValNotEmpty() calls
+
+		The "case e.Style != "" && len(supportedStyleValues) == 0:" case will
+		likely require special handling. Revisit the methods for the validator
+		struct type to see if I started (or finished?) what will be needed for
+		that.
+	*/
 	switch {
 
 	// Field is not empty and field value is not in the supported list of values.
