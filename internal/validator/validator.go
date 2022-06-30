@@ -49,6 +49,23 @@ func (v *Validator) MustSelfValidate(items ...Validater) bool {
 	return true
 }
 
+// MustSelfValidateIfXEqualsY asserts that each given item can self-validate
+// if value x is equal to y.
+//
+// A true value is returned if the validation step passed. A false value is
+// returned false if this or a prior validation step failed.
+func (v *Validator) MustSelfValidateIfXEqualsY(x string, y string, items ...Validater) bool {
+	if v.err != nil {
+		return false
+	}
+
+	if x == y {
+		v.MustSelfValidate(items...)
+	}
+
+	return true
+}
+
 // MustBeNotEmptyValue asserts that fieldVal is not empty. fieldValDesc
 // describes the field value being validated (e.g., "Type") and typeDesc
 // describes the specific struct or value type whose field we are validating
@@ -196,8 +213,82 @@ func (v *Validator) MustBeNotEmptyCollection(fieldValueDesc string, typeDesc str
 	return true
 }
 
+// MustBeNotEmptyCollectionIfFieldValNotEmpty asserts that the specified items
+// collection is not empty if fieldVal is not empty. fieldValueDesc describes
+// the field for this collection being validated (e.g., "Facts") and typeDesc
+// describes the specific struct or value type whose field we are validating
+// (e.g., "Element").
+//
+// A true value is returned if the collection is not empty. A false value is
+// returned if a prior validation step failed or if the items collection is
+// empty.
+func (v *Validator) MustBeNotEmptyCollectionIfFieldValNotEmpty(
+	fieldVal string,
+	fieldValueDesc string,
+	typeDesc string,
+	baseErr error,
+	items ...interface{},
+) bool {
+
+	switch {
+	case v.err != nil:
+		return false
+
+	case fieldVal != "" && len(items) == 0:
+		switch {
+		case baseErr != nil:
+			v.err = fmt.Errorf(
+				"required %s collection is empty for %s: %w",
+				fieldValueDesc,
+				typeDesc,
+				baseErr,
+			)
+		default:
+			v.err = fmt.Errorf(
+				"required %s collection is empty for %s",
+				fieldValueDesc,
+				typeDesc,
+			)
+		}
+
+		return false
+
+	default:
+		return true
+	}
+
+}
+
+// MustBeSuccessfulFuncCall accepts fn, a function that returns an error. fn
+// is called in order to determine validation results.
+//
+// A true value is returned if fn was successful. A false value is returned if
+// a prior validation step failed or if fn returned an error.
+func (v *Validator) MustBeSuccessfulFuncCall(fn func() error) bool {
+	if v.err != nil {
+		return false
+	}
+
+	if err := fn(); err != nil {
+		v.err = err
+		return false
+	}
+
+	return true
+}
+
 // IsValid indicates whether validation checks performed thus far have all
 // passed.
 func (v *Validator) IsValid() bool {
 	return v.err != nil
+}
+
+// Error returns the error string from the last recorded validation error.
+func (v *Validator) Error() string {
+	return v.err.Error()
+}
+
+// Err returns the last recorded validation error.
+func (v *Validator) Err() error {
+	return v.err
 }

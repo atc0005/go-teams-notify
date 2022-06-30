@@ -944,6 +944,17 @@ func (a Attachment) Validate() error {
 
 // Validate asserts that fields have valid values.
 func (c Card) Validate() error {
+
+	// Create validation helper to assist with validation tasks. While we call
+	// each validation step and only check the results at the end, this type
+	// is designed so that each subsequent validation step short-circuits
+	// after the first validation failure; only the first validation failure
+	// is reported.
+	v := validator.Validator{}
+
+	// FIXME: Placeholder while refactoring
+	_ = v
+
 	// The Version field is required for top-level cards, optional for Cards
 	// nested within an Action.ShowCard.
 	switch {
@@ -1165,15 +1176,11 @@ func (e Element) Validate() error {
 		ErrInvalidFieldValue,
 	)
 
-	if e.Style != "" && len(supportedStyleValues) == 0 {
-		return fmt.Errorf(
-			"invalid %s %q for element; %s values not supported for element: %w",
-			"Style",
-			e.Style,
-			"Style",
-			ErrInvalidFieldValue,
-		)
-	}
+	v.MustBeSuccessfulFuncCall(
+		func() error {
+			return assertElementSupportsStyleValue(e, supportedStyleValues)
+		},
+	)
 
 	/******************************************************************
 		Requirements for specific Element types.
@@ -1241,7 +1248,9 @@ func (e Element) Validate() error {
 		v.MustSelfValidate(Facts(e.Facts))
 	}
 
-	return nil
+	// Return the last recorded validation error, or nil if no validation
+	// errors occurred.
+	return v.Err()
 }
 
 // Validate asserts that the collection of Column values has valid values.
@@ -2253,4 +2262,18 @@ func cardBodyHasMention(body []Element, mentions []Mention) bool {
 		}
 	}
 	return true
+}
+
+func assertElementSupportsStyleValue(element Element, supportedValues []string) error {
+	if element.Style != "" && len(supportedValues) == 0 {
+		return fmt.Errorf(
+			"invalid %s %q for element; %s values not supported for element: %w",
+			"Style",
+			element.Style,
+			"Style",
+			ErrInvalidFieldValue,
+		)
+	}
+
+	return nil
 }
