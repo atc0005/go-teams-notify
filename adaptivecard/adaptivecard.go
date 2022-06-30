@@ -958,6 +958,8 @@ func (c Card) Validate() error {
 	// The Version field is required for top-level cards, optional for Cards
 	// nested within an Action.ShowCard.
 	switch {
+
+	// TODO: Create new helper: MustBeFieldXIsValueY
 	case c.Type != TypeAdaptiveCard:
 		return fmt.Errorf(
 			"invalid card type %q; expected %q: %w",
@@ -966,6 +968,8 @@ func (c Card) Validate() error {
 			ErrInvalidType,
 		)
 
+	// TODO: Create new helper: MustBeFieldXIsValueYIfFieldValNotEmpty
+	//
 	// While the schema value should be set it is not strictly required. If it
 	// is set, we assert that it is the correct value.
 	case c.Schema != "" && c.Schema != AdaptiveCardSchema:
@@ -976,6 +980,8 @@ func (c Card) Validate() error {
 			ErrInvalidFieldValue,
 		)
 
+	// TODO: Use MustBeSuccessfulFuncCall()
+	//
 	// Both are optional fields, unless MinHeight is set in which case
 	// VerticalContentAlignment is required.
 	case c.MinHeight != "" && c.VerticalContentAlignment == "":
@@ -986,6 +992,8 @@ func (c Card) Validate() error {
 			ErrMissingValue,
 		)
 
+	// TODO: Use MustBeSuccessfulFuncCall()
+	//
 	// If there are recorded user mentions, we need to assert that
 	// Mention.Text is contained (substring match) within an applicable
 	// field of a supported Element of the Card Body.
@@ -1003,6 +1011,8 @@ func (c Card) Validate() error {
 			ErrMissingValue,
 		)
 
+	// TODO: Use MustBeSuccessfulFuncCall()
+	//
 	// For every user mention, we require at least one match in an applicable
 	// Element in the Card Body.
 	case len(c.MSTeams.Entities) > 0 && !cardBodyHasMention(c.Body, c.MSTeams.Entities):
@@ -1012,18 +1022,21 @@ func (c Card) Validate() error {
 		)
 	}
 
+	// TODO: Use MustSelfValidate()
 	for _, element := range c.Body {
 		if err := element.Validate(); err != nil {
 			return err
 		}
 	}
 
+	// TODO: Use MustSelfValidate()
 	for _, action := range c.Actions {
 		if err := action.Validate(); err != nil {
 			return err
 		}
 	}
 
+	// TODO: Replace with v.Err() call.
 	return nil
 }
 
