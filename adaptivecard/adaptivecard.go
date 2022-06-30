@@ -1140,7 +1140,6 @@ func (e Element) Validate() error {
 	******************************************************************/
 
 	switch {
-
 	// The Text field is required by TextBlock and TextRun elements, but an
 	// empty string appears to be permitted. Because of this, we avoid
 	// asserting that a value is present for the field.

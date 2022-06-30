@@ -256,7 +256,6 @@ func (v *Validator) MustBeNotEmptyCollectionIfFieldValNotEmpty(
 	default:
 		return true
 	}
-
 }
 
 // MustBeSuccessfulFuncCall accepts fn, a function that returns an error. fn
