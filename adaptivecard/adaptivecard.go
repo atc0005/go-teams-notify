@@ -1099,12 +1099,6 @@ func (e Elements) Validate() error {
 
 // Validate asserts that fields have valid values.
 func (e Element) Validate() error {
-	// NOTES
-	//
-	// The Text field is required by TextBlock and TextRun elements, but an
-	// empty string appears to be permitted. Because of this, we avoid
-	// asserting that a value is present for the field.
-
 	// Create validation helper that will perform the bulk of our validation
 	// tasks. While we call each validation step and only check the results at
 	// the end, this type is designed so that each subsequent validation step
@@ -1128,53 +1122,12 @@ func (e Element) Validate() error {
 		General requirements for all Element types.
 	******************************************************************/
 
-	v.MustBeInListIfFieldValNotEmpty(
-		e.Type,
-		"Type",
-		"element",
-		supportedElementTypes,
-		ErrInvalidType,
-	)
-
-	v.MustBeInListIfFieldValNotEmpty(
-		e.Size,
-		"Size",
-		"element",
-		supportedSizeValues,
-		ErrInvalidFieldValue,
-	)
-
-	v.MustBeInListIfFieldValNotEmpty(
-		e.Weight,
-		"Weight",
-		"element",
-		supportedWeightValues,
-		ErrInvalidFieldValue,
-	)
-
-	v.MustBeInListIfFieldValNotEmpty(
-		e.Color,
-		"Color",
-		"element",
-		supportedColorValues,
-		ErrInvalidFieldValue,
-	)
-
-	v.MustBeInListIfFieldValNotEmpty(
-		e.Spacing,
-		"Spacing",
-		"element",
-		supportedSpacingValues,
-		ErrInvalidFieldValue,
-	)
-
-	v.MustBeInListIfFieldValNotEmpty(
-		e.Style,
-		"Style",
-		"element",
-		supportedStyleValues,
-		ErrInvalidFieldValue,
-	)
+	v.MustBeInListIfFieldValNotEmpty(e.Type, "Type", "element", supportedElementTypes, ErrInvalidType)
+	v.MustBeInListIfFieldValNotEmpty(e.Size, "Size", "element", supportedSizeValues, ErrInvalidFieldValue)
+	v.MustBeInListIfFieldValNotEmpty(e.Weight, "Weight", "element", supportedWeightValues, ErrInvalidFieldValue)
+	v.MustBeInListIfFieldValNotEmpty(e.Color, "Color", "element", supportedColorValues, ErrInvalidFieldValue)
+	v.MustBeInListIfFieldValNotEmpty(e.Spacing, "Spacing", "element", supportedSpacingValues, ErrInvalidFieldValue)
+	v.MustBeInListIfFieldValNotEmpty(e.Style, "Style", "element", supportedStyleValues, ErrInvalidFieldValue)
 
 	v.MustBeSuccessfulFuncCall(
 		func() error {
@@ -1187,64 +1140,39 @@ func (e Element) Validate() error {
 	******************************************************************/
 
 	switch {
+
+	// The Text field is required by TextBlock and TextRun elements, but an
+	// empty string appears to be permitted. Because of this, we avoid
+	// asserting that a value is present for the field.
+	// case e.Type == TypeElementTextBlock:
+	// case e.Type == TypeElementTextRun:
+
+	// Columns collection is used by the ColumnSet type. While not required,
+	// the collection should be checked.
 	case e.Type == TypeElementColumnSet:
-		// Used by ColumnSet type, not required. If present, should be
-		// checked.
 		v.MustSelfValidate(Columns(e.Columns))
 
 	// Actions collection is required for ActionSet element type.
 	// https://adaptivecards.io/explorer/ActionSet.html
 	case e.Type == TypeElementActionSet:
-		v.MustBeNotEmptyCollection(
-			"Actions",
-			e.Type,
-			ErrMissingValue,
-			e.Actions,
-		)
-
+		v.MustBeNotEmptyCollection("Actions", e.Type, ErrMissingValue, e.Actions)
 		v.MustSelfValidate(Actions(e.Actions))
-
-		// This works:
-		// for _, action := range e.Actions {
-		// 	v.MustSelfValidate(action)
-		// }
-		//
-		// This does not:
-		// https://stackoverflow.com/questions/12994679/slice-of-struct-slice-of-interface-it-implements
-		// v.MustSelfValidate(e.Actions...)
 
 	// Items collection is required for Container element type.
 	// https://adaptivecards.io/explorer/Container.html
 	case e.Type == TypeElementContainer:
-		v.MustBeNotEmptyCollection(
-			"Items",
-			e.Type,
-			ErrMissingValue,
-			e.Items,
-		)
-
+		v.MustBeNotEmptyCollection("Items", e.Type, ErrMissingValue, e.Items)
 		v.MustSelfValidate(Elements(e.Items))
 
 	// URL is required for Image element type.
 	// https://adaptivecards.io/explorer/Image.html
 	case e.Type == TypeElementImage:
-		v.MustBeNotEmptyValue(
-			e.URL,
-			"URL",
-			e.Type,
-			ErrMissingValue,
-		)
+		v.MustBeNotEmptyValue(e.URL, "URL", e.Type, ErrMissingValue)
 
 	// Facts collection is required for FactSet element type.
 	// https://adaptivecards.io/explorer/FactSet.html
 	case e.Type == TypeElementFactSet:
-		v.MustBeNotEmptyCollection(
-			"Facts",
-			e.Type,
-			ErrMissingValue,
-			e.Facts,
-		)
-
+		v.MustBeNotEmptyCollection("Facts", e.Type, ErrMissingValue, e.Facts)
 		v.MustSelfValidate(Facts(e.Facts))
 	}
 
