@@ -19,6 +19,7 @@ import (
 	"strings"
 
 	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
+	"github.com/atc0005/go-teams-notify/v2/internal/validator"
 )
 
 // General constants.
@@ -333,7 +334,7 @@ type Message struct {
 	// NOTE: Including multiple attachment *without* AttachmentLayout set to
 	// "carousel" hides cards after the first. Not sure if this is a bug, or
 	// if it's intentional.
-	Attachments Attachments `json:"attachments"`
+	Attachments []Attachment `json:"attachments"`
 
 	// AttachmentLayout controls the layout for Adaptive Cards in the
 	// Attachments collection.
@@ -351,11 +352,6 @@ type Message struct {
 
 // Attachments is a collection of Adaptive Cards for a Microsoft Teams
 // message.
-//
-// TODO: Creating a custom type in order to "hang" methods off of it. May not
-// need this if we expose bulk of functionality from Message type.
-//
-// TODO: Use slice of pointers?
 type Attachments []Attachment
 
 // Attachment represents an attached Adaptive Card for a Microsoft Teams
@@ -450,6 +446,9 @@ type Card struct {
 	VerticalContentAlignment string `json:"verticalContentAlignment,omitempty"`
 }
 
+// Elements is a collection of Element values.
+type Elements []Element
+
 // Element is a "building block" for an Adaptive Card. Elements are shown
 // within the primary card region (aka, "body"), columns and other container
 // types. Not all fields of this Go struct type are supported by all Adaptive
@@ -539,6 +538,9 @@ type Container Element
 //
 type FactSet Element
 
+// Columns is a collection of Column values.
+type Columns []Column
+
 // Column is a container used by a ColumnSet element type. Each container
 // may contain one or more elements.
 //
@@ -569,6 +571,9 @@ type Column struct {
 	SelectAction *ISelectAction `json:"selectAction,omitempty"`
 }
 
+// Facts is a collection of Fact values.
+type Facts []Fact
+
 // Fact represents a Fact in a FactSet as a key/value pair.
 type Fact struct {
 	// Title is required; the title of the fact.
@@ -577,6 +582,9 @@ type Fact struct {
 	// Value is required; the value of the fact.
 	Value string `json:"value"`
 }
+
+// Actions is a collection of Action values.
+type Actions []Action
 
 // Action represents an action that a user may take on a card. Actions
 // typically get rendered in an "action bar" at the bottom of a card.
@@ -1067,6 +1075,17 @@ func (tc TopLevelCard) Validate() error {
 	return nil
 }
 
+// Validate asserts that the collection of Element values has valid values.
+func (e Elements) Validate() error {
+	for _, element := range e {
+		if err := element.Validate(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Validate asserts that fields have valid values.
 func (e Element) Validate() error {
 	// NOTES
@@ -1080,10 +1099,7 @@ func (e Element) Validate() error {
 	// the end, this type is designed so that each subsequent validation step
 	// short-circuits after the first validation failure; only the first
 	// validation failure is reported.
-	v := validator{}
-
-	// FIXME: Placeholder until finished refactoring.
-	_ = v
+	v := validator.Validator{}
 
 	supportedElementTypes := supportedElementTypes()
 	supportedSizeValues := supportedSizeValues()
@@ -1097,14 +1113,9 @@ func (e Element) Validate() error {
 	// function to retrieve valid style values for evaluation.
 	supportedStyleValues := supportedStyleValues(e.Type)
 
-	// v.MustBeInListIfFieldValNotEmpty(
-	// 	e.Type,
-	// 	""
-	// )
-
-	//
-	// General requirements for all Element types.
-	//
+	/******************************************************************
+		General requirements for all Element types.
+	******************************************************************/
 
 	v.MustBeInListIfFieldValNotEmpty(
 		e.Type,
@@ -1114,59 +1125,47 @@ func (e Element) Validate() error {
 		ErrInvalidType,
 	)
 
-	/*
-		TODO: Start back converting these to standalone
-		v.MustBeInListIfFieldValNotEmpty() calls
+	v.MustBeInListIfFieldValNotEmpty(
+		e.Size,
+		"Size",
+		"element",
+		supportedSizeValues,
+		ErrInvalidFieldValue,
+	)
 
-		The "case e.Style != "" && len(supportedStyleValues) == 0:" case will
-		likely require special handling. Revisit the methods for the validator
-		struct type to see if I started (or finished?) what will be needed for
-		that.
-	*/
-	switch {
+	v.MustBeInListIfFieldValNotEmpty(
+		e.Weight,
+		"Weight",
+		"element",
+		supportedWeightValues,
+		ErrInvalidFieldValue,
+	)
 
-	// Field is not empty and field value is not in the supported list of values.
-	// case e.Size != "" && !goteamsnotify.InList(e.Size, supportedSizeValues, false):
-	case fieldNotEmptyAndNotInList(e.Size, supportedSizeValues):
-		return fmt.Errorf(
-			"invalid %s %q for element; expected one of %v: %w",
-			"Size",
-			e.Size,
-			supportedSizeValues,
-			ErrInvalidFieldValue,
-		)
+	v.MustBeInListIfFieldValNotEmpty(
+		e.Color,
+		"Color",
+		"element",
+		supportedColorValues,
+		ErrInvalidFieldValue,
+	)
 
-	// case e.Weight != "" && goteamsnotify.InList(e.Weight, supportedWeightValues, false):
-	case fieldNotEmptyAndNotInList(e.Weight, supportedWeightValues):
-		return fmt.Errorf(
-			"invalid %s %q for element; expected one of %v: %w",
-			"Weight",
-			e.Weight,
-			supportedWeightValues,
-			ErrInvalidFieldValue,
-		)
+	v.MustBeInListIfFieldValNotEmpty(
+		e.Spacing,
+		"Spacing",
+		"element",
+		supportedSpacingValues,
+		ErrInvalidFieldValue,
+	)
 
-	// case e.Color != "" && !goteamsnotify.InList(e.Color, supportedColorValues, false):
-	case fieldNotEmptyAndNotInList(e.Color, supportedColorValues):
-		return fmt.Errorf(
-			"invalid %s %q for element; expected one of %v: %w",
-			"Color",
-			e.Color,
-			supportedColorValues,
-			ErrInvalidFieldValue,
-		)
+	v.MustBeInListIfFieldValNotEmpty(
+		e.Style,
+		"Style",
+		"element",
+		supportedStyleValues,
+		ErrInvalidFieldValue,
+	)
 
-	// case e.Spacing != "" && !goteamsnotify.InList(e.Spacing, supportedSpacingValues, false):
-	case fieldNotEmptyAndNotInList(e.Spacing, supportedSpacingValues):
-		return fmt.Errorf(
-			"invalid %s %q for element; expected one of %v: %w",
-			"Spacing",
-			e.Spacing,
-			supportedSpacingValues,
-			ErrInvalidFieldValue,
-		)
-
-	case e.Style != "" && len(supportedStyleValues) == 0:
+	if e.Style != "" && len(supportedStyleValues) == 0 {
 		return fmt.Errorf(
 			"invalid %s %q for element; %s values not supported for element: %w",
 			"Style",
@@ -1174,26 +1173,17 @@ func (e Element) Validate() error {
 			"Style",
 			ErrInvalidFieldValue,
 		)
-
-	// case e.Style != "" && !goteamsnotify.InList(e.Style, supportedStyleValues, false):
-	case fieldNotEmptyAndNotInList(e.Style, supportedStyleValues):
-		return fmt.Errorf(
-			"invalid %s %q for element; expected one of %v: %w",
-			"Style",
-			e.Style,
-			supportedStyleValues,
-			ErrInvalidFieldValue,
-		)
 	}
 
-	// Requirements for specific Element types.
+	/******************************************************************
+		Requirements for specific Element types.
+	******************************************************************/
+
 	switch {
 	case e.Type == TypeElementColumnSet:
 		// Used by ColumnSet type, not required. If present, should be
 		// checked.
-		for _, column := range e.Columns {
-			v.MustSelfValidate(column)
-		}
+		v.MustSelfValidate(Columns(e.Columns))
 
 	// Actions collection is required for ActionSet element type.
 	// https://adaptivecards.io/explorer/ActionSet.html
@@ -1201,14 +1191,17 @@ func (e Element) Validate() error {
 		v.MustBeNotEmptyCollection(
 			"Actions",
 			e.Type,
+			ErrMissingValue,
 			e.Actions,
 		)
 
-		// This works:
-		for _, action := range e.Actions {
-			v.MustSelfValidate(action)
-		}
+		v.MustSelfValidate(Actions(e.Actions))
 
+		// This works:
+		// for _, action := range e.Actions {
+		// 	v.MustSelfValidate(action)
+		// }
+		//
 		// This does not:
 		// https://stackoverflow.com/questions/12994679/slice-of-struct-slice-of-interface-it-implements
 		// v.MustSelfValidate(e.Actions...)
@@ -1219,12 +1212,11 @@ func (e Element) Validate() error {
 		v.MustBeNotEmptyCollection(
 			"Items",
 			e.Type,
+			ErrMissingValue,
 			e.Items,
 		)
 
-		for _, item := range e.Items {
-			v.MustSelfValidate(item)
-		}
+		v.MustSelfValidate(Elements(e.Items))
 
 	// URL is required for Image element type.
 	// https://adaptivecards.io/explorer/Image.html
@@ -1233,6 +1225,7 @@ func (e Element) Validate() error {
 			e.URL,
 			"URL",
 			e.Type,
+			ErrMissingValue,
 		)
 
 	// Facts collection is required for FactSet element type.
@@ -1241,11 +1234,21 @@ func (e Element) Validate() error {
 		v.MustBeNotEmptyCollection(
 			"Facts",
 			e.Type,
+			ErrMissingValue,
 			e.Facts,
 		)
 
-		for _, fact := range e.Facts {
-			v.MustSelfValidate(fact)
+		v.MustSelfValidate(Facts(e.Facts))
+	}
+
+	return nil
+}
+
+// Validate asserts that the collection of Column values has valid values.
+func (c Columns) Validate() error {
+	for _, column := range c {
+		if err := column.Validate(); err != nil {
+			return err
 		}
 	}
 
@@ -1313,6 +1316,17 @@ func (c Column) Validate() error {
 
 	if c.SelectAction != nil {
 		return c.SelectAction.Validate()
+	}
+
+	return nil
+}
+
+// Validate asserts that the collection of Fact values has valid values.
+func (f Facts) Validate() error {
+	for _, fact := range f {
+		if err := fact.Validate(); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -1396,6 +1410,17 @@ func (i ISelectAction) Validate() error {
 				"invalid URL for Action: %w",
 				ErrMissingValue,
 			)
+		}
+	}
+
+	return nil
+}
+
+// Validate asserts that the collection of Action values has valid values.
+func (a Actions) Validate() error {
+	for _, action := range a {
+		if err := action.Validate(); err != nil {
+			return err
 		}
 	}
 
@@ -2229,26 +2254,3 @@ func cardBodyHasMention(body []Element, mentions []Mention) bool {
 	}
 	return true
 }
-
-// fieldNotEmptyAndNotInList is a validation helper function that
-// asserts that a given string field value is not empty and is not in a list
-// of supported/valid field values.
-func fieldNotEmptyAndNotInList(field string, list []string) bool {
-	return field != "" && !goteamsnotify.InList(field, list, false)
-}
-
-// func fieldNotSpecificValueAndListNotEmpty(field string, val string, list []interface{}) bool {
-// 	return field != val && len(list) > 0
-// }
-
-// validate requests that each item performs self validation and exits early
-// if a validation error occurs.
-// func validate(items ...validator) error {
-// 	for _, item := range items {
-// 		if err := item.Validate(); err != nil {
-// 			return err
-// 		}
-// 	}
-//
-// 	return nil
-// }
