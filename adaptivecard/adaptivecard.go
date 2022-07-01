@@ -1266,42 +1266,31 @@ func (m MSTeams) Validate() error {
 
 // Validate asserts that fields have valid values.
 func (i ISelectAction) Validate() error {
+	v := validator.Validator{}
+
 	// Some supportedISelectActionValues are restricted to later Adaptive Card
 	// schema versions.
-	supportedValues := supportedISelectActionValues(AdaptiveCardMaxVersion)
-	if !goteamsnotify.InList(i.Type, supportedValues, false) {
-		return fmt.Errorf(
-			"invalid %s %q for ISelectAction; expected one of %v: %w",
-			"Type",
-			i.Type,
-			supportedValues,
-			ErrInvalidType,
-		)
-	}
+	v.MustBeInList(
+		i.Type,
+		"Type",
+		"ISelectAction",
+		supportedISelectActionValues(AdaptiveCardMaxVersion),
+		ErrInvalidType,
+	)
 
-	if i.Fallback != "" {
-		supportedValues := supportedISelectActionFallbackValues(AdaptiveCardMaxVersion)
-		if !goteamsnotify.InList(i.Fallback, supportedValues, false) {
-			return fmt.Errorf(
-				"invalid %s %q for ISelectAction; expected one of %v: %w",
-				"Fallback",
-				i.Fallback,
-				supportedValues,
-				ErrInvalidFieldValue,
-			)
-		}
-	}
+	v.MustBeInListIfFieldValNotEmpty(
+		i.Fallback,
+		"Fallback",
+		"ISelectAction",
+		supportedISelectActionFallbackValues(AdaptiveCardMaxVersion),
+		ErrInvalidFieldValue,
+	)
 
 	if i.Type == TypeActionOpenURL {
-		if i.URL == "" {
-			return fmt.Errorf(
-				"invalid URL for Action: %w",
-				ErrMissingValue,
-			)
-		}
+		v.MustBeNotEmptyValue(i.URL, "URL", i.Type, ErrMissingValue)
 	}
 
-	return nil
+	return v.Err()
 }
 
 // Validate asserts that the collection of Action values are all valid.

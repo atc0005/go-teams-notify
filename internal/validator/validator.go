@@ -159,6 +159,51 @@ func (v *Validator) MustBeNotEmptyValue(fieldVal string, fieldValDesc string, ty
 	return true
 }
 
+// MustBeInList reports whether fieldVal is in validVals. fieldValDesc
+// describes the field value being validated (e.g., "Type") and typeDesc
+// describes the specific struct or value type whose field we are validating
+// (e.g., "Element").
+//
+// A true value is returned if fieldVal is is in validVals. A false value is
+// returned if a prior validation step failed or if fieldVal is empty or is
+// not in validVals.
+func (v *Validator) MustBeInList(fieldVal string, fieldValDesc string, typeDesc string, validVals []string, baseErr error) bool {
+	switch {
+	case v.err != nil:
+		return false
+
+	case fieldVal == "":
+		return false
+
+	case !goteamsnotify.InList(fieldVal, validVals, false):
+		switch {
+		case baseErr != nil:
+			v.err = fmt.Errorf(
+				"invalid %s %q for %s; expected one of %v: %w",
+				fieldValDesc,
+				fieldVal,
+				typeDesc,
+				validVals,
+				baseErr,
+			)
+		default:
+			v.err = fmt.Errorf(
+				"invalid %s %q for %s; expected one of %v",
+				fieldValDesc,
+				fieldVal,
+				typeDesc,
+				validVals,
+			)
+		}
+
+		return false
+
+	// Validation is good.
+	default:
+		return true
+	}
+}
+
 // MustBeInListIfFieldValNotEmpty reports whether fieldVal is in validVals if
 // fieldVal is not empty. fieldValDesc describes the field value being
 // validated (e.g., "Type") and typeDesc describes the specific struct or
