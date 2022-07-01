@@ -1250,21 +1250,12 @@ func (f Facts) Validate() error {
 
 // Validate asserts that fields have valid values.
 func (f Fact) Validate() error {
-	if f.Title == "" {
-		return fmt.Errorf(
-			"required field Title is empty for Fact: %w",
-			ErrMissingValue,
-		)
-	}
+	v := validator.Validator{}
 
-	if f.Value == "" {
-		return fmt.Errorf(
-			"required field Value is empty for Fact: %w",
-			ErrMissingValue,
-		)
-	}
+	v.MustBeNotEmptyValue(f.Title, "Title", "Fact", ErrMissingValue)
+	v.MustBeNotEmptyValue(f.Value, "Value", "Fact", ErrMissingValue)
 
-	return nil
+	return v.Err()
 }
 
 // Validate asserts that fields have valid values.
