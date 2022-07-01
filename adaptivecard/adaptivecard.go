@@ -892,7 +892,7 @@ func (m Message) Validate() error {
 
 	v := validation.Validator{}
 
-	v.MustBeFieldHasSpecificValue(
+	v.FieldHasSpecificValue(
 		m.Type,
 		"type",
 		TypeMessage,
@@ -902,12 +902,12 @@ func (m Message) Validate() error {
 
 	// We need an attachment (containing one or more Adaptive Cards) in order
 	// to generate a valid Message for Microsoft Teams delivery.
-	v.MustBeNotEmptyCollection("Attachments", m.Type, ErrMissingValue, m.Attachments)
+	v.NotEmptyCollection("Attachments", m.Type, ErrMissingValue, m.Attachments)
 
-	v.MustSelfValidate(Attachments(m.Attachments))
+	v.SelfValidate(Attachments(m.Attachments))
 
 	// Optional field, but only specific values permitted if set.
-	v.MustBeInListIfFieldValNotEmpty(
+	v.InListIfFieldValNotEmpty(
 		m.AttachmentLayout,
 		"AttachmentLayout",
 		"message",
@@ -922,7 +922,7 @@ func (m Message) Validate() error {
 func (a Attachment) Validate() error {
 	v := validation.Validator{}
 
-	v.MustBeFieldHasSpecificValue(
+	v.FieldHasSpecificValue(
 		a.ContentType,
 		"attachment type",
 		AttachmentContentType,
@@ -955,7 +955,7 @@ func (c Card) Validate() error {
 	// to assert that relationship, we skip applying validation for that value
 	// for now.
 
-	v.MustBeFieldHasSpecificValue(
+	v.FieldHasSpecificValue(
 		c.Type,
 		"type",
 		TypeAdaptiveCard,
@@ -965,7 +965,7 @@ func (c Card) Validate() error {
 
 	// While the schema value should be set it is not strictly required. If it
 	// is set, we assert that it is the correct value.
-	v.MustBeFieldHasSpecificValueIfFieldNotEmpty(
+	v.FieldHasSpecificValueIfFieldNotEmpty(
 		c.Schema,
 		"Schema",
 		AdaptiveCardSchema,
@@ -975,7 +975,7 @@ func (c Card) Validate() error {
 
 	// Both are optional fields, unless MinHeight is set in which case
 	// VerticalContentAlignment is required.
-	v.MustBeSuccessfulFuncCall(
+	v.SuccessfulFuncCall(
 		func() error {
 			return assertHeightAlignmentFieldsSetWhenRequired(
 				c.MinHeight, c.VerticalContentAlignment,
@@ -983,14 +983,14 @@ func (c Card) Validate() error {
 		},
 	)
 
-	v.MustBeSuccessfulFuncCall(
+	v.SuccessfulFuncCall(
 		func() error {
 			return assertCardBodyHasMention(c.Body, c.MSTeams.Entities)
 		},
 	)
 
-	v.MustSelfValidate(Elements(c.Body))
-	v.MustSelfValidate(Actions(c.Actions))
+	v.SelfValidate(Elements(c.Body))
+	v.SelfValidate(Actions(c.Actions))
 
 	return v.Err()
 }
@@ -1085,14 +1085,14 @@ func (e Element) Validate() error {
 		General requirements for all Element types.
 	******************************************************************/
 
-	v.MustBeInListIfFieldValNotEmpty(e.Type, "Type", "element", supportedElementTypes, ErrInvalidType)
-	v.MustBeInListIfFieldValNotEmpty(e.Size, "Size", "element", supportedSizeValues, ErrInvalidFieldValue)
-	v.MustBeInListIfFieldValNotEmpty(e.Weight, "Weight", "element", supportedWeightValues, ErrInvalidFieldValue)
-	v.MustBeInListIfFieldValNotEmpty(e.Color, "Color", "element", supportedColorValues, ErrInvalidFieldValue)
-	v.MustBeInListIfFieldValNotEmpty(e.Spacing, "Spacing", "element", supportedSpacingValues, ErrInvalidFieldValue)
-	v.MustBeInListIfFieldValNotEmpty(e.Style, "Style", "element", supportedStyleValues, ErrInvalidFieldValue)
+	v.InListIfFieldValNotEmpty(e.Type, "Type", "element", supportedElementTypes, ErrInvalidType)
+	v.InListIfFieldValNotEmpty(e.Size, "Size", "element", supportedSizeValues, ErrInvalidFieldValue)
+	v.InListIfFieldValNotEmpty(e.Weight, "Weight", "element", supportedWeightValues, ErrInvalidFieldValue)
+	v.InListIfFieldValNotEmpty(e.Color, "Color", "element", supportedColorValues, ErrInvalidFieldValue)
+	v.InListIfFieldValNotEmpty(e.Spacing, "Spacing", "element", supportedSpacingValues, ErrInvalidFieldValue)
+	v.InListIfFieldValNotEmpty(e.Style, "Style", "element", supportedStyleValues, ErrInvalidFieldValue)
 
-	v.MustBeSuccessfulFuncCall(
+	v.SuccessfulFuncCall(
 		func() error {
 			return assertElementSupportsStyleValue(e, supportedStyleValues)
 		},
@@ -1112,30 +1112,30 @@ func (e Element) Validate() error {
 	// Columns collection is used by the ColumnSet type. While not required,
 	// the collection should be checked.
 	case e.Type == TypeElementColumnSet:
-		v.MustSelfValidate(Columns(e.Columns))
+		v.SelfValidate(Columns(e.Columns))
 
 	// Actions collection is required for ActionSet element type.
 	// https://adaptivecards.io/explorer/ActionSet.html
 	case e.Type == TypeElementActionSet:
-		v.MustBeNotEmptyCollection("Actions", e.Type, ErrMissingValue, e.Actions)
-		v.MustSelfValidate(Actions(e.Actions))
+		v.NotEmptyCollection("Actions", e.Type, ErrMissingValue, e.Actions)
+		v.SelfValidate(Actions(e.Actions))
 
 	// Items collection is required for Container element type.
 	// https://adaptivecards.io/explorer/Container.html
 	case e.Type == TypeElementContainer:
-		v.MustBeNotEmptyCollection("Items", e.Type, ErrMissingValue, e.Items)
-		v.MustSelfValidate(Elements(e.Items))
+		v.NotEmptyCollection("Items", e.Type, ErrMissingValue, e.Items)
+		v.SelfValidate(Elements(e.Items))
 
 	// URL is required for Image element type.
 	// https://adaptivecards.io/explorer/Image.html
 	case e.Type == TypeElementImage:
-		v.MustBeNotEmptyValue(e.URL, "URL", e.Type, ErrMissingValue)
+		v.NotEmptyValue(e.URL, "URL", e.Type, ErrMissingValue)
 
 	// Facts collection is required for FactSet element type.
 	// https://adaptivecards.io/explorer/FactSet.html
 	case e.Type == TypeElementFactSet:
-		v.MustBeNotEmptyCollection("Facts", e.Type, ErrMissingValue, e.Facts)
-		v.MustSelfValidate(Facts(e.Facts))
+		v.NotEmptyCollection("Facts", e.Type, ErrMissingValue, e.Facts)
+		v.SelfValidate(Facts(e.Facts))
 	}
 
 	// Return the last recorded validation error, or nil if no validation
@@ -1235,8 +1235,8 @@ func (f Facts) Validate() error {
 func (f Fact) Validate() error {
 	v := validation.Validator{}
 
-	v.MustBeNotEmptyValue(f.Title, "Title", "Fact", ErrMissingValue)
-	v.MustBeNotEmptyValue(f.Value, "Value", "Fact", ErrMissingValue)
+	v.NotEmptyValue(f.Title, "Title", "Fact", ErrMissingValue)
+	v.NotEmptyValue(f.Value, "Value", "Fact", ErrMissingValue)
 
 	return v.Err()
 }
@@ -1246,7 +1246,7 @@ func (m MSTeams) Validate() error {
 	v := validation.Validator{}
 
 	// If an optional width value is set, assert that it is a valid value.
-	v.MustBeInListIfFieldValNotEmpty(
+	v.InListIfFieldValNotEmpty(
 		m.Width,
 		"Width",
 		"MSTeams",
@@ -1254,7 +1254,7 @@ func (m MSTeams) Validate() error {
 		ErrInvalidFieldValue,
 	)
 
-	v.MustSelfValidate(Mentions(m.Entities))
+	v.SelfValidate(Mentions(m.Entities))
 
 	return v.Err()
 }
@@ -1265,7 +1265,7 @@ func (i ISelectAction) Validate() error {
 
 	// Some supportedISelectActionValues are restricted to later Adaptive Card
 	// schema versions.
-	v.MustBeInList(
+	v.InList(
 		i.Type,
 		"Type",
 		"ISelectAction",
@@ -1273,7 +1273,7 @@ func (i ISelectAction) Validate() error {
 		ErrInvalidType,
 	)
 
-	v.MustBeInListIfFieldValNotEmpty(
+	v.InListIfFieldValNotEmpty(
 		i.Fallback,
 		"Fallback",
 		"ISelectAction",
@@ -1282,7 +1282,7 @@ func (i ISelectAction) Validate() error {
 	)
 
 	if i.Type == TypeActionOpenURL {
-		v.MustBeNotEmptyValue(i.URL, "URL", i.Type, ErrMissingValue)
+		v.NotEmptyValue(i.URL, "URL", i.Type, ErrMissingValue)
 	}
 
 	return v.Err()
