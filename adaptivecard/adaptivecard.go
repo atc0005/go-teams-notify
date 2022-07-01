@@ -687,6 +687,9 @@ type MSTeams struct {
 	Entities []Mention `json:"entities,omitempty"`
 }
 
+// Mentions is a collection of Mention values.
+type Mentions []Mention
+
 // Mention represents a mention in the message for a specific user.
 type Mention struct {
 	// Type is required; must be set to "mention".
@@ -930,7 +933,7 @@ func (a Attachment) Validate() error {
 	return v.Err()
 }
 
-// Validate asserts that the collection of Attachment values has valid values.
+// Validate asserts that the collection of Attachment values are all valid.
 func (a Attachments) Validate() error {
 	for _, attachment := range a {
 		if err := attachment.Validate(); err != nil {
@@ -1056,7 +1059,7 @@ func (tc TopLevelCard) Validate() error {
 	return nil
 }
 
-// Validate asserts that the collection of Element values has valid values.
+// Validate asserts that the collection of Element values are all valid.
 func (e Elements) Validate() error {
 	for _, element := range e {
 		if err := element.Validate(); err != nil {
@@ -1145,7 +1148,7 @@ func (e Element) Validate() error {
 	return v.Err()
 }
 
-// Validate asserts that the collection of Column values has valid values.
+// Validate asserts that the collection of Column values are all valid.
 func (c Columns) Validate() error {
 	for _, column := range c {
 		if err := column.Validate(); err != nil {
@@ -1222,7 +1225,7 @@ func (c Column) Validate() error {
 	return nil
 }
 
-// Validate asserts that the collection of Fact values has valid values.
+// Validate asserts that the collection of Fact values are all valid.
 func (f Facts) Validate() error {
 	for _, fact := range f {
 		if err := fact.Validate(); err != nil {
@@ -1245,27 +1248,20 @@ func (f Fact) Validate() error {
 
 // Validate asserts that fields have valid values.
 func (m MSTeams) Validate() error {
+	v := validator.Validator{}
+
 	// If an optional width value is set, assert that it is a valid value.
-	if m.Width != "" {
-		supportedValues := supportedMSTeamsWidthValues()
-		if !goteamsnotify.InList(m.Width, supportedValues, false) {
-			return fmt.Errorf(
-				"invalid %s %q for Action; expected one of %v: %w",
-				"Width",
-				m.Width,
-				supportedValues,
-				ErrInvalidFieldValue,
-			)
-		}
-	}
+	v.MustBeInListIfFieldValNotEmpty(
+		m.Width,
+		"Width",
+		"MSTeams",
+		supportedMSTeamsWidthValues(),
+		ErrInvalidFieldValue,
+	)
 
-	for _, mention := range m.Entities {
-		if err := mention.Validate(); err != nil {
-			return err
-		}
-	}
+	v.MustSelfValidate(Mentions(m.Entities))
 
-	return nil
+	return v.Err()
 }
 
 // Validate asserts that fields have valid values.
@@ -1308,7 +1304,7 @@ func (i ISelectAction) Validate() error {
 	return nil
 }
 
-// Validate asserts that the collection of Action values has valid values.
+// Validate asserts that the collection of Action values are all valid.
 func (a Actions) Validate() error {
 	for _, action := range a {
 		if err := action.Validate(); err != nil {
@@ -1358,6 +1354,17 @@ func (a Action) Validate() error {
 	default:
 		return nil
 	}
+}
+
+// Validate asserts that the collection of Mention values are all valid.
+func (m Mentions) Validate() error {
+	for _, mention := range m {
+		if err := mention.Validate(); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // Validate asserts that fields have valid values.
