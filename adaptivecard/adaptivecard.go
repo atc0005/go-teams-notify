@@ -2180,15 +2180,21 @@ func cardBodyHasMention(body []Element, mentions []Mention) bool {
 		return false
 	}
 
-	// BUG: We're unintentionally requiring that the user mention be present
-	// in all elements.
-	for _, mention := range mentions {
-		for _, element := range body {
-			if !element.HasMentionText(mention) {
-				return false
+	elementsHaveMention := func(elements []Element, m Mention) bool {
+		for _, element := range elements {
+			if element.HasMentionText(m) {
+				return true
 			}
 		}
+		return false
 	}
+
+	for _, mention := range mentions {
+		if !elementsHaveMention(body, mention) {
+			return false
+		}
+	}
+
 	return true
 }
 
