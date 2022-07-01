@@ -887,11 +887,6 @@ func (m Message) Validate() error {
 		return m.ValidateFunc()
 	}
 
-	// Create validation helper that will perform the bulk of our validation
-	// tasks. While we call each validation step and only check the results at
-	// the end, this type is designed so that each subsequent validation step
-	// short-circuits after the first validation failure; only the first
-	// validation failure is reported.
 	v := validator.Validator{}
 
 	v.MustBeFieldHasSpecificValue(
@@ -922,11 +917,6 @@ func (m Message) Validate() error {
 
 // Validate asserts that fields have valid values.
 func (a Attachment) Validate() error {
-	// Create validation helper that will perform the bulk of our validation
-	// tasks. While we call each validation step and only check the results at
-	// the end, this type is designed so that each subsequent validation step
-	// short-circuits after the first validation failure; only the first
-	// validation failure is reported.
 	v := validator.Validator{}
 
 	v.MustBeFieldHasSpecificValue(
@@ -1079,11 +1069,6 @@ func (e Elements) Validate() error {
 
 // Validate asserts that fields have valid values.
 func (e Element) Validate() error {
-	// Create validation helper that will perform the bulk of our validation
-	// tasks. While we call each validation step and only check the results at
-	// the end, this type is designed so that each subsequent validation step
-	// short-circuits after the first validation failure; only the first
-	// validation failure is reported.
 	v := validator.Validator{}
 
 	supportedElementTypes := supportedElementTypes()
