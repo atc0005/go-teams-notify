@@ -887,45 +887,37 @@ func (m Message) Validate() error {
 		return m.ValidateFunc()
 	}
 
-	if m.Type != TypeMessage {
-		return fmt.Errorf(
-			"invalid message type %q; expected %q: %w",
-			m.Type,
-			TypeMessage,
-			ErrInvalidType,
-		)
-	}
+	// Create validation helper that will perform the bulk of our validation
+	// tasks. While we call each validation step and only check the results at
+	// the end, this type is designed so that each subsequent validation step
+	// short-circuits after the first validation failure; only the first
+	// validation failure is reported.
+	v := validator.Validator{}
+
+	v.MustBeFieldHasSpecificValue(
+		m.Type,
+		"type",
+		TypeMessage,
+		"message",
+		ErrInvalidType,
+	)
 
 	// We need an attachment (containing one or more Adaptive Cards) in order
 	// to generate a valid Message for Microsoft Teams delivery.
-	if len(m.Attachments) == 0 {
-		return fmt.Errorf(
-			"required field Attachments is empty for Message: %w",
-			ErrMissingValue,
-		)
-	}
+	v.MustBeNotEmptyCollection("Attachments", m.Type, ErrMissingValue, m.Attachments)
 
-	for _, attachment := range m.Attachments {
-		if err := attachment.Validate(); err != nil {
-			return err
-		}
-	}
+	v.MustSelfValidate(Attachments(m.Attachments))
 
 	// Optional field, but only specific values permitted if set.
-	if m.AttachmentLayout != "" {
-		supportedValues := supportedAttachmentLayoutValues()
-		if !goteamsnotify.InList(m.AttachmentLayout, supportedValues, false) {
-			return fmt.Errorf(
-				"invalid %s %q for Message; expected one of %v: %w",
-				"AttachmentLayout",
-				m.AttachmentLayout,
-				supportedValues,
-				ErrInvalidFieldValue,
-			)
-		}
-	}
+	v.MustBeInListIfFieldValNotEmpty(
+		m.AttachmentLayout,
+		"AttachmentLayout",
+		"message",
+		supportedAttachmentLayoutValues(),
+		ErrInvalidFieldValue,
+	)
 
-	return nil
+	return v.Err()
 }
 
 // Validate asserts that fields have valid values.
@@ -942,9 +934,19 @@ func (a Attachment) Validate() error {
 	return nil
 }
 
+// Validate asserts that the collection of Attachment values has valid values.
+func (a Attachments) Validate() error {
+	for _, attachment := range a {
+		if err := attachment.Validate(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Validate asserts that fields have valid values.
 func (c Card) Validate() error {
-
 	// Create validation helper to assist with validation tasks. While we call
 	// each validation step and only check the results at the end, this type
 	// is designed so that each subsequent validation step short-circuits
@@ -977,48 +979,21 @@ func (c Card) Validate() error {
 		ErrInvalidFieldValue,
 	)
 
-	switch {
-	// TODO: Use MustBeSuccessfulFuncCall()
-	//
 	// Both are optional fields, unless MinHeight is set in which case
 	// VerticalContentAlignment is required.
-	case c.MinHeight != "" && c.VerticalContentAlignment == "":
-		return fmt.Errorf(
-			"field MinHeight is set, VerticalContentAlignment is not;"+
-				" field VerticalContentAlignment is only optional when MinHeight"+
-				" is not set: %w",
-			ErrMissingValue,
-		)
+	v.MustBeSuccessfulFuncCall(
+		func() error {
+			return assertHeightAlignmentFieldsSetWhenRequired(
+				c.MinHeight, c.VerticalContentAlignment,
+			)
+		},
+	)
 
-	// TODO: Use MustBeSuccessfulFuncCall()
-	//
-	// If there are recorded user mentions, we need to assert that
-	// Mention.Text is contained (substring match) within an applicable
-	// field of a supported Element of the Card Body.
-	//
-	// At present, this includes the Text field of a TextBlock Element or
-	// the Title or Value fields of a Fact from a FactSet.
-	//
-	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format#mention-support-within-adaptive-cards
-
-	// User mentions recorded, but no elements in Card Body to potentially
-	// contain required text string.
-	case len(c.MSTeams.Entities) > 0 && len(c.Body) == 0:
-		return fmt.Errorf(
-			"user mention text not found in empty Card Body: %w",
-			ErrMissingValue,
-		)
-
-	// TODO: Use MustBeSuccessfulFuncCall()
-	//
-	// For every user mention, we require at least one match in an applicable
-	// Element in the Card Body.
-	case len(c.MSTeams.Entities) > 0 && !cardBodyHasMention(c.Body, c.MSTeams.Entities):
-		return fmt.Errorf(
-			"user mention text not found in elements of Card Body: %w",
-			ErrMissingValue,
-		)
-	}
+	v.MustBeSuccessfulFuncCall(
+		func() error {
+			return assertCardBodyHasMention(c.Body, c.MSTeams.Entities)
+		},
+	)
 
 	v.MustSelfValidate(Elements(c.Body))
 	v.MustSelfValidate(Actions(c.Actions))
@@ -2224,6 +2199,36 @@ func assertHeightAlignmentFieldsSetWhenRequired(minHeight string, verticalConten
 			"field MinHeight is set, VerticalContentAlignment is not;"+
 				" field VerticalContentAlignment is only optional when MinHeight"+
 				" is not set: %w",
+			ErrMissingValue,
+		)
+	}
+
+	return nil
+}
+
+// assertCardBodyHasMention asserts that if there are recorded user mentions,
+// then Mention.Text is contained (substring match) within an applicable field
+// of a supported Element of the Card Body.
+//
+// At present, this includes the Text field of a TextBlock Element or
+// the Title or Value fields of a Fact from a FactSet.
+//
+// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format#mention-support-within-adaptive-cards
+func assertCardBodyHasMention(elements []Element, mentions []Mention) error {
+	// User mentions recorded, but no elements in Card Body to potentially
+	// contain required text string.
+	if len(mentions) > 0 && len(elements) == 0 {
+		return fmt.Errorf(
+			"user mention text not found in empty Card Body: %w",
+			ErrMissingValue,
+		)
+	}
+
+	// For every user mention, we require at least one match in an applicable
+	// Element in the Card Body.
+	if len(mentions) > 0 && !cardBodyHasMention(elements, mentions) {
+		return fmt.Errorf(
+			"user mention text not found in elements of Card Body: %w",
 			ErrMissingValue,
 		)
 	}
