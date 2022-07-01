@@ -2198,6 +2198,9 @@ func cardBodyHasMention(body []Element, mentions []Mention) bool {
 	return true
 }
 
+// assertElementSupportsStyleValue asserts that the style value for an element
+// falls within the list of valid style values for that element; not all
+// element types support all style values.
 func assertElementSupportsStyleValue(element Element, supportedValues []string) error {
 	if element.Style != "" && len(supportedValues) == 0 {
 		return fmt.Errorf(
@@ -2212,6 +2215,9 @@ func assertElementSupportsStyleValue(element Element, supportedValues []string) 
 	return nil
 }
 
+// assertHeightAlignmentFieldsSetWhenRequired asserts verticalContentAlignment
+// is set when minHeight is set; while both are optional fields, both have to
+// be set when the other is.
 func assertHeightAlignmentFieldsSetWhenRequired(minHeight string, verticalContentAlignment string) error {
 	if minHeight != "" && verticalContentAlignment == "" {
 		return fmt.Errorf(
