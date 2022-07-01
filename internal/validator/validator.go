@@ -66,6 +66,76 @@ func (v *Validator) MustSelfValidateIfXEqualsY(x string, y string, items ...Vali
 	return true
 }
 
+// MustBeFieldHasSpecificValue asserts that fieldVal is reqVal. fieldValDesc
+// describes the field value being validated (e.g., "Type") and typeDesc
+// describes the specific struct or value type whose field we are validating
+// (e.g., "Element").
+//
+// A true value is returned if the validation step passed. A false value is
+// returned if this or a prior validation step failed.
+func (v *Validator) MustBeFieldHasSpecificValue(
+	fieldVal string,
+	fieldValDesc string,
+	reqVal string,
+	typeDesc string,
+	baseErr error,
+) bool {
+
+	switch {
+	case v.err != nil:
+		return false
+
+	case fieldVal != reqVal:
+		v.err = fmt.Errorf(
+			// "required %s is empty for %s: %w",
+			// "invalid card type %q; expected %q: %w",
+			"invalid %s %q for %s; expected %q: %w",
+			fieldValDesc,
+			fieldVal,
+			typeDesc,
+			reqVal,
+			baseErr,
+		)
+		return false
+
+	default:
+		return true
+	}
+}
+
+// MustBeFieldHasSpecificValueIfFieldNotEmpty asserts that fieldVal is reqVal
+// unless fieldVal is empty. fieldValDesc describes the field value being
+// validated (e.g., "Type") and typeDesc describes the specific struct or
+// value type whose field we are validating (e.g., "Element").
+//
+// A true value is returned if the validation step passed. A false value is
+// returned if this or a prior validation step failed.
+func (v *Validator) MustBeFieldHasSpecificValueIfFieldNotEmpty(
+	fieldVal string,
+	fieldValDesc string,
+	reqVal string,
+	typeDesc string,
+	baseErr error,
+) bool {
+
+	switch {
+	case v.err != nil:
+		return false
+
+	case fieldVal != "":
+		return v.MustBeFieldHasSpecificValue(
+			fieldVal,
+			fieldValDesc,
+			reqVal,
+			typeDesc,
+			baseErr,
+		)
+
+	default:
+		return true
+	}
+}
+
 // MustBeNotEmptyValue asserts that fieldVal is not empty. fieldValDesc
 // describes the field value being validated (e.g., "Type") and typeDesc
 // describes the specific struct or value type whose field we are validating

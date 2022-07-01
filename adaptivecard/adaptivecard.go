@@ -952,34 +952,32 @@ func (c Card) Validate() error {
 	// is reported.
 	v := validator.Validator{}
 
-	// FIXME: Placeholder while refactoring
-	_ = v
-
-	// The Version field is required for top-level cards, optional for Cards
-	// nested within an Action.ShowCard.
-	switch {
-
-	// TODO: Create new helper: MustBeFieldXIsValueY
-	case c.Type != TypeAdaptiveCard:
-		return fmt.Errorf(
-			"invalid card type %q; expected %q: %w",
-			c.Type,
-			TypeAdaptiveCard,
-			ErrInvalidType,
-		)
-
-	// TODO: Create new helper: MustBeFieldXIsValueYIfFieldValNotEmpty
+	// TODO: Version field validation
 	//
+	// The Version field is required for top-level cards, optional for Cards
+	// nested within an Action.ShowCard. Because we don't have a reliable way
+	// to assert that relationship, we skip applying validation for that value
+	// for now.
+
+	v.MustBeFieldHasSpecificValue(
+		c.Type,
+		"type",
+		TypeAdaptiveCard,
+		"card",
+		ErrInvalidType,
+	)
+
 	// While the schema value should be set it is not strictly required. If it
 	// is set, we assert that it is the correct value.
-	case c.Schema != "" && c.Schema != AdaptiveCardSchema:
-		return fmt.Errorf(
-			"invalid Schema value %q; expected %q: %w",
-			c.Schema,
-			AdaptiveCardSchema,
-			ErrInvalidFieldValue,
-		)
+	v.MustBeFieldHasSpecificValueIfFieldNotEmpty(
+		c.Schema,
+		"Schema",
+		AdaptiveCardSchema,
+		"card",
+		ErrInvalidFieldValue,
+	)
 
+	switch {
 	// TODO: Use MustBeSuccessfulFuncCall()
 	//
 	// Both are optional fields, unless MinHeight is set in which case
@@ -1022,22 +1020,10 @@ func (c Card) Validate() error {
 		)
 	}
 
-	// TODO: Use MustSelfValidate()
-	for _, element := range c.Body {
-		if err := element.Validate(); err != nil {
-			return err
-		}
-	}
+	v.MustSelfValidate(Elements(c.Body))
+	v.MustSelfValidate(Actions(c.Actions))
 
-	// TODO: Use MustSelfValidate()
-	for _, action := range c.Actions {
-		if err := action.Validate(); err != nil {
-			return err
-		}
-	}
-
-	// TODO: Replace with v.Err() call.
-	return nil
+	return v.Err()
 }
 
 // Validate asserts that fields have valid values.
@@ -2194,6 +2180,8 @@ func cardBodyHasMention(body []Element, mentions []Mention) bool {
 		return false
 	}
 
+	// BUG: We're unintentionally requiring that the user mention be present
+	// in all elements.
 	for _, mention := range mentions {
 		for _, element := range body {
 			if !element.HasMentionText(mention) {
@@ -2212,6 +2200,19 @@ func assertElementSupportsStyleValue(element Element, supportedValues []string) 
 			element.Style,
 			"Style",
 			ErrInvalidFieldValue,
+		)
+	}
+
+	return nil
+}
+
+func assertHeightAlignmentFieldsSetWhenRequired(minHeight string, verticalContentAlignment string) error {
+	if minHeight != "" && verticalContentAlignment == "" {
+		return fmt.Errorf(
+			"field MinHeight is set, VerticalContentAlignment is not;"+
+				" field VerticalContentAlignment is only optional when MinHeight"+
+				" is not set: %w",
+			ErrMissingValue,
 		)
 	}
 
