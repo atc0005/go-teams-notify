@@ -922,16 +922,22 @@ func (m Message) Validate() error {
 
 // Validate asserts that fields have valid values.
 func (a Attachment) Validate() error {
-	if a.ContentType != AttachmentContentType {
-		return fmt.Errorf(
-			"invalid attachment type %q; expected %q: %w",
-			a.ContentType,
-			AttachmentContentType,
-			ErrInvalidType,
-		)
-	}
+	// Create validation helper that will perform the bulk of our validation
+	// tasks. While we call each validation step and only check the results at
+	// the end, this type is designed so that each subsequent validation step
+	// short-circuits after the first validation failure; only the first
+	// validation failure is reported.
+	v := validator.Validator{}
 
-	return nil
+	v.MustBeFieldHasSpecificValue(
+		a.ContentType,
+		"attachment type",
+		AttachmentContentType,
+		"attachment",
+		ErrInvalidType,
+	)
+
+	return v.Err()
 }
 
 // Validate asserts that the collection of Attachment values has valid values.
