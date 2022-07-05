@@ -6,8 +6,8 @@
 // full license information.
 
 /*
-Package validation provides logic to assist with validation tasks. The logic
-is designed so that each subsequent validation step short-circuits after the
+Package validator provides logic to assist with validation tasks. The logic is
+designed so that each subsequent validation step short-circuits after the
 first validation failure; only the first validation failure is reported.
 
 Credit to Fabrizio Milo for sharing the original implementation:
@@ -16,4 +16,4 @@ Credit to Fabrizio Milo for sharing the original implementation:
 - https://github.com/Mistobaan
 
 */
-package validation
+package validator

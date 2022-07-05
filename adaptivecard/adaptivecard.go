@@ -19,7 +19,7 @@ import (
 	"strings"
 
 	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
-	"github.com/atc0005/go-teams-notify/v2/internal/validation"
+	"github.com/atc0005/go-teams-notify/v2/internal/validator"
 )
 
 // General constants.
@@ -890,7 +890,7 @@ func (m Message) Validate() error {
 		return m.ValidateFunc()
 	}
 
-	v := validation.Validator{}
+	v := validator.Validator{}
 
 	v.FieldHasSpecificValue(
 		m.Type,
@@ -920,7 +920,7 @@ func (m Message) Validate() error {
 
 // Validate asserts that fields have valid values.
 func (a Attachment) Validate() error {
-	v := validation.Validator{}
+	v := validator.Validator{}
 
 	v.FieldHasSpecificValue(
 		a.ContentType,
@@ -946,7 +946,7 @@ func (a Attachments) Validate() error {
 
 // Validate asserts that fields have valid values.
 func (c Card) Validate() error {
-	v := validation.Validator{}
+	v := validator.Validator{}
 
 	// TODO: Version field validation
 	//
@@ -1067,7 +1067,7 @@ func (e Elements) Validate() error {
 
 // Validate asserts that fields have valid values.
 func (e Element) Validate() error {
-	v := validation.Validator{}
+	v := validator.Validator{}
 
 	supportedElementTypes := supportedElementTypes()
 	supportedSizeValues := supportedSizeValues()
@@ -1233,7 +1233,7 @@ func (f Facts) Validate() error {
 
 // Validate asserts that fields have valid values.
 func (f Fact) Validate() error {
-	v := validation.Validator{}
+	v := validator.Validator{}
 
 	v.NotEmptyValue(f.Title, "Title", "Fact", ErrMissingValue)
 	v.NotEmptyValue(f.Value, "Value", "Fact", ErrMissingValue)
@@ -1243,7 +1243,7 @@ func (f Fact) Validate() error {
 
 // Validate asserts that fields have valid values.
 func (m MSTeams) Validate() error {
-	v := validation.Validator{}
+	v := validator.Validator{}
 
 	// If an optional width value is set, assert that it is a valid value.
 	v.InListIfFieldValNotEmpty(
@@ -1261,7 +1261,7 @@ func (m MSTeams) Validate() error {
 
 // Validate asserts that fields have valid values.
 func (i ISelectAction) Validate() error {
-	v := validation.Validator{}
+	v := validator.Validator{}
 
 	// Some supportedISelectActionValues are restricted to later Adaptive Card
 	// schema versions.
