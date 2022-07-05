@@ -32,6 +32,17 @@ type Validator struct {
 	err error
 }
 
+// hasNilValues is a helper function used to determine whether any items in
+// the given collection are nil.
+func hasNilValues(items []interface{}) bool {
+	for _, item := range items {
+		if item == nil {
+			return true
+		}
+	}
+	return false
+}
+
 // SelfValidate asserts that each given item can self-validate.
 //
 // A true value is returned if the validation step passed. A false value is
@@ -342,30 +353,19 @@ func (v *Validator) NoNilValuesInCollection(fieldValueDesc string, typeDesc stri
 		return false
 	}
 
-	hasNilValues := func(items []interface{}) bool {
-		for _, item := range items {
-			if item == nil {
-				return true
-			}
-		}
-		return false
-	}
-
 	switch {
-	// case len(items) > 0:
 	case hasNilValues(items):
-
 		switch {
 		case baseErr != nil:
 			v.err = fmt.Errorf(
-				"required %s collection is empty for %s: %w",
+				"required %s collection contains nil values for %s: %w",
 				fieldValueDesc,
 				typeDesc,
 				baseErr,
 			)
 		default:
 			v.err = fmt.Errorf(
-				"required %s collection is empty for %s",
+				"required %s collection contains nil values for for %s",
 				fieldValueDesc,
 				typeDesc,
 			)
@@ -373,34 +373,9 @@ func (v *Validator) NoNilValuesInCollection(fieldValueDesc string, typeDesc stri
 
 		return false
 
-	// Empty collection, but no nil values.
-	case len(items) == 0:
-		return true
-
 	default:
-		if hasNilValues(items) {
-			switch {
-			case baseErr != nil:
-				v.err = fmt.Errorf(
-					"required %s collection is empty for %s: %w",
-					fieldValueDesc,
-					typeDesc,
-					baseErr,
-				)
-			default:
-				v.err = fmt.Errorf(
-					"required %s collection is empty for %s",
-					fieldValueDesc,
-					typeDesc,
-				)
-			}
-
-			return false
-		}
-
+		return true
 	}
-
-	return true
 }
 
 // NotEmptyCollectionIfFieldValNotEmpty asserts that the specified items
