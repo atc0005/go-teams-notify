@@ -33,9 +33,6 @@ import "testing"
 */
 
 func TestColumnItems_Validate(t *testing.T) {
-	// TODO: Create ColumnItems type, populate with test data
-	// TODO: Process ColumnItems type
-
 	/*
 		A ColumnSet contains Column values.
 		A Column contains an Items value which is a []*Element.
@@ -48,7 +45,6 @@ func TestColumnItems_Validate(t *testing.T) {
 
 		This specific test ignores the parent Column and its parent ColumnSet
 		and instead focuses just on the ColumnItems validation behavior.
-
 	*/
 
 	// []*Element
@@ -69,8 +65,8 @@ func TestColumnItems_Validate(t *testing.T) {
 
 	columnItems = append(columnItems, &element1)
 	columnItems = append(columnItems, &element2)
-	columnItems = append(columnItems, nil)      // Problem entry.
-	columnItems = append(columnItems, element3) // Should be fine.
+	columnItems = append(columnItems, nil) // Problem entry.
+	columnItems = append(columnItems, element3)
 
 	// Run validation using item "copy"
 	for i, item := range columnItems {
