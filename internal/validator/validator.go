@@ -35,7 +35,7 @@ type Validator struct {
 // SelfValidate asserts that each given item can self-validate.
 //
 // A true value is returned if the validation step passed. A false value is
-// returned false if this or a prior validation step failed.
+// returned if this or a prior validation step failed.
 func (v *Validator) SelfValidate(items ...Validater) bool {
 	if v.err != nil {
 		return false

@@ -541,6 +541,10 @@ type FactSet Element
 // Columns is a collection of Column values.
 type Columns []Column
 
+// ColumnItems is a collection of card elements that should be rendered inside
+// of the column.
+type ColumnItems []*Element
+
 // Column is a container used by a ColumnSet element type. Each container
 // may contain one or more elements.
 //
@@ -1154,70 +1158,49 @@ func (c Columns) Validate() error {
 	return nil
 }
 
-// Validate asserts that fields have valid values.
-func (c Column) Validate() error {
-	if c.Type != TypeColumn {
-		return fmt.Errorf(
-			"invalid column type %q; expected %q: %w",
-			c.Type,
-			TypeColumn,
-			ErrInvalidType,
-		)
-	}
-
-	switch v := c.Width.(type) {
-	// Nothing to see here.
-	case nil:
-
-	// Assert specific fixed keyword values or valid pixel width; all other
-	// values are invalid.
-	case string:
-		v = strings.TrimSpace(v)
-		matched, _ := regexp.MatchString(ColumnWidthPixelRegex, v)
-
-		switch {
-		case v == ColumnWidthAuto:
-		case v == ColumnWidthStretch:
-		case !matched:
-			return fmt.Errorf(
-				"invalid pixel width %q; expected value in format %s: %w",
-				v,
-				ColumnWidthPixelWidthExample,
-				ErrInvalidFieldValue,
-			)
-		}
-
-	// Number representing relative width of the column.
-	case int:
-
-	// Unsupported value.
-	default:
-		return fmt.Errorf(
-			"invalid pixel width %q; "+
-				"expected one of keywords %q, int value (e.g., %d) "+
-				"or specific pixel width (e.g., %s): %w",
-			v,
-			strings.Join([]string{
-				ColumnWidthAuto,
-				ColumnWidthStretch,
-			}, ","),
-			1,
-			ColumnWidthPixelWidthExample,
-			ErrInvalidFieldValue,
-		)
-	}
-
-	for _, element := range c.Items {
-		if err := element.Validate(); err != nil {
+// Validate asserts that the ColumnItems values are all valid.
+//
+// TODO: Write a specific test for this to determine actual behavior.
+func (ci ColumnItems) Validate() error {
+	for _, item := range ci {
+		// TODO: What does the Validate method "see" here?
+		// TODO: Determine this via test case.
+		if err := item.Validate(); err != nil {
 			return err
 		}
 	}
 
+	return nil
+}
+
+// Validate asserts that fields have valid values.
+func (c Column) Validate() error {
+	v := validator.Validator{}
+
+	v.FieldHasSpecificValue(
+		c.Type,
+		"type",
+		TypeColumn,
+		"column",
+		ErrInvalidType,
+	)
+
+	v.SuccessfulFuncCall(
+		func() error { return assertColumnWidthValidValues(c) },
+	)
+
+	v.SelfValidate(ColumnItems(c.Items))
+
+	// if c.SelectAction != nil {
+	// 	return c.SelectAction.Validate()
+	// }
+
+	// TODO: Assert this functions as expected with a test case.
 	if c.SelectAction != nil {
-		return c.SelectAction.Validate()
+		v.SelfValidate(c.SelectAction)
 	}
 
-	return nil
+	return v.Err()
 }
 
 // Validate asserts that the collection of Fact values are all valid.
@@ -2203,6 +2186,52 @@ func assertCardBodyHasMention(elements []Element, mentions []Mention) error {
 		return fmt.Errorf(
 			"user mention text not found in elements of Card Body: %w",
 			ErrMissingValue,
+		)
+	}
+
+	return nil
+}
+
+func assertColumnWidthValidValues(c Column) error {
+	switch v := c.Width.(type) {
+	// Nothing to see here.
+	case nil:
+
+	// Assert specific fixed keyword values or valid pixel width; all other
+	// values are invalid.
+	case string:
+		v = strings.TrimSpace(v)
+		matched, _ := regexp.MatchString(ColumnWidthPixelRegex, v)
+
+		switch {
+		case v == ColumnWidthAuto:
+		case v == ColumnWidthStretch:
+		case !matched:
+			return fmt.Errorf(
+				"invalid pixel width %q; expected value in format %s: %w",
+				v,
+				ColumnWidthPixelWidthExample,
+				ErrInvalidFieldValue,
+			)
+		}
+
+	// Number representing relative width of the column.
+	case int:
+
+	// Unsupported value.
+	default:
+		return fmt.Errorf(
+			"invalid pixel width %q; "+
+				"expected one of keywords %q, int value (e.g., %d) "+
+				"or specific pixel width (e.g., %s): %w",
+			v,
+			strings.Join([]string{
+				ColumnWidthAuto,
+				ColumnWidthStretch,
+			}, ","),
+			1,
+			ColumnWidthPixelWidthExample,
+			ErrInvalidFieldValue,
 		)
 	}
 
