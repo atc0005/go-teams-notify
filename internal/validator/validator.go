@@ -328,6 +328,81 @@ func (v *Validator) NotEmptyCollection(fieldValueDesc string, typeDesc string, b
 	return true
 }
 
+// NoNilValuesInCollection asserts that the specified items collection does
+// not contain any nil values. fieldValueDesc describes the field for this
+// collection being validated (e.g., "Facts") and typeDesc describes the
+// specific struct or value type whose field we are validating (e.g.,
+// "Element").
+//
+// A true value is returned if the collection does not contain any nil values
+// (even if the collection itself has no values). A false value is returned if
+// a prior validation step failed or if any items in the collection are nil.
+func (v *Validator) NoNilValuesInCollection(fieldValueDesc string, typeDesc string, baseErr error, items ...interface{}) bool {
+	if v.err != nil {
+		return false
+	}
+
+	hasNilValues := func(items []interface{}) bool {
+		for _, item := range items {
+			if item == nil {
+				return true
+			}
+		}
+		return false
+	}
+
+	switch {
+	// case len(items) > 0:
+	case hasNilValues(items):
+
+		switch {
+		case baseErr != nil:
+			v.err = fmt.Errorf(
+				"required %s collection is empty for %s: %w",
+				fieldValueDesc,
+				typeDesc,
+				baseErr,
+			)
+		default:
+			v.err = fmt.Errorf(
+				"required %s collection is empty for %s",
+				fieldValueDesc,
+				typeDesc,
+			)
+		}
+
+		return false
+
+	// Empty collection, but no nil values.
+	case len(items) == 0:
+		return true
+
+	default:
+		if hasNilValues(items) {
+			switch {
+			case baseErr != nil:
+				v.err = fmt.Errorf(
+					"required %s collection is empty for %s: %w",
+					fieldValueDesc,
+					typeDesc,
+					baseErr,
+				)
+			default:
+				v.err = fmt.Errorf(
+					"required %s collection is empty for %s",
+					fieldValueDesc,
+					typeDesc,
+				)
+			}
+
+			return false
+		}
+
+	}
+
+	return true
+}
+
 // NotEmptyCollectionIfFieldValNotEmpty asserts that the specified items
 // collection is not empty if fieldVal is not empty. fieldValueDesc describes
 // the field for this collection being validated (e.g., "Facts") and typeDesc

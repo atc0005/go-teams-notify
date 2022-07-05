@@ -1158,13 +1158,18 @@ func (c Columns) Validate() error {
 	return nil
 }
 
-// Validate asserts that the ColumnItems values are all valid.
-//
-// TODO: Write a specific test for this to determine actual behavior.
+// Validate asserts that the Items collection field for a column contains
+// valid values. Special handling is applied since the collection could
+// contain nil values.
 func (ci ColumnItems) Validate() error {
 	for _, item := range ci {
-		// TODO: What does the Validate method "see" here?
-		// TODO: Determine this via test case.
+		if item == nil {
+			return fmt.Errorf(
+				"card element in Column is nil: %w",
+				ErrMissingValue,
+			)
+		}
+
 		if err := item.Validate(); err != nil {
 			return err
 		}
@@ -1189,13 +1194,14 @@ func (c Column) Validate() error {
 		func() error { return assertColumnWidthValidValues(c) },
 	)
 
+	// Assert that the collection does not contain nil items.
+	v.NoNilValuesInCollection("Items", c.Type, ErrMissingValue, c.Items)
+
+	// Convert []*Element to ColumnItems so that we can use its Validate()
+	// method to handle cases where nil values could be present in the
+	// collection.
 	v.SelfValidate(ColumnItems(c.Items))
 
-	// if c.SelectAction != nil {
-	// 	return c.SelectAction.Validate()
-	// }
-
-	// TODO: Assert this functions as expected with a test case.
 	if c.SelectAction != nil {
 		v.SelfValidate(c.SelectAction)
 	}
