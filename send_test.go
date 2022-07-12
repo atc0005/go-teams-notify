@@ -228,31 +228,43 @@ func TestTeamsClientSend(t *testing.T) {
 		err := c.Send(test.reqURL, test.reqMsg)
 		if err != nil {
 
-			// Type assertion check between returned error and specified table
-			// test error.
-			//
-			// WARNING: errors.As modifies the error target, so we create a
-			// copy of test.error for use with errors.As so that we don't
-			// modify the original and affect any later tests in this loop.
-			targetErr := test.error
-			if !errors.As(err, &targetErr) {
+			// Assert that returned error chain contains specified table test
+			// error.
+			if !errors.Is(err, test.error) {
+
+				// Debugging; trying to figure out how wrapping is applied.
+
+				t.Log("calling initial errors.Unwrap")
+				inner := errors.Unwrap(err)
+				for {
+					t.Logf("inner error: %T", inner)
+					if inner == nil {
+						break
+					}
+
+					t.Log("calling errors.Unwrap")
+					inner = errors.Unwrap(inner)
+				}
+
+				t.Logf("test %d; got %s", idx, err)
+
 				t.Fatalf(
 					"FAIL: test %d; got %T, want %T",
 					idx,
 					err,
-					targetErr,
+					test.error,
 				)
 			} else {
 				t.Logf(
-					"OK: test %d; targetErr is of type %T, err is of type %T",
+					"OK: test %d; test.error is of type %T, err is of type %T",
 					idx,
-					targetErr,
+					test.error,
 					err,
 				)
 				t.Logf(
-					"OK: test %d; targetErr has value '%s'",
+					"OK: test %d; test.error has value '%s'",
 					idx,
-					targetErr.Error(),
+					test.error.Error(),
 				)
 				t.Logf(
 					"OK: test %d; error response has value '%s'",
