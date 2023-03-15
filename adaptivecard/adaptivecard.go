@@ -112,6 +112,23 @@ const (
 	ColumnWidthPixelWidthExample string = "50px"
 )
 
+// Table specific constants.
+// https://adaptivecards.io/explorer/Table.html
+const (
+	// TypeColumn is the type for an Adaptive Card Column.
+	TypeTable     string = "Table"
+	TypeTableRow  string = "TableRow"
+	TypeTableCell string = "TableCell"
+
+	// TableColumnDefinitionWidthPixelRegex is a regular expression pattern
+	// intended to match specific pixel width values (e.g., 50px).
+	TableColumnDefinitionWidthPixelRegex string = "^[0-9]+px$"
+
+	// TableColumnWidthPixelWidthExample is an example of a valid pixel width
+	// for a TableColumnDefinition.
+	TableColumnDefinitionWidthPixelWidthExample string = "50px"
+)
+
 // Text size for TextBlock or TextRun elements.
 const (
 	SizeSmall      string = "small"
@@ -266,8 +283,7 @@ const (
 // https://adaptivecards.io/explorer/AdaptiveCard.html
 //
 // TODO: Confirm whether all types are supported.
-// NOTE: Based on current docs, version 1.4 is the latest supported at this
-// time.
+//
 // https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference#support-for-adaptive-cards
 // https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/universal-action-model#schema
 const (
@@ -285,6 +301,7 @@ const (
 	TypeElementInputToggle    string = "Input.Toggle"
 	TypeElementMedia          string = "Media"         // Introduced in version 1.1 (TODO: Is this supported in Teams message?)
 	TypeElementRichTextBlock  string = "RichTextBlock" // Introduced in version 1.2
+	TypeElementTable          string = "Table"         // Introduced in version 1.5
 	TypeElementTextBlock      string = "TextBlock"
 	TypeElementTextRun        string = "TextRun" // Introduced in version 1.2
 )
@@ -481,8 +498,8 @@ type Element struct {
 	// "attention" style (TextBlock does not).
 	Style string `json:"style,omitempty"`
 
-	// Items is required for the Container element type. Items is a collection
-	// of card elements to render inside the Container.
+	// Items is required for most Container element types. Items is a
+	// collection of card elements to render inside the Container.
 	Items []Element `json:"items,omitempty"`
 
 	// Columns is a collection of Columns used to divide a region. This field
@@ -565,6 +582,81 @@ type Fact struct {
 
 	// Value is required; the value of the fact.
 	Value string `json:"value"`
+}
+
+// Table is a container used to display data in a tabular form. Each table may
+// contain one or more rows
+//
+// https://adaptivecards.io/explorer/Table.html
+// type Table struct {
+//
+// Type is required; must be set to "Table".
+// 	Type string `json:"type"`
+//
+// ID is a unique identifier associated with this Table.
+// 	ID string `json:"id,omitempty"`
+//
+// Items are the card elements that should be rendered inside of the column.
+// 	Items []*Element `json:"items,omitempty"`
+// }
+
+// TableColumnDefinition defines the characteristics of a column in a Table
+// element such as number of columns or their sizes.
+//
+// https://adaptivecards.io/explorer/Table.html
+type TableColumnDefinition struct {
+	// Width represents the width of a column in a table. Valid values consist
+	// of a number representing the relative width of the column or a specific
+	// pixel width, like "50px".
+	//
+	// The default value is 1.
+	Width interface{} `json:"width,omitempty"`
+}
+
+// TableCell represents a cell within a row of a Table element.
+//
+// https://adaptivecards.io/explorer/TableCell.html
+type TableCell struct {
+
+	// Type is required; must be set to "TableCell".
+	Type string `json:"type"`
+
+	// FIXME: Used here also?
+	ID string `json:"id,omitempty"`
+
+	// FIXME: Inherited?
+	//
+	// NOTE: Uses the ContainerStyle values/enums.
+	//
+	// Style string `json:"style,omitempty"`
+
+	// Items are the card elements that should be rendered inside of the
+	// cell.
+	Items []*Element `json:"items,omitempty"`
+}
+
+// TableRow is a row within a Table each being a collection of cells. Rows are
+// not required, which allows empty Tables to be generated via templating
+// without breaking the rendering of the whole card.
+//
+// https://adaptivecards.io/explorer/Table.html
+type TableRow struct {
+	// Type is required; must be set to "TableRow".
+	Type string `json:"type"`
+
+	// ID is a unique identifier associated with this Table.
+	ID string `json:"id,omitempty"`
+
+	// Cells are the cells in this row. If a row contains more cells than
+	// there are columns defined on the Table element, the extra cells are
+	// ignored.
+	Cells []TableCell `json:"cells"`
+
+	// FIXME: Inherited?
+	//
+	// NOTE: Uses the ContainerStyle values/enums.
+	//
+	// Style string `json:"style,omitempty"`
 }
 
 // Actions is a collection of Action values.
@@ -1206,6 +1298,49 @@ func (f Fact) Validate() error {
 
 	v.NotEmptyValue(f.Title, "Title", "Fact", ErrMissingValue)
 	v.NotEmptyValue(f.Value, "Value", "Fact", ErrMissingValue)
+
+	return v.Err()
+}
+
+// Validate asserts that fields have valid values.
+func (tcd TableColumnDefinition) Validate() error {
+	v := validator.Validator{}
+
+	/*
+
+			FIXME: Flesh this out
+
+		v.FieldHasSpecificValue(
+			c.Type,
+			"type",
+			TypeColumn,
+			"column",
+			ErrInvalidType,
+		)
+
+	*/
+
+	v.SuccessfulFuncCall(
+		func() error { return assertTableColumnDefinitionWidthValidValues(tcd) },
+	)
+
+	/*
+
+		FIXME: Flesh this out
+
+		// Assert that the collection does not contain nil items.
+		v.NoNilValuesInCollection("Items", c.Type, ErrMissingValue, c.Items)
+
+		// Convert []*Element to ColumnItems so that we can use its Validate()
+		// method to handle cases where nil values could be present in the
+		// collection.
+		v.SelfValidate(ColumnItems(c.Items))
+
+		if c.SelectAction != nil {
+			v.SelfValidate(c.SelectAction)
+		}
+
+	*/
 
 	return v.Err()
 }
@@ -1897,6 +2032,16 @@ func NewTitleTextBlock(title string, wrap bool) Element {
 	}
 }
 
+/*
+
+func NewTable() Table {
+
+}
+
+func (t *Table) AddRow(rows ...TableCell)
+
+*/
+
 // NewFactSet creates an empty FactSet.
 func NewFactSet() FactSet {
 	factSet := FactSet{
@@ -2217,6 +2362,44 @@ func assertColumnWidthValidValues(c Column) error {
 			}, ","),
 			1,
 			ColumnWidthPixelWidthExample,
+			ErrInvalidFieldValue,
+		)
+	}
+
+	return nil
+}
+
+func assertTableColumnDefinitionWidthValidValues(tcd TableColumnDefinition) error {
+	switch v := tcd.Width.(type) {
+	// Nothing to see here.
+	case nil:
+
+	// Assert valid pixel width; all other values are invalid.
+	case string:
+		v = strings.TrimSpace(v)
+		matched, _ := regexp.MatchString(ColumnWidthPixelRegex, v)
+
+		if !matched {
+			return fmt.Errorf(
+				"invalid pixel width %q; expected value in format %s: %w",
+				v,
+				ColumnWidthPixelWidthExample,
+				ErrInvalidFieldValue,
+			)
+		}
+
+	// Number representing relative width of the column.
+	case int:
+
+	// Unsupported value.
+	default:
+		return fmt.Errorf(
+			"invalid pixel width %q; "+
+				"expected int value (e.g., %d) "+
+				"or specific pixel width (e.g., %s): %w",
+			v,
+			1,
+			TableColumnDefinitionWidthPixelWidthExample,
 			ErrInvalidFieldValue,
 		)
 	}
