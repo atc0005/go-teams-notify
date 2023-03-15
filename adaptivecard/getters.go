@@ -12,8 +12,7 @@ package adaptivecard
 // for validation and display purposes.
 func supportedElementTypes() []string {
 	// TODO: Confirm whether all types are supported.
-	// NOTE: Based on current docs, version 1.4 is the latest supported at this
-	// time.
+	//
 	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference#support-for-adaptive-cards
 	// https://adaptivecards.io/explorer/AdaptiveCard.html
 	return []string{
@@ -31,6 +30,7 @@ func supportedElementTypes() []string {
 		TypeElementInputToggle,
 		TypeElementMedia, // Introduced in version 1.1 (TODO: Is this supported in Teams message?)
 		TypeElementRichTextBlock,
+		TypeElementTable, // Introduced in version 1.5
 		TypeElementTextBlock,
 		TypeElementTextRun,
 	}
