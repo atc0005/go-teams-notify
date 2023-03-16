@@ -132,8 +132,8 @@ func main() {
 	msg.Prepare()
 	fmt.Println(msg.PrettyPrint())
 
-	// _ = mstClient
-	// _ = webhookUrl
+	_ = mstClient
+	_ = webhookUrl
 
 	// Send the message with default timeout/retry settings.
 	if err := mstClient.Send(webhookUrl, msg); err != nil {
