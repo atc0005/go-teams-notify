@@ -113,10 +113,14 @@ const (
 )
 
 // Table specific constants.
+//
 // https://adaptivecards.io/explorer/Table.html
+// https://adaptivecards.io/explorer/TableCell.html
 const (
-	// TypeColumn is the type for an Adaptive Card Column.
-	TypeTable     string = "Table"
+
+	// NOTE: Table is not a type, it is an Card Element
+	// TypeTable     string = "Table"
+
 	TypeTableRow  string = "TableRow"
 	TypeTableCell string = "TableCell"
 
@@ -506,6 +510,10 @@ type Element struct {
 	// is used by a ColumnSet element type.
 	Columns []Column `json:"columns,omitempty"`
 
+	// Embed Table as a workaround for conflict between columns JSON property
+	// used by both ColumnSet and Table element types.
+	Table
+
 	// Actions is required for the ActionSet element type. Actions is a
 	// collection of Actions to show for an ActionSet element type.
 	//
@@ -585,20 +593,33 @@ type Fact struct {
 }
 
 // Table is a container used to display data in a tabular form. Each table may
-// contain one or more rows
+// contain one or more rows.
 //
 // https://adaptivecards.io/explorer/Table.html
-// type Table struct {
-//
-// Type is required; must be set to "Table".
-// 	Type string `json:"type"`
-//
-// ID is a unique identifier associated with this Table.
-// 	ID string `json:"id,omitempty"`
-//
-// Items are the card elements that should be rendered inside of the column.
-// 	Items []*Element `json:"items,omitempty"`
-// }
+type Table struct {
+	// Columns defines the number of columns in the table, their sizes, and
+	// more.
+	Columns []TableColumnDefinition `json:",omitempty"`
+
+	// Rows defines the rows of the table.
+	Rows []TableRow `json:"rows,omitempty"`
+
+	// GridStyle defines the style of the grid. This property currently only
+	// controls the grid's color.
+	GridStyle string `json:"gridStyle,omitempty"`
+
+	// FirstRowAsHeader specifies whether the first row of the table should be
+	// treated as a header row, and be announced as such by accessibility
+	// software.
+	//
+	// If not specified defaults to true.
+	FirstRowAsHeader *bool `json:"firstRowAsHeaders,omitempty"`
+
+	// ShowGridLines specified whether grid lines should be displayed.
+	//
+	// If not specified defaults to true.
+	ShowGridLines *bool `json:"showGridLines,omitempty"`
+}
 
 // TableColumnDefinition defines the characteristics of a column in a Table
 // element such as number of columns or their sizes.
@@ -613,22 +634,15 @@ type TableColumnDefinition struct {
 	Width interface{} `json:"width,omitempty"`
 }
 
+// TableColumnDefinitions is a collection of TableColumnDefinition values.
+type TableColumnDefinitions []TableColumnDefinition
+
 // TableCell represents a cell within a row of a Table element.
 //
 // https://adaptivecards.io/explorer/TableCell.html
 type TableCell struct {
-
-	// Type is required; must be set to "TableCell".
-	Type string `json:"type"`
-
-	// FIXME: Used here also?
-	ID string `json:"id,omitempty"`
-
-	// FIXME: Inherited?
-	//
-	// NOTE: Uses the ContainerStyle values/enums.
-	//
-	// Style string `json:"style,omitempty"`
+	// Style is a style hint for a TableCell.
+	Style string `json:"style,omitempty"`
 
 	// Items are the card elements that should be rendered inside of the
 	// cell.
@@ -641,22 +655,13 @@ type TableCell struct {
 //
 // https://adaptivecards.io/explorer/Table.html
 type TableRow struct {
-	// Type is required; must be set to "TableRow".
-	Type string `json:"type"`
-
-	// ID is a unique identifier associated with this Table.
-	ID string `json:"id,omitempty"`
-
 	// Cells are the cells in this row. If a row contains more cells than
 	// there are columns defined on the Table element, the extra cells are
 	// ignored.
 	Cells []TableCell `json:"cells"`
 
-	// FIXME: Inherited?
-	//
-	// NOTE: Uses the ContainerStyle values/enums.
-	//
-	// Style string `json:"style,omitempty"`
+	// Style defines the style of the entire row.
+	Style string `json:"style,omitempty"`
 }
 
 // Actions is a collection of Action values.
