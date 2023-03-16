@@ -198,6 +198,8 @@ func supportedStyleValues(elementType string) []string {
 		return supportedContainerStyleValues()
 	case TypeElementContainer:
 		return supportedContainerStyleValues()
+	case TypeElementTable:
+		return supportedContainerStyleValues()
 	case TypeElementImage:
 		return supportedImageStyleValues()
 	case TypeElementInputChoiceSet:

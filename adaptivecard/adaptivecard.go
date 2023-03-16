@@ -515,7 +515,7 @@ type Element struct {
 	Rows []TableRow `json:"rows,omitempty"`
 
 	// GridStyle defines the style of the grid. This property currently only
-	// controls the grid's color.  This field is used by a Table element type.
+	// controls the grid's color. This field is used by a Table element type.
 	GridStyle string `json:"gridStyle,omitempty"`
 
 	// FirstRowAsHeaders specifies whether the first row of the table should be
@@ -1243,6 +1243,16 @@ func (e Element) Validate() error {
 	case e.Type == TypeElementFactSet:
 		v.NotEmptyCollection("Facts", e.Type, ErrMissingValue, e.Facts)
 		v.SelfValidate(Facts(e.Facts))
+
+	case e.Type == TypeElementTable:
+		// GridStyle
+		// Rows
+		// Columns
+
+		// TODO: What can we turn off for this?
+		// TODO: Should we keep the previous TableColumnDefinitions and wrap e.Columns?
+		// v.SelfValidate(Columns(e.Columns))
+
 	}
 
 	// Return the last recorded validation error, or nil if no validation
