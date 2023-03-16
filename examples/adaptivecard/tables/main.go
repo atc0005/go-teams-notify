@@ -25,6 +25,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
 
 	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
 	"github.com/atc0005/go-teams-notify/v2/adaptivecard"
@@ -45,39 +47,71 @@ func main() {
 	msgText := "Here are some examples of formatted stuff like " +
 		"\n * this list itself  \n * **bold** \n * *italic* \n * ***bolditalic***"
 
+	_ = msgTitle
+	_ = msgText
+
 	card := adaptivecard.Card{
 		Type:    adaptivecard.TypeAdaptiveCard,
 		Schema:  adaptivecard.AdaptiveCardSchema,
 		Version: fmt.Sprintf(adaptivecard.AdaptiveCardVersionTmpl, adaptivecard.AdaptiveCardMaxVersion),
 		Body: []adaptivecard.Element{
+			// {
+			// 	Type: adaptivecard.TypeElementTextBlock,
+			// 	Wrap: true,
+			// 	Text: msgTitle,
+			// },
+			// {
+			// 	Type: adaptivecard.TypeElementTextBlock,
+			// 	Wrap: true,
+			// 	Text: msgText,
+			// },
 			{
-				Type: adaptivecard.TypeElementTextBlock,
-				Wrap: true,
-				Text: msgTitle,
-			},
-			{
-				Type: adaptivecard.TypeElementTextBlock,
-				Wrap: true,
-				Text: msgText,
-			},
-			{
-				Type: adaptivecard.TypeElementTable,
-				Table: adaptivecard.Table{
-					Columns: []adaptivecard.TableColumnDefinition{
-						{
-							Width: 1,
-						},
+				Type:      adaptivecard.TypeElementTable,
+				GridStyle: adaptivecard.ContainerStyleAccent,
+				// ShowGridLines: func() *bool { show := true; return &show }(),
+				FirstRowAsHeaders: func() *bool { show := true; return &show }(),
+				Columns: []adaptivecard.Column{
+					{
+						Width: 1,
 					},
-					Rows: []adaptivecard.TableRow{
-						{
-							Cells: []adaptivecard.TableCell{
-								{
-									Items: []*adaptivecard.Element{
-										{
-											Type: adaptivecard.TypeElementTextBlock,
-											Wrap: true,
-											Text: "Table cell test!",
-										},
+					{
+						Width: 1,
+					},
+					{
+						Width: 1,
+					},
+				},
+				Rows: []adaptivecard.TableRow{
+					{
+						Type: adaptivecard.TypeTableRow,
+						Cells: []adaptivecard.TableCell{
+							{
+								Type: adaptivecard.TypeTableCell,
+								Items: []*adaptivecard.Element{
+									{
+										Type: adaptivecard.TypeElementTextBlock,
+										Wrap: true,
+										Text: "Table cell test!",
+									},
+								},
+							},
+							{
+								Type: adaptivecard.TypeTableCell,
+								Items: []*adaptivecard.Element{
+									{
+										Type: adaptivecard.TypeElementTextBlock,
+										Wrap: true,
+										Text: "Table cell test!",
+									},
+								},
+							},
+							{
+								Type: adaptivecard.TypeTableCell,
+								Items: []*adaptivecard.Element{
+									{
+										Type: adaptivecard.TypeElementTextBlock,
+										Wrap: true,
+										Text: "Table cell test!",
 									},
 								},
 							},
@@ -98,15 +132,15 @@ func main() {
 	msg.Prepare()
 	fmt.Println(msg.PrettyPrint())
 
-	_ = mstClient
-	_ = webhookUrl
+	// _ = mstClient
+	// _ = webhookUrl
 
 	// Send the message with default timeout/retry settings.
-	// if err := mstClient.Send(webhookUrl, msg); err != nil {
-	// 	log.Printf(
-	// 		"failed to send message: %v",
-	// 		err,
-	// 	)
-	// 	os.Exit(1)
-	// }
+	if err := mstClient.Send(webhookUrl, msg); err != nil {
+		log.Printf(
+			"failed to send message: %v",
+			err,
+		)
+		os.Exit(1)
+	}
 }
