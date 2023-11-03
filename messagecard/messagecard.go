@@ -124,7 +124,7 @@ type PotentialActionActionCard struct {
 
 	// Actions are the available actions. Only used for ActionCard action
 	// type.
-	Actions []PotentialActionActionCardAction `json:"actions,omitempty" yaml:"actions,omitempty"`
+	Actions []PotentialActionActionCardAction `json:"actions" yaml:"actions"`
 }
 
 // PotentialActionActionCardAction is used for configuring ActionCard actions
