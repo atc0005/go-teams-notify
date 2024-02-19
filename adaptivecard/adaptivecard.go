@@ -198,7 +198,8 @@ const (
 	SpacingPadding    string = "padding"
 )
 
-// Supported Horizontal alignment values for (supported) container types.
+// Supported Horizontal alignment values for (supported) container and text
+// types.
 const (
 	HorizontalAlignmentLeft   string = "left"
 	HorizontalAlignmentCenter string = "center"
@@ -502,6 +503,9 @@ type Element struct {
 	// preceding element.
 	Spacing string `json:"spacing,omitempty"`
 
+	// HorizontalAlignment controls the horizontal text alignment.
+	HorizontalAlignment string `json:"horizontalAlignment,omitempty"`
+
 	// The style of the element for accessibility purposes. Valid values
 	// differ based on the element type. For example, a TextBlock element
 	// supports the "heading" style, whereas the Column element supports the
@@ -583,6 +587,10 @@ type Element struct {
 	// Wrap controls whether text is allowed to wrap or is clipped for
 	// TextBlock elements.
 	Wrap bool `json:"wrap,omitempty"`
+
+	// IsSubtle specifies whether this element should appear slightly toned
+	// down.
+	IsSubtle bool `json:"isSubtle,omitempty"`
 
 	// Separator, when true, indicates that a separating line shown should be
 	// drawn at the top of the element.
@@ -1281,6 +1289,7 @@ func (e Element) Validate() error {
 	supportedWeightValues := supportedWeightValues()
 	supportedColorValues := supportedColorValues()
 	supportedSpacingValues := supportedSpacingValues()
+	supportedHorizontalAlignmentValues := supportedHorizontalAlignmentValues()
 
 	// Valid Style field values differ based on type. For example, a Container
 	// element supports Container styles whereas a TextBlock supports a
@@ -1297,6 +1306,7 @@ func (e Element) Validate() error {
 	v.InListIfFieldValNotEmpty(e.Weight, "Weight", "element", supportedWeightValues, ErrInvalidFieldValue)
 	v.InListIfFieldValNotEmpty(e.Color, "Color", "element", supportedColorValues, ErrInvalidFieldValue)
 	v.InListIfFieldValNotEmpty(e.Spacing, "Spacing", "element", supportedSpacingValues, ErrInvalidFieldValue)
+	v.InListIfFieldValNotEmpty(e.HorizontalAlignment, "HorizontalAlignment", "element", supportedHorizontalAlignmentValues, ErrInvalidFieldValue)
 	v.InListIfFieldValNotEmpty(e.Style, "Style", "element", supportedStyleValues, ErrInvalidFieldValue)
 
 	/******************************************************************
@@ -1443,7 +1453,7 @@ func (tcd TableColumnDefinition) Validate() error {
 		tcd.HorizontalCellContentAlignment,
 		"HorizontalCellContentAlignment",
 		TypeTableColumnDefinition,
-		supportedHorizontalContentAlignmentValues(),
+		supportedHorizontalAlignmentValues(),
 		ErrInvalidFieldValue,
 	)
 
@@ -1534,7 +1544,7 @@ func (tr TableRow) Validate() error {
 		tr.HorizontalCellContentAlignment,
 		"HorizontalCellContentAlignment",
 		TypeTableRow,
-		supportedHorizontalContentAlignmentValues(),
+		supportedHorizontalAlignmentValues(),
 		ErrInvalidFieldValue,
 	)
 

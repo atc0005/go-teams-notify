@@ -95,10 +95,11 @@ func supportedSpacingValues() []string {
 }
 
 // supportedHorizontalAlignmentValues returns a list of valid horizontal
-// content alignment values for supported container types. This list is
+// alignment values for supported container and text types. This list is
 // intended to be used for validation and display purposes.
-func supportedHorizontalContentAlignmentValues() []string {
+func supportedHorizontalAlignmentValues() []string {
 	// https://adaptivecards.io/explorer/Table.html
+	// https://adaptivecards.io/explorer/TextBlock.html
 	// https://adaptivecards.io/schemas/adaptive-card.json
 	return []string{
 		HorizontalAlignmentLeft,
