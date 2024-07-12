@@ -26,6 +26,38 @@ The following types of changes will be recorded in this file:
 
 - placeholder
 
+## [v2.10.0] - 2024-02-22
+
+### Added
+
+- (GH-255) Add `IsSublte` and `HorizontalAlignment` to `Element`
+  - credit: [@codello](https://github.com/codello)
+
+### Changed
+
+#### Dependency Updates
+
+- (GH-256) Update Dependabot PR prefixes
+
+## [v2.9.0] - 2024-01-25
+
+### Added
+
+- (GH-241) Add proxy server examples
+- (GH-251) Initial support for toggling visibility
+
+### Changed
+
+#### Dependency Updates
+
+- (GH-238) ghaw: bump actions/checkout from 3 to 4
+- (GH-248) ghaw: bump github/codeql-action from 2 to 3
+- (GH-236) Update Dependabot config to monitor both branches
+
+#### Other
+
+- (GH-244) Update Go Doc comment formatting
+
 ## [v2.8.0] - 2023-07-21
 
 ### Added
@@ -491,7 +523,9 @@ The following types of changes will be recorded in this file:
 
 - add initial functionality of sending messages to MS Teams channel
 
-[Unreleased]: https://github.com/atc0005/go-teams-notify/compare/v2.8.0...HEAD
+[Unreleased]: https://github.com/atc0005/go-teams-notify/compare/v2.10.0...HEAD
+[v2.10.0]: https://github.com/atc0005/go-teams-notify/releases/tag/v2.10.0
+[v2.9.0]: https://github.com/atc0005/go-teams-notify/releases/tag/v2.9.0
 [v2.8.0]: https://github.com/atc0005/go-teams-notify/releases/tag/v2.8.0
 [v2.7.1]: https://github.com/atc0005/go-teams-notify/releases/tag/v2.7.1
 [v2.7.0]: https://github.com/atc0005/go-teams-notify/releases/tag/v2.7.0

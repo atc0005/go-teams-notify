@@ -5,7 +5,7 @@
 # Licensed under the MIT License. See LICENSE file in the project root for
 # full license information.
 
-# https://help.github.com/en/github/administering-a-repository/configuration-options-for-dependency-updates
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 
 ######################################################################
 # Monitor Go module dependency updates
@@ -28,7 +28,7 @@ updates:
     allow:
       - dependency-type: "all"
     commit-message:
-      prefix: "go.mod"
+      prefix: "Go Dependency"
 
   - package-ecosystem: "gomod"
     directory: "/"
@@ -45,7 +45,7 @@ updates:
     allow:
       - dependency-type: "all"
     commit-message:
-      prefix: "go.mod"
+      prefix: "Go Dependency"
 
   ######################################################################
   # Monitor GitHub Actions dependency updates
@@ -67,7 +67,7 @@ updates:
     allow:
       - dependency-type: "all"
     commit-message:
-      prefix: "ghaw"
+      prefix: "CI Dependency"
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -85,4 +85,5 @@ updates:
     allow:
       - dependency-type: "all"
     commit-message:
-      prefix: "ghaw"
+      prefix: "CI Dependency"
+

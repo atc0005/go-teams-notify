@@ -17,10 +17,6 @@ linters:
     - gofmt
     - revive
     - gosec
-
-    # Deprecated linter, but still functional as of golangci-lint v1.39.0.
-    # See https://github.com/atc0005/go-ci/issues/302 for more information.
-    - maligned
     - nakedret
     - prealloc
     - exportloopref
@@ -40,10 +36,6 @@ linters-settings:
   gocyclo:
     # minimal code complexity to report, 30 by default (but we recommend 10-20)
     min-complexity: 15
-
-  maligned:
-    # print struct with more effective memory layout or not, false by default
-    suggest-new: true
 
   nakedret:
     # make an issue if func has more lines of code than this setting and it has naked returns; default is 30
