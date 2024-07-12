@@ -49,7 +49,13 @@ const (
 	//
 	// https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-reference#support-for-adaptive-cards
 	// https://adaptivecards.io/designer
-	AdaptiveCardMaxVersion  float64 = 1.5
+	//
+	// NOTE: Documented as 1.5 (adaptivecards.io/designer), but in practice >
+	// 1.4 is rejected for Power Automate workflow connectors.
+	//
+	// Setting to 1.4 works both for legacy O365 connectors and Workflow
+	// connectors.
+	AdaptiveCardMaxVersion  float64 = 1.4
 	AdaptiveCardMinVersion  float64 = 1.0
 	AdaptiveCardVersionTmpl string  = "%0.1f"
 )
