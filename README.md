@@ -18,6 +18,8 @@ A package to send messages to a Microsoft Teams channel.
 - [Features](#features)
 - [Project Status](#project-status)
 - [Supported Releases](#supported-releases)
+  - [Plans: v2](#plans-v2)
+  - [Plans: v3](#plans-v3)
 - [Changelog](#changelog)
 - [Usage](#usage)
   - [Add this project as a dependency](#add-this-project-as-a-dependency)
@@ -120,24 +122,26 @@ For more details, see the
 
 ## Supported Releases
 
-| Series   | Example          | Status                                       |
-| -------- | ---------------- | -------------------------------------------- |
-| `v1.x.x` | `v1.3.1`         | Not Supported (EOL)                          |
-| `v2.x.x` | `v2.6.0`         | Supported (until approximately October 2024) |
-| `v3.x.x` | `v3.0.0`         | Planning (tentative October 2024)            |
-| `v4.x.x` | `v4.0.0-alpha.1` | TBD                                          |
+| Series   | Example          | Status                                  |
+| -------- | ---------------- | --------------------------------------- |
+| `v1.x.x` | `v1.3.1`         | Not Supported (EOL)                     |
+| `v2.x.x` | `v2.6.0`         | Supported (until approximately 2026-01) |
+| `v3.x.x` | `v3.0.0-alpha.1` | Planning (target 2026-01)               |
+| `v4.x.x` | `v4.0.0-alpha.1` | TBD                                     |
 
-The current plan (now until ~ October 2024):
+### Plans: v2
 
-- continue supporting the v2 branch with bugfixes and minor changes
-- update the v2 branch with support for Power Automate workflow URLs
-- refresh documentation to cover O365 connectors and Power Automate workflow
-  connectors
+| Task                                                         | Start Date / Version | Status   |
+| ------------------------------------------------------------ | -------------------- | -------- |
+| support the v2 branch with bugfixes and minor changes        | 2020-03-29 (v2.0.0)  | Ongoing  |
+| add support & documentation for Power Automate workflow URLs | v2.11.0-alpha.1      | Complete |
 
-Early October 2024:
+### Plans: v3
+
+Early January 2026:
 
 - Microsoft [drops support for O365
-  connectors][o365-connector-retirement-announcement] on 2024-10-01
+  connectors][o365-connector-retirement-announcement] in December 2025
 - we release a v3 branch
   - drop support for the [🚫
 deprecated][o365-connector-retirement-announcement] O365 connectors
@@ -190,8 +194,34 @@ Quoting from the microsoft365dev blog:
 > - Wave 2 - effective October 1st, 2024: All connectors within all clouds
 >   will stop working
 
-As noted, Existing O365 connector webhook URLs *should* continue to work until
-2024-10-01.
+[Microsoft later changed some of the
+details][o365-connector-retirement-announcement] regarding the retirement
+timeline of O365 connectors:
+
+> Update 07/23/2024: We understand and appreciate the feedback that customers
+> have shared with us regarding the timeline provided for the migration from
+> Office 365 connectors. We have extended the retirement timeline through
+> December 2025 to provide ample time to migrate to another solution such as
+> Power Automate, an app within Microsoft Teams, or Microsoft Graph. Please
+> see below for more information about the extension:
+>
+> - All existing connectors within all clouds will continue to work until
+>   December 2025, however using connectors beyond December 31, 2024 will
+>   require additional action.
+>   - Connector owners will be required to update the respective URL to post
+>     by December 31st, 2024. At least 90 days prior to the December 31, 2024
+>     deadline, we will send further guidance about making this URL update. If
+>     the URL is not updated by December 31, 2024 the connector will stop
+>     working. This is due to further service hardening updates being
+>     implemented for Office 365 connectors in alignment with Microsoft’s
+>     [Secure Future
+>     Initiative](https://blogs.microsoft.com/blog/2024/05/03/prioritizing-security-above-all-else/)
+> - Starting August 15th, 2024 all new creations should be created using the
+>   Workflows app in Microsoft Teams
+
+Since O365 connectors will likely persist in many environments until the very
+end of the deprecation period this project will [continue to support
+them](#supported-releases) until then alongside Power Automate workflows.
 
 #### Workflow connectors
 
@@ -450,8 +480,8 @@ using either this library or the original project.
   ([de-de](https://docs.microsoft.com/de-de/outlook/actionable-messages/adaptive-card),
   [en-us](https://docs.microsoft.com/en-us/outlook/actionable-messages/adaptive-card))
   - O365 connectors
-  ([de-de](https://docs.microsoft.com/de-de/outlook/actionable-messages/send-via-connectors),
-  [en-us](https://docs.microsoft.com/en-us/outlook/actionable-messages/send-via-connectors))
+    - [Send via connectors](https://docs.microsoft.com/en-us/outlook/actionable-messages/send-via-connectors))
+    - [Create Incoming Webhooks](https://learn.microsoft.com/en-us/microsoftteams/platform/webhooks-and-connectors/how-to/add-incoming-webhook)
   - [adaptivecards.io](https://adaptivecards.io/designer)
   - [Legacy actionable message card reference][msgcard-ref]
   - Workflow connectors
