@@ -1934,12 +1934,6 @@ func (a Action) Validate() error {
 	// Optional, but only supported by the Action.ShowCard type.
 	case a.Card != nil:
 		v.FieldHasSpecificValue(a.Type, "type", TypeActionShowCard, "type", ErrInvalidType)
-
-		return fmt.Errorf(
-			"error: specifying a Card is unsupported for Action type %q: %w",
-			a.Type,
-			ErrInvalidFieldValue,
-		)
 	}
 
 	// Return the last recorded validation error, or nil if no validation
