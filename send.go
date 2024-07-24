@@ -36,7 +36,7 @@ const (
 
 // Known Workflow URL patterns for submitting messages to Microsoft Teams.
 const (
-	WorkflowURLBaseDomain = "logic.azure.com"
+	WorkflowURLBaseDomain = `^https:\/\/(?:.*\.azure-api|logic\.azure)\.(?:com|net)`
 )
 
 // DisableWebhookURLValidation is a special keyword used to indicate to
