@@ -34,6 +34,11 @@ const (
 	WebhookURLOrgWebhookPrefix = "https://example.webhook.office.com"
 )
 
+// Known Workflow URL patterns for submitting messages to Microsoft Teams.
+const (
+	WorkflowURLBaseDomain = `^https:\/\/(?:.*)(:?\.azure-api|logic\.azure)\.(?:com|net)`
+)
+
 // DisableWebhookURLValidation is a special keyword used to indicate to
 // validation function(s) that webhook URL validation should be disabled.
 //
@@ -380,6 +385,7 @@ func processResponse(response *http.Response) (string, error) {
 	}
 	responseString := string(responseData)
 
+	// TODO: Refactor for v3 series once O365 connector support is dropped.
 	switch {
 	// 400 Bad Response is likely an indicator that we failed to provide a
 	// required field in our JSON payload. For example, when leaving out the
@@ -393,8 +399,22 @@ func processResponse(response *http.Response) (string, error) {
 
 		return "", err
 
-	// Microsoft Teams developers have indicated that a 200 status code is
-	// insufficient to confirm that a message was successfully submitted.
+	case response.StatusCode == 202:
+		// 202 Accepted response is expected for Workflow connector URL
+		// submissions.
+
+		logger.Println("202 Accepted response received as expected for workflow connector")
+
+		return responseString, nil
+
+	// DEPRECATED
+	//
+	// See https://github.com/atc0005/go-teams-notify/issues/262
+	//
+	// Microsoft Teams developers have indicated that receiving a 200 status
+	// code when submitting payloads to O365 connectors is insufficient to
+	// confirm that a message was successfully submitted.
+	//
 	// Instead, clients should ensure that a specific response string was also
 	// returned along with a 200 status code to confirm that a message was
 	// sent successfully. Because there is a chance that unintentional
@@ -402,6 +422,11 @@ func processResponse(response *http.Response) (string, error) {
 	//
 	// See atc0005/go-teams-notify#59 for more information.
 	case responseString != strings.TrimSpace(ExpectedWebhookURLResponseText):
+		logger.Printf(
+			"StatusCode: %v, Status: %v\n", response.StatusCode, response.Status,
+		)
+		logger.Printf("ResponseString: %v\n", responseString)
+
 		err = fmt.Errorf(
 			"got %q, expected %q: %w",
 			responseString,
@@ -432,7 +457,10 @@ func validateWebhook(webhookURL string, skipWebhookValidation bool, patterns []s
 	}
 
 	if len(patterns) == 0 {
-		patterns = []string{DefaultWebhookURLValidationPattern}
+		patterns = []string{
+			DefaultWebhookURLValidationPattern,
+			WorkflowURLBaseDomain,
+		}
 	}
 
 	// Indicate passing validation if at least one pattern matches.
@@ -442,6 +470,8 @@ func validateWebhook(webhookURL string, skipWebhookValidation bool, patterns []s
 			return err
 		}
 		if matched {
+			logger.Printf("Pattern %v matched", pat)
+
 			return nil
 		}
 	}
