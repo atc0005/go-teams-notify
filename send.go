@@ -134,9 +134,9 @@ type messageValidator interface {
 	Validate() error
 }
 
-// teamsMessage is the interface shared by all supported message formats for
+// TeamsMessage is the interface shared by all supported message formats for
 // submission to a Microsoft Teams channel.
-type teamsMessage interface {
+type TeamsMessage interface {
 	messagePreparer
 	messageValidator
 
@@ -301,7 +301,7 @@ func (c *teamsClient) Send(webhookURL string, webhookMessage MessageCard) error 
 
 // Send is a wrapper function around the SendWithContext method in order to
 // provide backwards compatibility.
-func (c *TeamsClient) Send(webhookURL string, message teamsMessage) error {
+func (c *TeamsClient) Send(webhookURL string, message TeamsMessage) error {
 	// Create context that can be used to emulate existing timeout behavior.
 	ctx, cancel := context.WithTimeout(context.Background(), DefaultWebhookSendTimeout)
 	defer cancel()
@@ -321,7 +321,7 @@ func (c *teamsClient) SendWithContext(ctx context.Context, webhookURL string, we
 // SendWithContext submits a given message to a Microsoft Teams channel using
 // the provided webhook URL. The http client request honors the cancellation
 // or timeout of the provided context.
-func (c *TeamsClient) SendWithContext(ctx context.Context, webhookURL string, message teamsMessage) error {
+func (c *TeamsClient) SendWithContext(ctx context.Context, webhookURL string, message TeamsMessage) error {
 	return sendWithContext(ctx, c, webhookURL, message)
 }
 
@@ -337,7 +337,7 @@ func (c *teamsClient) SendWithRetry(ctx context.Context, webhookURL string, webh
 // SendWithRetry provides message retry support when submitting messages to a
 // Microsoft Teams channel. The caller is responsible for providing the
 // desired context timeout, the number of retries and retries delay.
-func (c *TeamsClient) SendWithRetry(ctx context.Context, webhookURL string, message teamsMessage, retries int, retriesDelay int) error {
+func (c *TeamsClient) SendWithRetry(ctx context.Context, webhookURL string, message TeamsMessage, retries int, retriesDelay int) error {
 	return sendWithRetry(ctx, c, webhookURL, message, retries, retriesDelay)
 }
 
@@ -499,7 +499,7 @@ func (c *TeamsClient) ValidateWebhook(webhookURL string) error {
 // sendWithContext submits a given message to a Microsoft Teams channel using
 // the provided webhook URL and client. The http client request honors the
 // cancellation or timeout of the provided context.
-func sendWithContext(ctx context.Context, client MessageSender, webhookURL string, message teamsMessage) error {
+func sendWithContext(ctx context.Context, client MessageSender, webhookURL string, message TeamsMessage) error {
 	logger.Printf("sendWithContext: Webhook message received: %#v\n", message)
 
 	if err := client.ValidateWebhook(webhookURL); err != nil {
@@ -563,7 +563,7 @@ func sendWithContext(ctx context.Context, client MessageSender, webhookURL strin
 // sendWithRetry provides message retry support when submitting messages to a
 // Microsoft Teams channel. The caller is responsible for providing the
 // desired context timeout, the number of retries and retries delay.
-func sendWithRetry(ctx context.Context, client MessageSender, webhookURL string, message teamsMessage, retries int, retriesDelay int) error {
+func sendWithRetry(ctx context.Context, client MessageSender, webhookURL string, message TeamsMessage, retries int, retriesDelay int) error {
 	var result error
 
 	// initial attempt + number of specified retries
