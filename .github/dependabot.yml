@@ -86,4 +86,3 @@ updates:
       - dependency-type: "all"
     commit-message:
       prefix: "CI Dependency"
-
