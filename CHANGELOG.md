@@ -26,6 +26,28 @@ The following types of changes will be recorded in this file:
 
 - placeholder
 
+## [v2.11.0] - 2024-08-02
+
+### Added
+
+- (GH-275) Add initial support for Workflow connectors
+
+### Changed
+
+#### Dependency Updates
+
+- (GH-259) Go Dependency: Bump github.com/stretchr/testify from 1.8.4 to 1.9.0
+
+#### Other
+
+- (GH-272) Documentation refresh for O365 & Workflow connectors
+
+### Fixed
+
+- (GH-261) Remove inactive maligned linter
+- (GH-274) Fix validation for `Action.Type` field
+- (GH-283) Update CodeQL workflow to run on dev branch PRs
+
 ## [v2.10.0] - 2024-02-22
 
 ### Added
@@ -523,7 +545,8 @@ The following types of changes will be recorded in this file:
 
 - add initial functionality of sending messages to MS Teams channel
 
-[Unreleased]: https://github.com/atc0005/go-teams-notify/compare/v2.10.0...HEAD
+[Unreleased]: https://github.com/atc0005/go-teams-notify/compare/v2.11.0...HEAD
+[v2.11.0]: https://github.com/atc0005/go-teams-notify/releases/tag/v2.11.0
 [v2.10.0]: https://github.com/atc0005/go-teams-notify/releases/tag/v2.10.0
 [v2.9.0]: https://github.com/atc0005/go-teams-notify/releases/tag/v2.9.0
 [v2.8.0]: https://github.com/atc0005/go-teams-notify/releases/tag/v2.8.0
