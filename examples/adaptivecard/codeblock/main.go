@@ -130,6 +130,17 @@ func main() {
 	// with the method adding the given Element to the first card in the
 	// collection or an error if a Card is not already present.
 
+	// Alternatively, we can create a Card first and then attach our Elements
+	// there. Only after all desired modifications are made to the card would
+	// we then use `adaptivecard.NewMessageFromCard(card)` to create our
+	// Message for submission to Teams. That's what I opted to do with the
+	// atc0005/send2teams project so that I could compose the Elements
+	// together.
+	//
+	// The `adaptivecard.NewSimpleMessage()` factory function was intended to
+	// serve as a very quick "just get it done already" approach to
+	// streamlining the process of crafting a simple Message for delivery.
+
 	// Send the message with default timeout/retry settings.
 	if err := mstClient.Send(webhookUrl, msg); err != nil {
 		log.Printf(
