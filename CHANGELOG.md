@@ -26,6 +26,12 @@ The following types of changes will be recorded in this file:
 
 - placeholder
 
+## [v2.12.0] - 2024-08-16
+
+### Added
+
+- (GH-291) Expose `TeamsMessage` interface to support mocking
+
 ## [v2.11.0] - 2024-08-02
 
 ### Added
@@ -545,7 +551,8 @@ The following types of changes will be recorded in this file:
 
 - add initial functionality of sending messages to MS Teams channel
 
-[Unreleased]: https://github.com/atc0005/go-teams-notify/compare/v2.11.0...HEAD
+[Unreleased]: https://github.com/atc0005/go-teams-notify/compare/v2.12.0...HEAD
+[v2.12.0]: https://github.com/atc0005/go-teams-notify/releases/tag/v2.12.0
 [v2.11.0]: https://github.com/atc0005/go-teams-notify/releases/tag/v2.11.0
 [v2.10.0]: https://github.com/atc0005/go-teams-notify/releases/tag/v2.10.0
 [v2.9.0]: https://github.com/atc0005/go-teams-notify/releases/tag/v2.9.0
