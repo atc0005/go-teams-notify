@@ -31,6 +31,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
 	goteamsnotify "github.com/atc0005/go-teams-notify/v2"
 	"github.com/atc0005/go-teams-notify/v2/adaptivecard"
@@ -42,7 +43,27 @@ func main() {
 	mstClient := goteamsnotify.NewTeamsClient()
 
 	// Set webhook url.
+	//
+	// NOTE: This is for illustration purposes only. Best practice is to NOT
+	// hardcode credentials of any kind.
 	webhookUrl := "https://example.logic.azure.com:443/workflows/GUID_HERE/triggers/manual/paths/invoke?api-version=YYYY-MM-DD&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=SIGNATURE_HERE"
+
+	// Allow specifying webhook URL via environment variable, fall-back to
+	// hard-coded value in this example file.
+	expectedEnvVar := "WEBHOOK_URL"
+	envWebhookURL := os.Getenv(expectedEnvVar)
+	switch {
+	case envWebhookURL != "":
+		log.Printf(
+			"Using webhook URL %q from environment variable %q\n\n",
+			envWebhookURL,
+			expectedEnvVar,
+		)
+		webhookUrl = envWebhookURL
+	default:
+		log.Println(expectedEnvVar, "environment variable not set.")
+		log.Printf("Using hardcoded value %q as fallback\n\n", webhookUrl)
+	}
 
 	// The title for message (first TextBlock element).
 	msgTitle := "Hello world"
@@ -62,15 +83,20 @@ func main() {
 		os.Exit(1)
 	}
 
+	// See also https://yourbasic.org/golang/multiline-string/ for other
+	// approaches to embedding formatted strings.
 	codeSnippet := `
-	package main
+package main
 
-	import "log/slog"
+import "log/slog"
 
-	func main() {
-		slog.Info("hello, world")
-	}
-	`
+func main() {
+	slog.Info("hello, world")
+}
+`
+
+	// If you want to strip leading/trailing whitespace.
+	codeSnippet = strings.TrimSpace(codeSnippet)
 
 	// Create CodeBlock using our snippet.
 	codeBlock := adaptivecard.NewCodeBlock(codeSnippet, "Go", 1)
