@@ -51,11 +51,12 @@ func main() {
 	msgText := "Here are some examples of formatted stuff like " +
 		"\n * this list itself  \n * **bold** \n * *italic* \n * ***bolditalic***"
 
-	// Create message using provided formatted title and text.
-	msg, err := adaptivecard.NewSimpleMessage(msgText, msgTitle, true)
+	// Create card using provided formatted title and text. We'll modify the
+	// card and when finished use it to generate a message for delivery.
+	card, err := adaptivecard.NewTextBlockCard(msgText, msgTitle, true)
 	if err != nil {
 		log.Printf(
-			"failed to create message: %v",
+			"failed to create card: %v",
 			err,
 		)
 		os.Exit(1)
@@ -71,75 +72,24 @@ func main() {
 	}
 	`
 
-	// Create codeblock using our snippet.
+	// Create CodeBlock using our snippet.
 	codeBlock := adaptivecard.NewCodeBlock(codeSnippet, "Go", 1)
 
-	// TODO: Attach codeblock
-	//
-	// Q: How? I'd like to append it directly after the message I've prepared.
-	// How do I do that in a way that makes sense?
-	//
-	// We need to limit the cards to just one so that we don't require
-	// Carousel mode to be enabled (with presumably limited support).
-	//
-	// The API surface suggests that we use Message.Attach() to attach a new
-	// card, but instead we need to attach a new element to the existing Card
-	// which is already "attached" to the Message.
-	//
-	// Card.AddElement() could be useful here?
-	// What provides access to the Card from the Message?
-	//
-	// The Message.Mention() method uses this logic:
-	//
-	// switch {
-	// case prependElement:
-	// 	m.Attachments[0].Content.Body = append(
-	// 		[]Element{textBlock},
-	// 		m.Attachments[0].Content.Body...,
-	// 	)
-	// default:
-	// 	m.Attachments[0].Content.Body = append(
-	// 		m.Attachments[0].Content.Body,
-	// 		textBlock,
-	// 	)
-	// }
-	//
-	// This field is of type `[]adaptivecard.Element`:
-	// msg.Attachments[0].Content.Body
-	//
-	// We need to handle that by retrieving what is currently there and
-	// appending a new Element value.
-	//
-	// Maybe `Message.AddElementToFirstCard()` or similar?
-	//
-	// NOTE: We know that there is an entry in the msg.Attachments collection
-	// due to the use of the `adaptivecard.NewSimpleMessage()` factory
-	// function taking care of that for us.
-	//
-	// msg.Attachments[0].Content.Body = append(
-	// 	msg.Attachments[0].Content.Body,
-	// 	codeBlock,
-	// )
-	//
-	// This is a little more ergonomic:
-	msg.Attachments[0].Content.AddElement(false, codeBlock)
-	//
-	// but it would probably be even more ergonomic to provide:
-	// msg.AddElement(false, codeBlock)
-	//
-	// with the method adding the given Element to the first card in the
-	// collection or an error if a Card is not already present.
+	// Add CodeBlock to our Card.
+	if err := card.AddElement(false, codeBlock); err != nil {
+		log.Printf(
+			"failed to add codeblock to card: %v",
+			err,
+		)
+		os.Exit(1)
+	}
 
-	// Alternatively, we can create a Card first and then attach our Elements
-	// there. Only after all desired modifications are made to the card would
-	// we then use `adaptivecard.NewMessageFromCard(card)` to create our
-	// Message for submission to Teams. That's what I opted to do with the
-	// atc0005/send2teams project so that I could compose the Elements
-	// together.
-	//
-	// The `adaptivecard.NewSimpleMessage()` factory function was intended to
-	// serve as a very quick "just get it done already" approach to
-	// streamlining the process of crafting a simple Message for delivery.
+	// Create Message from Card
+	msg, err := adaptivecard.NewMessageFromCard(card)
+	if err != nil {
+		log.Printf("failed to create message from card: %v", err)
+		os.Exit(1)
+	}
 
 	// Send the message with default timeout/retry settings.
 	if err := mstClient.Send(webhookUrl, msg); err != nil {
