@@ -33,6 +33,7 @@ func supportedElementTypes() []string {
 		TypeElementTable, // Introduced in version 1.5
 		TypeElementTextBlock,
 		TypeElementTextRun,
+		TypeElementMSTeamsCodeBlock,
 	}
 }
 
