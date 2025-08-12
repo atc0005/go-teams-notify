@@ -54,7 +54,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Mark the current working directory as a safe directory in git to
       # resolve "dubious ownership" complaints.
