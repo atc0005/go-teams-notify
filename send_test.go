@@ -178,6 +178,17 @@ func TestTeamsClientSend(t *testing.T) {
 			skipURLVal:            false,
 			validationURLPatterns: []string{`^https://.*\.domain\.com/.*$`},
 		},
+		{
+			name:                  "ms teams workflow webhook request with default patterns",
+			reqURL:                "https://default123xxxx.de.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/1x2x3x4x5/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=xxxx",
+			reqMsg:                simpleMsgCard,
+			resStatus:             200,
+			resBody:               ExpectedWebhookURLResponseText,
+			resError:              nil,
+			error:                 nil,
+			skipURLVal:            false,
+			validationURLPatterns: []string{DefaultWebhookURLValidationPattern, WorkflowURLBaseDomain},
+		},
 	}
 	for idx, test := range tests {
 		// Create range scoped var for use within closure
