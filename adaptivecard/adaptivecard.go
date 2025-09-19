@@ -308,6 +308,7 @@ const (
 	TypeElementColumnSet      string = "ColumnSet"
 	TypeElementContainer      string = "Container"
 	TypeElementFactSet        string = "FactSet"
+	TypeElementIcon           string = "Icon"
 	TypeElementImage          string = "Image"
 	TypeElementImageSet       string = "ImageSet"
 	TypeElementInputChoiceSet string = "Input.ChoiceSet"
@@ -494,6 +495,10 @@ type Element struct {
 	// https://adaptivecards.io/explorer/TextBlock.html
 	// https://adaptivecards.io/explorer/TextRun.html
 	Text string `json:"text,omitempty"`
+
+	// Name is required for the Icon element type.
+	// https://adaptivecards.microsoft.com/?topic=Icon
+	Name string `json:"name,omitempty"`
 
 	// URL is required for the Image element type. URL is the URL to an Image
 	// in an ImageSet element type.
@@ -1366,6 +1371,8 @@ func (e Element) Validate() error {
 		if e.SelectAction != nil {
 			v.SelfValidate(e.SelectAction)
 		}
+	case e.Type == TypeElementIcon:
+		v.NotEmptyValue(e.Name, "Name", e.Type, ErrMissingValue)
 
 	// URL is required for Image element type.
 	// https://adaptivecards.io/explorer/Image.html

@@ -20,6 +20,7 @@ func supportedElementTypes() []string {
 		TypeElementColumnSet,
 		TypeElementContainer,
 		TypeElementFactSet,
+		TypeElementIcon,
 		TypeElementImage,
 		TypeElementImageSet,
 		TypeElementInputChoiceSet,
