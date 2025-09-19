@@ -141,6 +141,19 @@ const (
 	SizeExtraLarge string = "extraLarge"
 )
 
+// Icon size for Icon elements.
+// https://adaptivecards.microsoft.com/?topic=Icon
+const (
+	SizeIconXXSmall  string = "xxSmall"
+	SizeIconXSmall   string = "xSmall"
+	SizeIconSmall    string = "Small"
+	SizeIconStandard string = "Standard"
+	SizeIconMedium   string = "Medium"
+	SizeIconLarge    string = "Large"
+	SizeIconXLarge   string = "xLarge"
+	SizeIconXXLarge  string = "xxLarge"
+)
+
 // Text weight for TextBlock or TextRun elements.
 const (
 	WeightBolder  string = "bolder"
@@ -1312,17 +1325,17 @@ func (e Element) Validate() error {
 	v := validator.Validator{}
 
 	supportedElementTypes := supportedElementTypes()
-	supportedSizeValues := supportedSizeValues()
 	supportedWeightValues := supportedWeightValues()
 	supportedColorValues := supportedColorValues()
 	supportedSpacingValues := supportedSpacingValues()
 	supportedHorizontalAlignmentValues := supportedHorizontalAlignmentValues()
 
-	// Valid Style field values differ based on type. For example, a Container
+	// Valid Style and Size fields values differ based on type. For example, a Container
 	// element supports Container styles whereas a TextBlock supports a
 	// different and more limited set of style values. We use a helper
 	// function to retrieve valid style values for evaluation.
 	supportedStyleValues := supportedStyleValues(e.Type)
+	supportedSizeValues := supportedSizeValues(e.Type)
 
 	/******************************************************************
 		General requirements for all Element types.
