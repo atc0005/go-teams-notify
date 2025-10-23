@@ -323,6 +323,13 @@ const (
 	TypeElementTextRun        string = "TextRun" // Introduced in version 1.2
 )
 
+// Known extension types for an Adaptive Card element.
+//
+//   - https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format?tabs=adaptive-md%2Cdesktop%2Cconnector-html#codeblock-in-adaptive-cards
+const (
+	TypeElementMSTeamsCodeBlock string = "CodeBlock"
+)
+
 // Sentinel errors for this package.
 var (
 	// ErrInvalidType indicates that an invalid type was specified.
@@ -601,6 +608,15 @@ type Element struct {
 	// Separator, when true, indicates that a separating line shown should be
 	// drawn at the top of the element.
 	Separator bool `json:"separator,omitempty"`
+
+	// CodeSnippet provides the content for a CodeBlock element, specific to MSTeams.
+	CodeSnippet string `json:"codeSnippet,omitempty"`
+
+	// Language specifies the language of a CodeBlock element, specific to MSTeams.
+	Language string `json:"language,omitempty"`
+
+	// StartLineNumber specifies the initial line number of CodeBlock element, specific to MSTeams.
+	StartLineNumber int `json:"startLineNumber,omitempty"`
 }
 
 // Container is an Element type that allows grouping items together.
@@ -1374,6 +1390,10 @@ func (e Element) Validate() error {
 		v.SelfValidate(TableRows(e.Rows))
 
 		v.SelfValidate(TableColumnDefinitions(e.Columns))
+
+	case e.Type == TypeElementMSTeamsCodeBlock:
+		v.NotEmptyValue(e.CodeSnippet, "CodeSnippet", e.Type, ErrMissingValue)
+		v.NotEmptyValue(e.Language, "Language", e.Type, ErrMissingValue)
 	}
 
 	// Return the last recorded validation error, or nil if no validation
@@ -3143,6 +3163,48 @@ func (c *Card) AddContainer(prepend bool, container Container) error {
 	}
 
 	return nil
+}
+
+// NewCodeBlock creates a new CodeBlock element with snippet, language, and
+// optional firstLine. This is an MSTeams extension element.
+//
+// Supported languages include:
+//
+//   - Bash
+//   - C
+//   - C#
+//   - C++
+//   - CSS
+//   - DOS
+//   - Go
+//   - GraphQL
+//   - HTML
+//   - Java
+//   - JavaScript
+//   - JSON
+//   - Perl
+//   - PHP
+//   - PlainText
+//   - PowerShell
+//   - Python
+//   - SQL
+//   - TypeScript
+//   - Verilog
+//   - VHDL
+//   - Visual Basic
+//   - XML
+//
+// See
+// https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format
+// for additional languages that may be supported.
+func NewCodeBlock(snippet string, language string, firstLine int) Element {
+	codeBlock := Element{
+		Type:            TypeElementMSTeamsCodeBlock,
+		CodeSnippet:     snippet,
+		Language:        language,
+		StartLineNumber: firstLine,
+	}
+	return codeBlock
 }
 
 // cardBodyHasMention indicates whether an Adaptive Card body contains all

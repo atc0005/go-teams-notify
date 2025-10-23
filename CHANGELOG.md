@@ -26,6 +26,20 @@ The following types of changes will be recorded in this file:
 
 - placeholder
 
+## [v2.13.0] - 2024-09-08
+
+### Added
+
+- (GH-293) Add MSTeams CodeBlock element
+  - credit: [@MichaelUrman](https://github.com/MichaelUrman)
+- (GH-298) Update documentation for CodeBlock element
+
+## [v2.12.0] - 2024-08-16
+
+### Added
+
+- (GH-291) Expose `TeamsMessage` interface to support mocking
+
 ## [v2.11.0] - 2024-08-02
 
 ### Added
@@ -545,7 +559,9 @@ The following types of changes will be recorded in this file:
 
 - add initial functionality of sending messages to MS Teams channel
 
-[Unreleased]: https://github.com/atc0005/go-teams-notify/compare/v2.11.0...HEAD
+[Unreleased]: https://github.com/atc0005/go-teams-notify/compare/v2.13.0...HEAD
+[v2.13.0]: https://github.com/atc0005/go-teams-notify/releases/tag/v2.13.0
+[v2.12.0]: https://github.com/atc0005/go-teams-notify/releases/tag/v2.12.0
 [v2.11.0]: https://github.com/atc0005/go-teams-notify/releases/tag/v2.11.0
 [v2.10.0]: https://github.com/atc0005/go-teams-notify/releases/tag/v2.10.0
 [v2.9.0]: https://github.com/atc0005/go-teams-notify/releases/tag/v2.9.0

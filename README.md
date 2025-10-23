@@ -38,6 +38,7 @@ A package to send messages to a Microsoft Teams channel.
     - [Basic](#basic)
     - [Specify proxy server](#specify-proxy-server)
     - [User Mention](#user-mention)
+    - [CodeBlock](#codeblock)
     - [Tables](#tables)
     - [Set custom user agent](#set-custom-user-agent)
     - [Add an Action](#add-an-action)
@@ -396,6 +397,14 @@ deprecated][o365-connector-retirement-announcement] `MessageCard` card format.
 - File: [user-mention-verbose](./examples/adaptivecard/user-mention-verbose/main.go)
   - this example does not necessarily reflect an optimal implementation
 
+#### CodeBlock
+
+This example illustrates the use of a [`CodeBlock`][adaptivecard-codeblock].
+This feature is not available in the legacy [🚫
+deprecated][o365-connector-retirement-announcement] `MessageCard` card format.
+
+- File: [codeblock](./examples/adaptivecard/codeblock/main.go)
+
 #### Tables
 
 These examples illustrates the use of a [`Table`][adaptivecard-table]. This
@@ -510,5 +519,7 @@ using either this library or the original project.
 [adaptivecard-ref-actions]: <https://docs.microsoft.com/en-us/adaptive-cards/authoring-cards/getting-started>
 [adaptivecard-user-mentions]: <https://docs.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format#mention-support-within-adaptive-cards>
 [adaptivecard-table]: <https://adaptivecards.io/explorer/Table.html>
+
+[adaptivecard-codeblock]: <https://learn.microsoft.com/en-us/microsoftteams/platform/task-modules-and-cards/cards/cards-format?tabs=adaptive-md%2Cdesktop%2Cconnector-html#codeblock-in-adaptive-cards>
 
 <!-- []: PLACEHOLDER "DESCRIPTION_HERE" -->
