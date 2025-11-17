@@ -20,6 +20,7 @@ func supportedElementTypes() []string {
 		TypeElementColumnSet,
 		TypeElementContainer,
 		TypeElementFactSet,
+		TypeElementIcon,
 		TypeElementImage,
 		TypeElementImageSet,
 		TypeElementInputChoiceSet,
@@ -40,14 +41,34 @@ func supportedElementTypes() []string {
 // supportedSizeValues returns a list of valid Size values for applicable
 // Element types. This list is intended to be used for validation and display
 // purposes.
-func supportedSizeValues() []string {
-	// https://adaptivecards.io/explorer/TextBlock.html
+func supportedSizeValues(elementType string) []string {
+	switch elementType {
+	case TypeElementIcon:
+		return supportedIconSizeValues()
+	default:
+		return []string{
+			SizeSmall,
+			SizeDefault,
+			SizeMedium,
+			SizeLarge,
+			SizeExtraLarge,
+		}
+	}
+}
+
+// supportedIconSizeValues returns a list of valid Size values for Icon
+// elements. This list is intended to be used for validation and display
+// purposes.
+func supportedIconSizeValues() []string {
 	return []string{
-		SizeSmall,
-		SizeDefault,
-		SizeMedium,
-		SizeLarge,
-		SizeExtraLarge,
+		SizeIconXXSmall,
+		SizeIconXSmall,
+		SizeIconSmall,
+		SizeIconStandard,
+		SizeIconMedium,
+		SizeIconLarge,
+		SizeIconXLarge,
+		SizeIconXXLarge,
 	}
 }
 

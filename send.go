@@ -53,6 +53,9 @@ const (
 	// webhook URL prefix patterns.
 	DefaultWebhookURLValidationPattern = `^https:\/\/(?:.*\.webhook|outlook)\.office(?:365)?\.com`
 
+	// PowerAutomateWebhookURLValidationPatten is a regex for matching known valid Power Automate webhook URL
+	PowerAutomateWebhookUrlValidationPatten = `^https:\/\/[a-z0-9\.]+\.environment\.api\.powerplatform\.com`
+
 	// Note: The regex allows for capital letters in the GUID patterns. This is
 	// allowed based on light testing which shows that mixed case works and the
 	// assumption that since Teams and Office 365 are Microsoft products case
@@ -459,6 +462,7 @@ func validateWebhook(webhookURL string, skipWebhookValidation bool, patterns []s
 	if len(patterns) == 0 {
 		patterns = []string{
 			DefaultWebhookURLValidationPattern,
+			PowerAutomateWebhookUrlValidationPatten,
 			WorkflowURLBaseDomain,
 		}
 	}

@@ -120,6 +120,16 @@ func TestTeamsClientSend(t *testing.T) {
 			skipURLVal: false,
 		},
 		{
+			name:       "valid values using power automate URL",
+			reqURL:     "https://default1234567890abcdefghijklmnopqust.01.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/1234567890abcdef0123456789abcdef/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers",
+			reqMsg:     simpleMsgCard,
+			resStatus:  200,
+			resBody:    ExpectedWebhookURLResponseText,
+			resError:   nil,
+			error:      nil,
+			skipURLVal: false,
+		},
+		{
 			// This test case should not result in an actual client request
 			// going out as validation failure should occur.
 			name:       "custom webhook domain without disabling validation",
